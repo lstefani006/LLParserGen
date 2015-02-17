@@ -7,12 +7,20 @@ namespace LLTest
 	{
 		public static void Main(string [] args)
 		{
-			using (var rd = new LexReader(args[0])) 
-			{ 
+			LexReader rd = null;
+			try {
+				if (args.Length == 1)
+					rd = new LexReader(args[0]);
+				else
+					rd = new LexReader(Console.In, "stdin");
+
 				var p = new MParser(); 
 				var e = p.Start(rd); 
-
 				Console.WriteLine(e.Exec());
+			}
+			finally {
+				if (rd != null)
+					rd.Dispose();
 			}
 		}
 	}
