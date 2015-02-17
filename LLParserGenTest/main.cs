@@ -7,9 +7,9 @@ namespace LLTest
 	{
 		public static void Main(string [] args)
 		{
-			using (LexReader rd = new LexReader(args[0])) 
+			using (var rd = new LexReader(args[0])) 
 			{ 
-				MParser p = new MParser(); 
+				var p = new MParser(); 
 				var e = p.Start(rd); 
 
 				Console.WriteLine(e.Exec());
@@ -23,45 +23,46 @@ namespace LLTest
 		public abstract int Exec();
 	}
 
-	public class ExprAdd : ExprRoot
+	public abstract class ExprBin : ExprRoot
 	{
-		public ExprAdd(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
-		ExprRoot a;
-		ExprRoot b;
+		protected ExprBin(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
+		protected ExprRoot a;
+		protected ExprRoot b;
+	}
+	public abstract class ExprUni : ExprRoot
+	{
+		protected ExprUni(ExprRoot a) { this.a = a; }
+		protected ExprRoot a;
+	}
+	public class ExprAdd : ExprBin
+	{
+		public ExprAdd(ExprRoot a, ExprRoot b) : base(a, b) {}
 		public override int Exec() { return a.Exec() + b.Exec(); }
 	}
-	public class ExprSub : ExprRoot
+	public class ExprSub : ExprBin
 	{
-		public ExprSub(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
-		ExprRoot a;
-		ExprRoot b;
+		public ExprSub(ExprRoot a, ExprRoot b) : base(a, b) {}
 		public override int Exec() { return a.Exec() - b.Exec(); }
 	}
-	public class ExprMul : ExprRoot
+	public class ExprMul : ExprBin
 	{
-		public ExprMul(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
-		ExprRoot a;
-		ExprRoot b;
+		public ExprMul(ExprRoot a, ExprRoot b) : base(a, b) {}
 		public override int Exec() { return a.Exec() * b.Exec(); }
 	}
-	public class ExprDiv : ExprRoot
+	public class ExprDiv : ExprBin
 	{
-		public ExprDiv(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
-		ExprRoot a;
-		ExprRoot b;
+		public ExprDiv(ExprRoot a, ExprRoot b) : base(a, b) {}
 		public override int Exec() { return a.Exec() / b.Exec(); }
 	}
-	public class ExprPlus : ExprRoot
+	public class ExprPlus : ExprUni
 	{
-		public ExprPlus(ExprRoot a) { this.a = a; }
-		ExprRoot a;
+		public ExprPlus(ExprRoot a) : base(a) {}
 		public override int Exec() { return a.Exec(); }
 	}
-	public class ExprNeg : ExprRoot
+	public class ExprNeg : ExprUni
 	{
-		public ExprNeg(ExprRoot a) { this.a = a; }
-		ExprRoot a;
-		public override int Exec() { return -a.Exec(); }
+		public ExprNeg(ExprRoot a) : base(a) {}
+		public override int Exec() { return a.Exec(); }
 	}
 	public class ExprNum : ExprRoot
 	{
