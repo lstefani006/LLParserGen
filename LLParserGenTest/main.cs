@@ -25,6 +25,10 @@ namespace LLTest
 		}
 	}
 
+	class Context
+	{
+	}
+
 
 	public abstract class ExprRoot : IAST
 	{
