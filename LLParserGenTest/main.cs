@@ -1,7 +1,7 @@
 using System;
 using LLParserLexerLib;
 
-namespace LLTest
+namespace LLParserGenTest
 {
 	class _
 	{
@@ -14,9 +14,13 @@ namespace LLTest
 				else
 					rd = new LexReader(Console.In, "stdin");
 
-				var p = new MParser(); 
-				var e = p.Start(rd); 
-				Console.WriteLine(e.Exec());
+				var p = new MParser();
+				var e = p.Start(rd);
+
+				using (Context ctx = new Context())
+				{
+				Console.WriteLine(e.Exec(ctx));
+				}
 			}
 			finally {
 				if (rd != null)
@@ -25,14 +29,10 @@ namespace LLTest
 		}
 	}
 
-	class Context
-	{
-	}
-
 
 	public abstract class ExprRoot : IAST
 	{
-		public abstract int Exec();
+		public abstract int Exec(Context ctx);
 	}
 
 	public abstract class ExprBin : ExprRoot
@@ -49,38 +49,38 @@ namespace LLTest
 	public class ExprAdd : ExprBin
 	{
 		public ExprAdd(ExprRoot a, ExprRoot b) : base(a, b) {}
-		public override int Exec() { return a.Exec() + b.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx) + b.Exec(ctx); }
 	}
 	public class ExprSub : ExprBin
 	{
 		public ExprSub(ExprRoot a, ExprRoot b) : base(a, b) {}
-		public override int Exec() { return a.Exec() - b.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx) - b.Exec(ctx); }
 	}
 	public class ExprMul : ExprBin
 	{
 		public ExprMul(ExprRoot a, ExprRoot b) : base(a, b) {}
-		public override int Exec() { return a.Exec() * b.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx) * b.Exec(ctx); }
 	}
 	public class ExprDiv : ExprBin
 	{
 		public ExprDiv(ExprRoot a, ExprRoot b) : base(a, b) {}
-		public override int Exec() { return a.Exec() / b.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx) / b.Exec(ctx); }
 	}
 	public class ExprPlus : ExprUni
 	{
 		public ExprPlus(ExprRoot a) : base(a) {}
-		public override int Exec() { return a.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx); }
 	}
 	public class ExprNeg : ExprUni
 	{
 		public ExprNeg(ExprRoot a) : base(a) {}
-		public override int Exec() { return a.Exec(); }
+		public override int Exec(Context ctx) { return a.Exec(ctx); }
 	}
 	public class ExprNum : ExprRoot
 	{
 		public ExprNum(LLParserLexerLib.TokenAST a) { this.a = a; }
 		LLParserLexerLib.TokenAST a;
-		public override int Exec() { return int.Parse(a.v); }
+		public override int Exec(Context ctx) { return int.Parse(a.v); }
 	}
 
 	////////////////////////

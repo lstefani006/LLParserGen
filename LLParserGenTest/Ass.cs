@@ -13,6 +13,7 @@ namespace LLParserGenTest
 		J_ret,
 		J_js,
 
+		I_add,
 	
 		I_lw,
 		I_lh,
@@ -36,7 +37,7 @@ namespace LLParserGenTest
 		I_sr,
 	}
 
-	abstract class MipsAssembly {
+	abstract class AssRoot {
 
 		protected U.Set<string> _in = new U.Set<string>();
 		protected U.Set<string> _out = new U.Set<string>();
@@ -44,20 +45,21 @@ namespace LLParserGenTest
 		protected U.Set<string> _lbl = new U.Set<string>();
 		protected U.Set<int> _prev = new U.Set<int>();
 
-		public U.Set<int> Succ = new U.Set<int>();
+		public U.Set<int> Succ { get { return _succ; } }
+		public U.Set<int> _succ;
 
 		public static void SetLabel(string lbl) {
 			S_lbl.Add(lbl);
 		}
 
-		protected MipsAssembly() {
+		protected AssRoot() {
 			_lbl = S_lbl;
 			S_lbl = new U.Set<string>();
 		}
 
-		public abstract bool ComputeLive(U.Set<string> rout);
+		public abstract void ComputeSucc(int pc, Context ctx);
+		public abstract bool ComputeLive(U.Set<string> prev);
 		public abstract void Substitute(string temp, string reg);
-		public abstract U.Set<int> GetSucc(int pc, Context ctx);
 
 		protected string InToString() {
 			string r = "[";
@@ -80,7 +82,7 @@ namespace LLParserGenTest
 		public U.Set<string> Lbl { get { return this._lbl; } }
 	}
 
-	class MipsX : MipsAssembly {
+	class MipsX : AssRoot {
 		OpCode op;
 		string rd;
 		string rt;
@@ -109,24 +111,22 @@ namespace LLParserGenTest
 				rin.Add(rs);
 				rin.Add(rt);
 				rin.Add(rd);
-			} else {
+			} else if (op == OpCode.X_ldi || op == OpCode.X_ldiu) {
 				rin.Remove(rd);
 				rin.Add(rs);
 				rin.Add(rt);
-			}
+			} else
+				Debug.Assert(false);
 
-			bool changed = false;
-			if (rin != _in || rout != _out)
-				changed = true;
-
+			bool changed = (rin != _in || rout != _out);
 			_in = rin;
 			_out = rout;
 
 			return changed;
 		}
 
-		public override U.Set<int> GetSucc(int pc, Context ctx) {
-			return new U.Set<int>() { pc + 1 };
+		public override void ComputeSucc(int pc, Context ctx) {
+			_succ = new U.Set<int>() { pc + 1 };
 		}
 
 
@@ -160,13 +160,14 @@ namespace LLParserGenTest
 
 	}
 
-	class MipsR : MipsAssembly {
+	class MipsR : AssRoot {
 		OpCode op;
 		string rd, rs, rt;
 
 		public MipsR(OpCode op, string rd, string rs, string rt) {
 			this.op = op;
 
+			// $d = $s + $t
 			this.rd = rd;
 			this.rs = rs;
 			this.rt = rt;
@@ -222,16 +223,16 @@ namespace LLParserGenTest
 			if (rt == temp) rt = reg;
 		}
 
-		public override U.Set<int> GetSucc(int pc, Context ctx) {
+		public override void ComputeSucc(int pc, Context ctx) {
 			//if (func == Func_R.jr)
 			//	Debug.Assert(false, "Non si puo` calcolare il next di un j r2");
 
 			// notare che invece Func_R.js ha con succ pc+1
-			return new U.Set<int>() { pc + 1 };
+			_succ = new U.Set<int>() { pc + 1 };
 		}
 	}
 
-	class MipsI : MipsAssembly, IEquatable<MipsI> {
+	class MipsI : AssRoot, IEquatable<MipsI> {
 		OpCode op;
 		string rs, rt;
 		int C;
@@ -255,14 +256,14 @@ namespace LLParserGenTest
 			var rout = new U.Set<string>(prev);
 			var rin = new U.Set<string>(prev);
 			switch (op) {
-			case OpCode.I_sw:
+			case OpCode.I_sw:  // sw ==> Memory[$s + C] = $t
 			case OpCode.I_sh:
 			case OpCode.I_sb:
 				rin.Add(rs);
 				rin.Add(rt);
 				break;
 
-			case OpCode.I_beq:
+			case OpCode.I_beq:  // if($s == $t) go to PC+4+4*C
 			case OpCode.I_bne:
 			case OpCode.I_bgt:
 			case OpCode.I_bge:
@@ -292,17 +293,14 @@ namespace LLParserGenTest
 				rin.Add(rs);
 				break;
 			}
-			bool changed = false;
-			if (_in != rin || _out != rout)
-				changed = true;
 
+			bool changed = (_in != rin || _out != rout);
 			_in = rin;
 			_out = rout;
-
 			return changed;
 		}
 
-		public override U.Set<int> GetSucc(int pc, Context ctx) {
+		public override void ComputeSucc(int pc, Context ctx) {
 			var ret = new U.Set<int>() { pc + 1 };
 			if (op == OpCode.I_beq || op == OpCode.I_bne ||
 			     op == OpCode.I_bgt || op == OpCode.I_bge ||
@@ -313,7 +311,7 @@ namespace LLParserGenTest
 					ret.Add(this.C);
 			}
 
-			return ret;
+			_succ = ret;
 		}
 
 		public override string ToString() {
@@ -404,7 +402,7 @@ namespace LLParserGenTest
 		public string Window { get { return this.lbl; } }
 	}
 
-	class MipsJ : MipsAssembly, IEquatable<MipsJ> {
+	class MipsJ : AssRoot, IEquatable<MipsJ> {
 		OpCode op;
 		int C;
 		string lbl;
@@ -443,7 +441,7 @@ namespace LLParserGenTest
 					rin.Add(r);
 
 
-
+			// quidipende dall'istruzione
 
 			bool changed = false;
 			if (_in != rin || _out != rout)
@@ -469,10 +467,10 @@ namespace LLParserGenTest
 		public override void Substitute(string temp, string reg) {
 		}
 
-		public override U.Set<int> GetSucc(int pc, Context ctx) {
-			if (op == OpCode.J_ret) return new U.Set<int>();
-			if (op == OpCode.J_js) return new U.Set<int>() { pc + 1 };
-			return new U.Set<int>() { ctx.GetAddrFromLabel(this.lbl) };
+		public override void ComputeSucc(int pc, Context ctx) {
+			if (op == OpCode.J_ret) _succ = new U.Set<int>();
+			else if (op == OpCode.J_js) _succ = new U.Set<int>() { pc + 1 };
+			else _succ = new U.Set<int>() { ctx.GetAddrFromLabel(this.lbl) };
 		}
 
 

@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
+namespace LLParserGenTest
+{
 
 public static class U
 {
@@ -137,3 +139,4 @@ public static class U
 	}
 }
 
+}

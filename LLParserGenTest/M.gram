@@ -28,7 +28,7 @@ del                                   ^DEL
 %parser 
 %parser.class MParser
 %parser.using System
-%parser.namespace LLTest
+%parser.namespace LLParserGenTest
 
 start<ExprRoot>
 	: e_add            ^$1

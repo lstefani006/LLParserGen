@@ -4,23 +4,25 @@ using System.Collections.Generic;
 
 namespace LLParserGenTest
 {
-	public class Context {
-		public Context() {
-		}
+	public class Context : IDisposable {
 
-		private List<MipsAssembly> _ass = new List<MipsAssembly>();
+		public void Dispose() {}
 
-		private void ComputeSucc(int istart, int iend) {
-			for (int i = istart; i < iend; ++i)
-				_ass[i].Succ = _ass[i].GetSucc(i, this);
-		}
+		public Context() {}
+
+		public void add(string rd, string rs, string rt) { _ass.Add(new MipsX(OpCode.I_add, rd, rs, rt)); }
+
+		private List<AssRoot> _ass = new List<AssRoot>();
 
 		private void ComputeLive(int istart, int iend) {
 			// capisco per ogni istruzione quale sono
 			// le istruzioni che la seguono.
 			// puo` essere quella immediatamente successiva 
 			// o un jmp da qualche parte nel codice.
-			this.ComputeSucc(istart, iend);
+			for (int i = istart; i < iend; ++i)
+				_ass[i].ComputeSucc(i, this);
+
+
 			if (false) {
 				for (var i = istart; i < iend; ++i) {
 					var c = _ass[i];
@@ -43,7 +45,6 @@ namespace LLParserGenTest
 					if (b) changed = true;
 
 					//Console.WriteLine(this);
-
 				}
 				//Console.WriteLine(this);
 			} while (changed);
