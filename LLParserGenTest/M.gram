@@ -30,8 +30,18 @@ del                                   ^DEL
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<ExprRoot>
-	: e_add            ^$1
+start<StmtRoot>
+	: stmt            ^$1
+	;
+
+stmt<StmtRoot>
+	: IF '(' e_ass ')' stmt    ^new StmtIf($3, $5)
+	| e_ass ';'                ^new StmtExpr($1)
+	;
+
+e_ass<ExprRoot>
+	: e_add '=' e_ass   ^new ExprAss($1, $3)
+	| e_add             ^$1
 	;
 
 e_add<ExprRoot>
