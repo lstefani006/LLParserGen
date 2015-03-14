@@ -1,0 +1,37 @@
+﻿<Properties StartupItem="LLParserGenTest.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Context.cs">
+    <Files>
+      <File FileName="M.gram" Line="1" Column="1" />
+      <File FileName="../LLParserGenLib/U_Lexer.cs" Line="1" Column="1" />
+      <File FileName="Graph.cs" Line="1" Column="1" />
+      <File FileName="U.cs" Line="1" Column="1" />
+      <File FileName="Ass.cs" Line="1" Column="1" />
+      <File FileName="Context.cs" Line="72" Column="72" />
+      <File FileName="main.cs" Line="1" Column="1" />
+      <File FileName="M.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="54" column="38" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.LLParserGenTest>
+    <MonoDevelop.Ide.CustomExecutionModes>
+      <Data Name="Default (Custom)" Id="e9561784-554e-4850-96e0-ed246cb5fc3e" ModeId="Default">
+        <CommandData>
+          <Item Key="MonoDevelop.Ide.Execution.CustomArgsCustomizer">
+            <Value Arguments="m.txt" WorkingDirectory="/home/leo/src/LLParserGen/LLParserGenTest" ctype="CustomArgsExecutionModeData">
+              <EnvironmentVariables />
+            </Value>
+          </Item>
+          <Item Key="MonoDevelop.Ide.Execution.MonoExecutionCustomizer">
+            <Value ctype="MonoExecutionParameters" />
+          </Item>
+        </CommandData>
+      </Data>
+    </MonoDevelop.Ide.CustomExecutionModes>
+  </MonoDevelop.Ide.ItemProperties.LLParserGenTest>
+</Properties>

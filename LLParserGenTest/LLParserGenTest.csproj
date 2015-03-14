@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A0473FD0-BD59-40EC-9FDA-9732577567EF}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LLParserGenTest</RootNamespace>
+    <AssemblyName>LLParserGenTest</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+    <Commandlineparameters>m.txt</Commandlineparameters>
+    <CustomCommands>
+      <CustomCommands>
+        <Command type="Execute" command="${TargetFile}" workingdir="/home/leo/src/LLParserGen/LLParserGenTest" />
+      </CustomCommands>
+    </CustomCommands>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>full</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="M.cs" />
+    <Compile Include="main.cs" />
+    <Compile Include="..\LLParserGenLib\U_Lexer.cs">
+      <Link>U_Lexer.cs</Link>
+    </Compile>
+    <Compile Include="..\LLParserGenLib\U_LLParserLexerLib.cs">
+      <Link>U_LLParserLexerLib.cs</Link>
+    </Compile>
+    <Compile Include="Graph.cs" />
+    <Compile Include="U.cs" />
+    <Compile Include="Ass.cs" />
+    <Compile Include="Context.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <Content Include="M.gram">
+      <Generator>LLParserGen.exe</Generator>
+    </Content>
+  </ItemGroup>
+</Project>
