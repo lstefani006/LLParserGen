@@ -577,7 +577,7 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					
 					TokenAST nt1_s = Match(ID, nt1_i);
-					e_prim_s = new ExprNum(nt1_s);
+					e_prim_s = new ExprId(nt1_s);
 				}
 				break;
 			case 2:

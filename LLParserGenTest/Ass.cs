@@ -6,15 +6,57 @@ using System.Linq;
 
 namespace LLParserGenTest
 {
+	/*
+	 * r0-r14-rp
+	 * 
+	 * add r2, r3, r4
+	 * add r2, r3, 232
+	 * add r2, 53, r4
+	 *  
+	 * ld  r3, 345
+	 * ld  r3, b1[r4]
+	 * ld  r3, b1[r4 + off]
+	 * ld  r3, b1[r4 + off + r5*1]
+	 * ld  r3, b2[r4 + off + r5*2]
+	 * ld  r3, b4[r4 + off + r5*4]
+	 * 
+	 * beq r2, r5,  lbl
+	 * beq r2, 434, lbl
+	 * beq 34, r4,  lbl
+	 * br  lbl
+	 * js  lbl
+	 * js  obj-addr, id-int, off
+	 * 
+	 */
 	public enum OpCode {
+		/*
 		X_sti, X_stiu,
 		X_ldi,
 		X_ldiu,
 		J_ret,
 		J_js,
+		*/
 
 		I_add,
+		I_sub,
+		I_mul,
+		I_div,
+
+		J_jmp,
+		J_js,
+		J_ret,
+
+		B_beq,
+		B_bne,
+		B_bgt,
+		B_bge,
+		B_blt,
+		B_ble,
+
+		L_ld
+
 	
+		/*
 		I_lw,
 		I_lh,
 		I_lb,
@@ -35,29 +77,29 @@ namespace LLParserGenTest
 		I_mvw,
 		I_lr,
 		I_sr,
+		*/
 	}
 
-	abstract class AssRoot {
+	public abstract class AssRoot : IEquatable<AssRoot> {
 
 		protected U.Set<string> _in = new U.Set<string>();
 		protected U.Set<string> _out = new U.Set<string>();
-		protected static U.Set<string> S_lbl = new U.Set<string>();
 		protected U.Set<string> _lbl = new U.Set<string>();
-		protected U.Set<int> _prev = new U.Set<int>();
 
-		public U.Set<int> Succ { get { return _succ; } }
-		public U.Set<int> _succ;
+		public U.Set<AssRoot> _succ;
+		public U.Set<AssRoot> Succ { get { return _succ; } }
 
-		public static void SetLabel(string lbl) {
-			S_lbl.Add(lbl);
+		protected AssRoot(Context ctx, U.Set<string> lbl) { _lbl = lbl; }
+
+		public bool Equals(AssRoot other)
+		{
+			foreach (var a in this._lbl)
+				foreach (var b in other._lbl)
+					if (a == b) return true;
+			return false;
 		}
 
-		protected AssRoot() {
-			_lbl = S_lbl;
-			S_lbl = new U.Set<string>();
-		}
-
-		public abstract void ComputeSucc(int pc, Context ctx);
+		public abstract void ComputeSucc(Context ctx);
 		public abstract bool ComputeLive(U.Set<string> prev);
 		public abstract void Substitute(string temp, string reg);
 
@@ -82,6 +124,284 @@ namespace LLParserGenTest
 		public U.Set<string> Lbl { get { return this._lbl; } }
 	}
 
+	class AssI : AssRoot
+	{
+		OpCode op;
+		string rd;
+		string rt;
+		string rs;
+
+		public AssI(Context ctx, U.Set<string> lbl, OpCode op, string rd, string rt, string rs) : base(ctx, lbl)
+		{
+			Debug.Assert(op == OpCode.I_add || op == OpCode.I_sub || op == OpCode.I_mul || op == OpCode.I_div);
+
+			this.op = op;
+
+			this.rd = rd;
+			this.rt = rt;
+			this.rs = rs;
+		}
+
+		public override bool ComputeLive(U.Set<string> prev)
+		{
+			// in = (out - def) u use
+			//
+			// out variabili vive dopo l'istruzione
+			// def variabili definite (scritte) nell'istruzione
+			// use variabili argomenti (lette) nell'instruzione
+
+			var rout = new U.Set<string>(prev);
+			var rin = new U.Set<string>(prev);
+
+			if (true)
+			{
+				// rd is written  ==> is not live before this instruction
+				// rs/rt are read ==> they must be live for this instruction
+				rin.Remove(rd);
+				rin.Add(rs);
+				rin.Add(rt);
+			}
+
+			bool changed = (rin != _in || rout != _out);
+			_in = rin;
+			_out = rout;
+
+			return changed;
+		}
+
+		public override void ComputeSucc(Context ctx)
+		{
+			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) };
+		}
+
+
+		public override string ToString()
+		{
+			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
+			switch (op)
+			{
+			case OpCode.I_add:
+			case OpCode.I_sub:
+				{
+					string r = U.F("{0,-6} {1}, {2}, {3}", f, rd, rt, rs);
+					return U.F("{0} {1}", InToString(), r);
+				}
+
+			default:
+				Debug.Assert(false);
+				return null;
+			}
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
+			if (rd == temp) rd = reg;
+			if (rs == temp) rs = reg;
+			if (rt == temp) rt = reg;
+		}
+	}
+	class AssJ : AssRoot
+	{
+		OpCode op;
+		string addr;
+
+		public AssJ(Context ctx, U.Set<string> lbl, OpCode op, string addr)
+			: base(ctx, lbl)
+		{
+			Debug.Assert(Enum.GetName(typeof(OpCode), op).StartsWith("J"));
+			Debug.Assert(op == OpCode.J_jmp || op == OpCode.J_js);
+
+			this.op = op;
+			this.addr = addr;
+		}
+
+		public override bool ComputeLive(U.Set<string> prev)
+		{
+			// in = (out - def) u use
+			//
+			// out variabili vive dopo l'istruzione
+			// def variabili definite (scritte) nell'istruzione
+			// use variabili argomenti (lette) nell'instruzione
+
+			var rout = new U.Set<string>(prev);
+			var rin = new U.Set<string>(prev);
+
+			if (true)
+			{
+			}
+
+			bool changed = (rin != _in || rout != _out);
+			_in = rin;
+			_out = rout;
+
+			return changed;
+		}
+
+		public override void ComputeSucc(Context ctx)
+		{
+			switch (op)
+			{
+			case OpCode.J_jmp: _succ = new U.Set<AssRoot>() { ctx.GetOp(this.addr) }; break;
+			case OpCode.J_ret: _succ = new U.Set<AssRoot>(); break;
+			case OpCode.J_js: _succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) }; break;
+			default: Debug.Assert(false); break;
+			}
+		}
+
+
+		public override string ToString()
+		{
+			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
+			switch (op)
+			{
+			case OpCode.I_add:
+			case OpCode.I_sub:
+				{
+					string r = U.F("{0,-6} {1}", f, this.addr);
+					return U.F("{0} {1}", InToString(), r);
+				}
+
+			default:
+				Debug.Assert(false);
+				return null;
+			}
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
+		}
+	}
+	class AssB : AssRoot
+	{
+		OpCode op;
+		string rs;
+		string rt;
+		string addr;
+
+		public AssB(Context ctx, U.Set<string> lbl, OpCode op, string rs, string rt, string addr)
+			: base(ctx, lbl)
+		{
+			Debug.Assert(Enum.GetName(typeof(OpCode), op).StartsWith("B_"));
+
+			this.op = op;
+
+			this.rs = rs;
+			this.rt = rt;
+			this.addr = addr;
+		}
+
+		public override bool ComputeLive(U.Set<string> prev)
+		{
+			// in = (out - def) u use
+			//
+			// out variabili vive dopo l'istruzione
+			// def variabili definite (scritte) nell'istruzione
+			// use variabili argomenti (lette) nell'instruzione
+
+			var rout = new U.Set<string>(prev);
+			var rin = new U.Set<string>(prev);
+
+			if (true)
+			{
+				// rd is written  ==> is not live before this instruction
+				// rs/rt are read ==> they must be live for this instruction
+				rin.Add(rs);
+				rin.Add(rt);
+			}
+
+			bool changed = (rin != _in || rout != _out);
+			_in = rin;
+			_out = rout;
+
+			return changed;
+		}
+
+		public override void ComputeSucc(Context ctx)
+		{
+			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this), ctx.GetOp(this.addr) };
+		}
+
+
+		public override string ToString()
+		{
+			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
+			switch (op)
+			{
+			case OpCode.I_add:
+			case OpCode.I_sub:
+				{
+					string r = U.F("{0,-6} {1}, {2}, {3}", f, rs, rt, addr);
+					return U.F("{0} {1}", InToString(), r);
+				}
+
+			default:
+				Debug.Assert(false);
+				return null;
+			}
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
+			if (rs == temp) rs = reg;
+			if (rt == temp) rt = reg;
+		}
+	}
+
+	class AssLd : AssRoot
+	{
+		string rd;
+		int c;
+
+		public AssLd(Context ctx, U.Set<string> lbl, string rd, int c)
+			: base(ctx, lbl)
+		{
+			this.rd = rd;
+			this.c = c;
+		}
+
+		public override bool ComputeLive(U.Set<string> prev)
+		{
+			// in = (out - def) u use
+			//
+			// out variabili vive dopo l'istruzione
+			// def variabili definite (scritte) nell'istruzione
+			// use variabili argomenti (lette) nell'instruzione
+
+			var rout = new U.Set<string>(prev);
+			var rin = new U.Set<string>(prev);
+
+			if (true)
+			{
+				// rd is written  ==> is not live before this instruction
+				// rs/rt are read ==> they must be live for this instruction
+				rin.Remove(rd);
+			}
+
+			bool changed = (rin != _in || rout != _out);
+			_in = rin;
+			_out = rout;
+
+			return changed;
+		}
+
+		public override void ComputeSucc(Context ctx)
+		{
+			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) };
+		}
+
+
+		public override string ToString()
+		{
+			string r = U.F("{0,-6} {1}, {2}", "ld", rd, c);
+			return U.F("{0} {1}", InToString(), r);
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
+			if (rd == temp) rd = reg;
+		}
+	}
+#if MIPS
 	class MipsX : AssRoot {
 		OpCode op;
 		string rd;
@@ -478,6 +798,7 @@ namespace LLParserGenTest
 			return this == other;
 		}
 	}
+#endif
 }
 
 

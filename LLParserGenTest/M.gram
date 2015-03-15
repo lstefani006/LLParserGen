@@ -64,6 +64,6 @@ e_una<ExprRoot>
 
 e_prim<ExprRoot>
 	: NUM              ^new ExprNum($1)
-	| ID               ^new ExprNum($1)
+	| ID               ^new ExprId($1)
 	| '(' e_add ')'    ^$2
 	;
