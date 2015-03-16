@@ -1,25 +1,23 @@
 %lexer
 
-/*
-fun                                   ^FUN
 var                                   ^VAR
-del                                   ^DEL
-*/
+if                                    ^IF
 
+";"									  ^(;)
 "+"									  ^(+)
 "-"									  ^(-)
 "*"									  ^(*)
 "/"									  ^(/)
 "("									  ^(()
 ")"									  ^())
-/*
+"="									  ^(=)
 ">"									  ^GT
 ">="								  ^GE
 "<"		    						  ^LT
 "<="	    						  ^LE
 "=="	    						  ^EQ
 "!="	    						  ^NE
-*/
+
 (_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])* ^ID
 [0-9]+                                ^NUM
 (\ |\n|\r|\t)+                        ^()
@@ -30,19 +28,36 @@ del                                   ^DEL
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<StmtRoot>
-	: stmt            ^$1
+start<StmtList>
+	: start stmt               ^$1.Add($2)
+	|                          ^new StmtList()
 	;
 
 stmt<StmtRoot>
 	: IF '(' e_ass ')' stmt    ^new StmtIf($3, $5)
 	| e_ass ';'                ^new StmtExpr($1)
+	| VAR ID ';'               ^new StmtDecl($2)
 	;
 
 e_ass<ExprRoot>
-	: e_add '=' e_ass   ^new ExprAss($1, $3)
-	| e_add             ^$1
+	: e_lt '=' e_ass   ^new ExprAss($1, $3)
+	| e_lt             ^$1
 	;
+
+e_lt<ExprRoot>
+	: e_lt LT e_eq    ^new ExprEq("<",  $1, $3)
+	| e_lt LE e_eq    ^new ExprEq("<=", $1, $3)
+	| e_lt GT e_eq    ^new ExprEq(">",  $1, $3)
+	| e_lt GE e_eq    ^new ExprEq(">=", $1, $3)
+	| e_eq            ^$1
+	;
+
+e_eq<ExprRoot>
+	: e_eq EQ e_add  ^new ExprEq("==", $1, $3)
+	| e_eq NE e_add  ^new ExprEq("!=", $1, $3)
+	| e_add            ^$1
+	;
+
 
 e_add<ExprRoot>
 	: e_add '+' e_mul  ^new ExprAdd($1, $3)

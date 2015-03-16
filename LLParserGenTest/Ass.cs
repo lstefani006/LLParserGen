@@ -134,6 +134,10 @@ namespace LLParserGenTest
 		public AssI(Context ctx, U.Set<string> lbl, OpCode op, string rd, string rt, string rs) : base(ctx, lbl)
 		{
 			Debug.Assert(op == OpCode.I_add || op == OpCode.I_sub || op == OpCode.I_mul || op == OpCode.I_div);
+			Debug.Assert(rd != null);
+			Debug.Assert(rs != null);
+			Debug.Assert(rt != null);
+
 
 			this.op = op;
 
@@ -178,19 +182,8 @@ namespace LLParserGenTest
 		public override string ToString()
 		{
 			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
-			switch (op)
-			{
-			case OpCode.I_add:
-			case OpCode.I_sub:
-				{
-					string r = U.F("{0,-6} {1}, {2}, {3}", f, rd, rt, rs);
-					return U.F("{0} {1}", InToString(), r);
-				}
-
-			default:
-				Debug.Assert(false);
-				return null;
-			}
+			string r = U.F("{0,-6} {1}, {2}, {3}", f, rd, rt, rs);
+			return U.F("{0} {1}", InToString(), r);
 		}
 
 		public override void Substitute(string temp, string reg)
@@ -325,19 +318,8 @@ namespace LLParserGenTest
 		public override string ToString()
 		{
 			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
-			switch (op)
-			{
-			case OpCode.I_add:
-			case OpCode.I_sub:
-				{
-					string r = U.F("{0,-6} {1}, {2}, {3}", f, rs, rt, addr);
-					return U.F("{0} {1}", InToString(), r);
-				}
-
-			default:
-				Debug.Assert(false);
-				return null;
-			}
+			string r = U.F("{0,-6} {1}, {2}, {3}", f, rs, rt, addr);
+			return U.F("{0} {1}", InToString(), r);
 		}
 
 		public override void Substitute(string temp, string reg)
@@ -392,7 +374,7 @@ namespace LLParserGenTest
 
 		public override string ToString()
 		{
-			string r = U.F("{0,-6} {1}, {2}", "ld", rd, c);
+			string r = U.F("{0,-6} {1}, {2}", "ld ", rd, c);
 			return U.F("{0} {1}", InToString(), r);
 		}
 

@@ -31,8 +31,21 @@ namespace LLParserGenTest
 		public void ld(string rs, int c) { e(); _ass.Add(new AssLd(this, emitNextLbl, rs, c)); emitNextLbl = null; }
 
 		U.Set<string> emitNextLbl;
-		public void emit(string lbl) { if (emitNextLbl != null) emitNextLbl.Add(lbl); }
+		public void emit(string lbl) { if (emitNextLbl == null) emitNextLbl = new U.Set<string>(); emitNextLbl.Add(lbl); }
 		private void e() { if (emitNextLbl == null) { emitNextLbl = new U.Set<string>(); emitNextLbl.Add(NewLbl()); } }
+
+		private Dictionary<string, string> _vars = new Dictionary<string, string>();
+		private int vars_n = 0;
+		public void AddDefVar(string name) { 
+			if (_vars.ContainsKey(name) == true)
+				throw new Exception(U.F("duplicated variable {0}", name));
+			_vars[name] = U.F("r{0}", ++vars_n); 
+		}
+		public string GerVar(string name) { 
+			if (_vars.ContainsKey(name) == false)
+				throw new Exception(U.F("variable {0} not found", name));
+			return _vars[name];
+		}
 
 
 		private void ComputeLive(int istart, int iend)
@@ -105,7 +118,7 @@ namespace LLParserGenTest
 			return ToString(0, _ass.Count);
 		}
 
-		private Graph ComputeGraph(int istart, int iend, string prefix)
+		private Graph ComputeGraph(int istart, int iend)
 		{
 			Graph gr = new Graph();
 
@@ -115,10 +128,9 @@ namespace LLParserGenTest
 
 				for (int j = 0; j < c.In.Count; ++j)
 				{
-					if (c.In[j].StartsWith(prefix) || c.In[j].StartsWith("r"))
+					if (c.In[j].StartsWith("r"))
 					{
 						bool giaFissato = c.In[j].StartsWith("r");
-
 						if (gr.ExistsNode(c.In[j]) == false)
 							gr.CreateNode(c.In[j], giaFissato);
 					}
@@ -185,7 +197,7 @@ namespace LLParserGenTest
 		}
 
 
-		public bool GenerateCode(/*Function f*/)
+		public bool GenerateCode(/*Function f*/ StmtRoot s)
 		{
 			/*StartFunction(f);
 
@@ -199,6 +211,14 @@ namespace LLParserGenTest
 				J(OpCode.J_ret);
 			int iend = _ass.Count;
 			*/
+
+			s.GenCode(this);
+
+			Console.WriteLine("####");
+			Console.WriteLine("{0}", this.ToString());
+
+			return true;
+
 			int istart = 0;
 			int iend = _ass.Count; ;
 
@@ -208,7 +228,7 @@ namespace LLParserGenTest
 			Console.WriteLine("Live variables");
 			Console.WriteLine(this.ToString(istart, iend));
 
-			var gr = this.ComputeGraph(istart, iend, "$");
+			var gr = this.ComputeGraph(istart, iend);
 
 			Console.WriteLine("Grafo");
 			Console.WriteLine(gr);
