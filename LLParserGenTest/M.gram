@@ -2,6 +2,8 @@
 
 var                                   ^VAR
 if                                    ^IF
+else                                  ^ELSE
+while                                 ^WHILE
 
 ";"									  ^(;)
 "+"									  ^(+)
@@ -10,6 +12,8 @@ if                                    ^IF
 "/"									  ^(/)
 "("									  ^(()
 ")"									  ^())
+"{"									  ^({)
+"}"									  ^(})
 "="									  ^(=)
 ">"									  ^GT
 ">="								  ^GE
@@ -34,9 +38,22 @@ start<StmtList>
 	;
 
 stmt<StmtRoot>
-	: IF '(' e_ass ')' stmt    ^new StmtIf($3, $5)
-	| e_ass ';'                ^new StmtExpr($1)
-	| VAR ID ';'               ^new StmtDecl($2)
+	: IF '(' e_ass ')' stmt             ^new StmtIf($3, $5)
+	| IF '(' e_ass ')' stmt *ELSE stmt  ^new StmtIf($3, $5, $7)
+	| e_ass ';'                         ^new StmtExpr($1)
+	| VAR ID ';'                        ^new StmtDecl($2)
+	| '{' stmtliste '}'                 ^$2
+	| WHILE '(' e_ass ')' stmt          ^new StmtWhile($3, $5)
+	;
+
+stmtliste<StmtList>
+	: stmtlist              ^$1
+	|                       ^new StmtList();
+	;
+
+stmtlist<StmtList>
+	: stmtlist stmt          ^$1.Add($2)
+	| stmt                   ^new StmtList($1)
 	;
 
 e_ass<ExprRoot>

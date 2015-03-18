@@ -245,19 +245,8 @@ namespace LLParserGenTest
 		public override string ToString()
 		{
 			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
-			switch (op)
-			{
-			case OpCode.I_add:
-			case OpCode.I_sub:
-				{
-					string r = U.F("{0,-6} {1}", f, this.addr);
-					return U.F("{0} {1}", InToString(), r);
-				}
-
-			default:
-				Debug.Assert(false);
-				return null;
-			}
+			string r = U.F("{0,-6} {1}", f, this.addr);
+			return U.F("{0} {1}", InToString(), r);
 		}
 
 		public override void Substitute(string temp, string reg)

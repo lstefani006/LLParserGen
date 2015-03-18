@@ -20,7 +20,7 @@ namespace LLParserGenTest
 		public void mul(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_mul, rd, rs, rt)); emitNextLbl = null; }
 		public void div(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_div, rd, rs, rt)); emitNextLbl = null; }
 
-		public void jmp(string addr) { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr)); emitNextLbl = null; }
+		public void jmp(string addr)                       { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
 		public void beq(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_beq, rs, rt, addr)); emitNextLbl = null; }
 		public void bne(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_bne, rs, rt, addr)); emitNextLbl = null; }
 		public void blt(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_blt, rs, rt, addr)); emitNextLbl = null; }

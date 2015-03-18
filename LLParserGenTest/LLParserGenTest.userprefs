@@ -1,23 +1,23 @@
-﻿<Properties StartupItem="LLParserGenTest.csproj">
+﻿<Properties StartupItem="LLParserGenTest.csproj" GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="main.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="M.cs">
     <Files>
-      <File FileName="M.gram" Line="34" Column="34" />
+      <File FileName="M.gram" Line="1" Column="1" />
       <File FileName="../LLParserGenLib/U_Lexer.cs" Line="1" Column="1" />
-      <File FileName="Graph.cs" Line="3" Column="3" />
+      <File FileName="Graph.cs" Line="1" Column="1" />
       <File FileName="U.cs" Line="1" Column="1" />
       <File FileName="Ass.cs" Line="1" Column="1" />
-      <File FileName="Context.cs" Line="39" Column="39" />
-      <File FileName="main.cs" Line="7" Column="7" />
+      <File FileName="Context.cs" Line="1" Column="1" />
+      <File FileName="main.cs" Line="1" Column="1" />
       <File FileName="../LLParserGenLib/U_LLParserLexerLib.cs" Line="1" Column="1" />
-      <File FileName="m.txt" Line="2" Column="2" />
-      <File FileName="M.cs" Line="22" Column="22" />
+      <File FileName="m.txt" Line="14" Column="14" />
+      <File FileName="M.cs" Line="1" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="LLParserGenTest" expanded="True">
-            <Node name="main.cs" selected="True" />
+            <Node name="M.cs" selected="True" />
           </Node>
         </State>
       </Pad>
@@ -25,9 +25,11 @@
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="15" column="1" />
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="11" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="382" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="378" column="1" />
       <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/Context.cs" line="219" column="19" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="60" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="66" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

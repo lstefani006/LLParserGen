@@ -25,9 +25,8 @@ namespace LLParserGenTest
 	public class StmtList : StmtRoot {
 		readonly List<StmtRoot> a;
 
-		public StmtList() {
-			this.a = new List<StmtRoot>();
-		}
+		public StmtList() { this.a = new List<StmtRoot>(); }
+		public StmtList(StmtRoot s) { this.a = new List<StmtRoot>(); this.Add(s); }
 
 		public StmtList Add(StmtRoot s) {
 			this.a.Add(s); 
@@ -54,21 +53,53 @@ namespace LLParserGenTest
 
 	public class StmtIf : StmtRoot {
 		readonly ExprRoot e;
+		readonly StmtRoot sa;
+		readonly StmtRoot sb;
+
+		public StmtIf(ExprRoot e, StmtRoot sa, StmtRoot sb = null) {
+			this.e = e;
+			this.sa = sa;
+			this.sb = sb;
+		}
+
+		public override void GenCode(Context ctx) {
+			if (this.sb == null) {
+				var lbl_false = ctx.NewLbl();
+				e.EvalBool(ctx, null, lbl_false);
+				this.sa.GenCode(ctx);
+				ctx.emit(lbl_false);
+			} else {
+				var lbl_out = ctx.NewLbl();
+				var lbl_false = ctx.NewLbl();
+				e.EvalBool(ctx, null, lbl_false);
+				this.sa.GenCode(ctx);
+				ctx.jmp(lbl_out);
+				ctx.emit(lbl_false);
+				this.sb.GenCode(ctx);
+				ctx.emit(lbl_out);
+			}
+		}
+	}
+
+	public class StmtWhile : StmtRoot {
+		readonly ExprRoot e;
 		readonly StmtRoot s;
 
-		public StmtIf(ExprRoot e, StmtRoot s) {
+		public StmtWhile(ExprRoot e, StmtRoot s) {
 			this.e = e;
 			this.s = s;
 		}
 
 		public override void GenCode(Context ctx) {
-			var lbl_false = ctx.NewLbl();
-			e.EvalBool(ctx, null, lbl_false);
-			s.GenCode(ctx);
-			ctx.emit(lbl_false);
+			var lbl_true = ctx.NewLbl();
+			var lbl_loop = ctx.NewLbl();
+			ctx.jmp(lbl_loop);
+			ctx.emit(lbl_true);
+			this.s.GenCode(ctx);
+			ctx.emit(lbl_loop);
+			this.e.EvalBool(ctx, lbl_true, null);
 		}
 	}
-
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;
 
