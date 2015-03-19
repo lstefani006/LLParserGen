@@ -8,9 +8,9 @@ namespace LLParserGenTest
 	{
 		private int _cnt_tmp;
 		private int _cnt_lbl;
-		private List<AssRoot> _ass = new List<AssRoot>();
+		private readonly List<AssRoot> _ass = new List<AssRoot>();
 		public string NewTmp() { return U.F("T{0}", ++_cnt_tmp); }
-		public string NewLbl() { return U.F("L{0}", ++_cnt_lbl); }
+		public string NewLbl() { return U.F("${0}", ++_cnt_lbl); }
 
 		public Context() { }
 		public void Dispose() { }
@@ -35,11 +35,16 @@ namespace LLParserGenTest
 		private void e() { if (emitNextLbl == null) { emitNextLbl = new U.Set<string>(); emitNextLbl.Add(NewLbl()); } }
 
 		private Dictionary<string, string> _vars = new Dictionary<string, string>();
-		private int vars_n = 0;
 		public void AddDefVar(string name) { 
 			if (_vars.ContainsKey(name) == true)
 				throw new Exception(U.F("duplicated variable {0}", name));
-			_vars[name] = U.F("r{0}", ++vars_n); 
+			_vars[name] = NewTmp();
+		}
+		int nvar = 0;
+		public void AddArgVar(string name) { 
+			if (_vars.ContainsKey(name) == true)
+				throw new Exception(U.F("duplicated variable {0}", name));
+			_vars[name] = U.F("r{0}", nvar++); 
 		}
 		public string GerVar(string name) { 
 			if (_vars.ContainsKey(name) == false)
@@ -57,14 +62,6 @@ namespace LLParserGenTest
 			for (int i = istart; i < iend; ++i)
 				_ass[i].ComputeSucc(this);
 
-			if (true)
-			{
-				for (var i = istart; i < iend; ++i)
-				{
-					var c = _ass[i];
-					Console.WriteLine("{0,-3} {1, -10} {2}", i, c.Succ, c.ToString());
-				}
-			}
 
 			bool changed;
 			do
@@ -78,14 +75,18 @@ namespace LLParserGenTest
 					U.Set<string> rout = new U.Set<string>();
 					foreach (var t in c.Succ)
 						rout = rout + t.In;
+
+					// tentativo per dire che r0 non deve essere toccato
+					// e che r1 è il ritorno;
+					//if (i == iend - 1) {
+					//	rout.Add("r0");
+					//	rout.Add("r1");
+					//}
+
 					bool b = c.ComputeLive(rout);
 					if (b) changed = true;
-
-					//Console.WriteLine(this);
 				}
-				//Console.WriteLine(this);
 			} while (changed);
-			//Console.WriteLine(this.ToString(istart, iend));
 		}
 
 		public string ToString(int istart, int iend)
@@ -128,12 +129,9 @@ namespace LLParserGenTest
 
 				for (int j = 0; j < c.In.Count; ++j)
 				{
-					if (c.In[j].StartsWith("r"))
-					{
-						bool giaFissato = c.In[j].StartsWith("r");
-						if (gr.ExistsNode(c.In[j]) == false)
-							gr.CreateNode(c.In[j], giaFissato);
-					}
+					bool giaFissato = c.In[j].StartsWith("r");
+					if (gr.ExistsNode(c.In[j]) == false)
+						gr.CreateNode(c.In[j], giaFissato);
 				}
 			}
 
@@ -183,9 +181,8 @@ namespace LLParserGenTest
 		public AssRoot GetSuccOp(AssRoot ass)
 		{
 			for (int i = 0; i < _ass.Count; ++i)
-				if (_ass[i] == ass)
+				if (_ass[i] == ass && i + 1 < _ass.Count) 
 					return _ass[i + 1];
-			Debug.Assert(false);
 			return null;
 		}
 		public AssRoot GetOp(string lbl)
@@ -197,7 +194,7 @@ namespace LLParserGenTest
 		}
 
 
-		public bool GenerateCode(/*Function f*/ StmtRoot s)
+		public bool GenerateCode(Fun f)
 		{
 			/*StartFunction(f);
 
@@ -211,25 +208,23 @@ namespace LLParserGenTest
 				J(OpCode.J_ret);
 			int iend = _ass.Count;
 			*/
+			foreach (var a in f.args.args)
+				this.AddArgVar(a);
 
-			s.GenCode(this);
+			this.emit(f.name);
+			f.body.GenCode(this);
 
-			Console.WriteLine("####");
 			Console.WriteLine("{0}", this.ToString());
-
-			return true;
 
 			int istart = 0;
 			int iend = _ass.Count; ;
-
 			this.ComputeLive(istart, iend);
 
-			//Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
+			Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
 			Console.WriteLine("Live variables");
 			Console.WriteLine(this.ToString(istart, iend));
 
 			var gr = this.ComputeGraph(istart, iend);
-
 			Console.WriteLine("Grafo");
 			Console.WriteLine(gr);
 
@@ -276,6 +271,7 @@ namespace LLParserGenTest
 
 			}
 
+			Console.WriteLine(this.ToString(istart, iend));
 			return ok;
 		}
 	}

@@ -1,10 +1,13 @@
 %lexer
 
+fun                                   ^FUN
+
 var                                   ^VAR
 if                                    ^IF
 else                                  ^ELSE
 while                                 ^WHILE
 
+","									  ^(,)
 ";"									  ^(;)
 "+"									  ^(+)
 "-"									  ^(-)
@@ -32,9 +35,22 @@ while                                 ^WHILE
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<StmtList>
-	: start stmt               ^$1.Add($2)
-	|                          ^new StmtList()
+start<Fun>
+	: fun                ^$1
+	;
+
+fun<Fun>
+	: FUN ID '(' funargse ')' '{' stmtlist '}'   ^new Fun($2, $4, $7)
+	;
+
+funargse<FunArgList>
+	:                      ^new FunArgList()
+	| funargs              ^$1
+	;
+
+funargs<FunArgList>
+	: ID                   ^new FunArgList($1)
+	| funargs ',' ID       ^$1.Add($3)
 	;
 
 stmt<StmtRoot>

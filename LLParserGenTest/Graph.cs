@@ -10,12 +10,12 @@ namespace LLParserGenTest
 		public Graph() {
 		}
 
-		List<NodeReg> _nodes = new List<NodeReg>();
+		readonly List<NodeReg> _nodes = new List<NodeReg>();
 
 		public NodeReg CreateNode(string reg, bool giaAssegnato) {
 			Debug.Assert(ExistsNode(reg) == false);
 
-			NodeReg n = new NodeReg(this, reg, giaAssegnato);
+			NodeReg n = new NodeReg(reg, giaAssegnato);
 			_nodes.Add(n);
 			return n;
 		}
@@ -54,12 +54,12 @@ namespace LLParserGenTest
 
 
 		public bool Color(int k) {
-			Stack<string> st = new Stack<string>();
+			var st = new Stack<string>();
 			return Color(k, st);
 		}
 
-		private bool Color(int k, Stack<string> st) {
-			// rimuovo dal grafo un nodo nodo l'altro
+		bool Color(int k, Stack<string> st) {
+			// rimuovo dal grafo un nodo nodo
 			// il nodo da rimuovere deve avere meno di k vicini
 			Graph gr = this;
 			while (gr._nodes.Count > 0) {
@@ -71,8 +71,8 @@ namespace LLParserGenTest
 
 					// cerco il nodo nel grafo che ha meno vicini
 					var q = from nn in gr._nodes
-					       orderby nn.Neighbors.Count ascending
-					       select nn;
+					        orderby nn.Neighbors.Count ascending
+					        select nn;
 
 					nd = q.FirstOrDefault();
 					if (nd == null)
@@ -87,10 +87,9 @@ namespace LLParserGenTest
 				var nd = st.Pop();
 
 				// se inizia per r e` un registro gia` assegnato
-				// se inizia per c e` un registro che non si assegna ora.
-				if (nd.StartsWith("r") /*|| nd.StartsWith("c")*/)
+				// i registri da assegnare iniziano per Tn
+				if (nd.StartsWith("r"))
 					continue;
-				// i registri da assegnare iniziano per $n
 
 				// assegno un registro non assegnato gia` ai vicini
 				// rg = lista dei registri assegnati ai vicini
@@ -151,13 +150,12 @@ namespace LLParserGenTest
 	}
 
 	class NodeReg {
-		public NodeReg(Graph gr, string rg, bool giaFissato) {
+		public NodeReg(string rg, bool giaFissato) {
 			this._name = rg;
-			this.gr = gr;
 			this._neighbors = new List<NodeReg>();
 
 			if (giaFissato)
-				this._reg = rg;
+				this.Reg = rg;
 		}
 
 		public void AddEdge(NodeReg nd) {
@@ -180,11 +178,12 @@ namespace LLParserGenTest
 
 		public string Name { get { return _name; } }
 
-		public string Reg { get { return _reg; } set { _reg = value; } }
+		public string Reg {
+			get;
+			set;
+		}
 
-		readonly Graph gr;
 		readonly string _name;
-		string _reg;
 		List<NodeReg> _neighbors;
 	};
 }

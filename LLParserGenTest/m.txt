@@ -1,11 +1,11 @@
-var a;
-var b;
-var c;
 
-a = 1;
-b = 2;
-c = a > b;
-while (b * a > 3) {
-		b = b + 3;
+fun leo(a, b, c)
+{
+	var d;
+
+	d = 0;
+	while (b * a > 3) {
+		a = a - 1;
+	}
+	a = d;
 }
-a = 2;

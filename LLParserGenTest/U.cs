@@ -137,7 +137,8 @@ namespace LLParserGenTest
 			{
 				List<T> rr = new List<T>();
 				foreach (T v in _r) rr.Add(v);
-				rr.Sort();
+				if (typeof(T) is IComparable<T>)
+					rr.Sort();
 
 				string r = "[";
 				for (int i = 0; i < rr.Count; ++i)

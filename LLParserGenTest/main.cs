@@ -18,6 +18,32 @@ namespace LLParserGenTest
 		}
 	}
 
+	public class Fun : IAST
+	{
+		public readonly string name;
+		public readonly FunArgList args;
+		public readonly StmtRoot body;
+		public Fun(TokenAST name, FunArgList args, StmtRoot body) {
+			this.name = name.v;
+			this.args = args;
+			this.body = body;
+		}
+	}
+	public class FunArgList : IAST {
+		public readonly List<string> args = new List<string>();
+
+		public FunArgList() {
+		}
+		public FunArgList(TokenAST a) {
+			this.Add(a);
+		}
+
+		public FunArgList Add(TokenAST arg) {
+			args.Add(arg.v);
+			return this;
+		}
+	}
+
 	public abstract class StmtRoot : IAST {
 		public abstract void GenCode(Context ctx);
 	}
@@ -84,11 +110,7 @@ namespace LLParserGenTest
 	public class StmtWhile : StmtRoot {
 		readonly ExprRoot e;
 		readonly StmtRoot s;
-
-		public StmtWhile(ExprRoot e, StmtRoot s) {
-			this.e = e;
-			this.s = s;
-		}
+		public StmtWhile(ExprRoot e, StmtRoot s) { this.e = e; this.s = s; }
 
 		public override void GenCode(Context ctx) {
 			var lbl_true = ctx.NewLbl();
@@ -100,28 +122,24 @@ namespace LLParserGenTest
 			this.e.EvalBool(ctx, lbl_true, null);
 		}
 	}
+
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;
-
-		public StmtExpr(ExprRoot e) {
-			this.e = e;
-		}
-
-		public override void GenCode(Context ctx) {
-			e.EvalRight(ctx, null);
-		}
+		public StmtExpr(ExprRoot e) { this.e = e; }
+		public override void GenCode(Context ctx) { e.EvalRight(ctx, null); }
 	}
-
 
 	public abstract class ExprRoot : IAST {
 		public abstract string EvalRight(Context ctx, string rdest);
 
 		public virtual void EvalBool(Context ctx, string lbl_true, string lbl_false) {
 			string s = EvalRight(ctx, null);
+			string rz = ctx.NewTmp();
+			ctx.ld(rz, 0);
 			if (lbl_true != null)
-				ctx.bne(s, "r0", lbl_true);
+				ctx.bne(s, rz, lbl_true);
 			else
-				ctx.beq(s, "r0", lbl_false);
+				ctx.beq(s, rz, lbl_false);
 		}
 
 		public virtual string EvalLeft(Context ctx) {
@@ -133,14 +151,9 @@ namespace LLParserGenTest
 		protected ExprRoot a;
 		protected ExprRoot b;
 
-		public ExprAss(ExprRoot a, ExprRoot b) {
-			this.a = a;
-			this.b = b;
-		}
+		public ExprAss(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
 
-		public override string EvalLeft(Context ctx) {
-			return a.EvalLeft(ctx);
-		}
+		public override string EvalLeft(Context ctx) { return a.EvalLeft(ctx); }
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string ra = a.EvalLeft(ctx);
@@ -152,30 +165,20 @@ namespace LLParserGenTest
 	}
 
 	public abstract class ExprBin : ExprRoot {
-		protected ExprBin(ExprRoot a, ExprRoot b) {
-			this.a = a;
-			this.b = b;
-		}
-
+		protected ExprBin(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
 		protected ExprRoot a;
 		protected ExprRoot b;
 	}
 
 	public abstract class ExprUni : ExprRoot {
-		protected ExprUni(ExprRoot a) {
-			this.a = a;
-		}
-
+		protected ExprUni(ExprRoot a) { this.a = a; }
 		protected ExprRoot a;
 	}
 
 	public class ExprEq : ExprBin {
 		string op;
 
-		public ExprEq(string op, ExprRoot a, ExprRoot b)
-			: base(a, b) {
-			this.op = op;
-		}
+		public ExprEq(string op, ExprRoot a, ExprRoot b) : base(a, b) { this.op = op; }
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string aa = a.EvalRight(ctx, null);
@@ -260,9 +263,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprAdd : ExprBin {
-		public ExprAdd(ExprRoot a, ExprRoot b)
-			: base(a, b) {
-		}
+		public ExprAdd(ExprRoot a, ExprRoot b) : base(a, b) { }
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string aa = a.EvalRight(ctx, null);
@@ -274,9 +275,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprSub : ExprBin {
-		public ExprSub(ExprRoot a, ExprRoot b)
-			: base(a, b) {
-		}
+		public ExprSub(ExprRoot a, ExprRoot b) : base(a, b) {}
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string aa = a.EvalRight(ctx, null);
@@ -288,9 +287,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprMul : ExprBin {
-		public ExprMul(ExprRoot a, ExprRoot b)
-			: base(a, b) {
-		}
+		public ExprMul(ExprRoot a, ExprRoot b) : base(a, b) {}
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string aa = a.EvalRight(ctx, null);
@@ -302,9 +299,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprDiv : ExprBin {
-		public ExprDiv(ExprRoot a, ExprRoot b)
-			: base(a, b) {
-		}
+		public ExprDiv(ExprRoot a, ExprRoot b) : base(a, b) {}
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string aa = a.EvalRight(ctx, null);
@@ -316,9 +311,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprPlus : ExprUni {
-		public ExprPlus(ExprRoot a)
-			: base(a) {
-		}
+		public ExprPlus(ExprRoot a) : base(a) { }
 
 		public override string EvalRight(Context ctx, string rdest) {
 			return a.EvalRight(ctx, rdest);
@@ -326,23 +319,20 @@ namespace LLParserGenTest
 	}
 
 	public class ExprNeg : ExprUni {
-		public ExprNeg(ExprRoot a)
-			: base(a) {
-		}
+		public ExprNeg(ExprRoot a) : base(a) { }
 
 		public override string EvalRight(Context ctx, string rdest) {
 			string ra = a.EvalRight(ctx, rdest);
 			if (rdest == null) rdest = ctx.NewTmp();
-			ctx.sub(rdest, "r0", ra);
+			var rz = ctx.NewTmp();
+			ctx.ld(rz, 0);
+			ctx.sub(rdest, rz, ra);
 			return rdest;
 		}
 	}
 
 	public class ExprNum : ExprRoot {
-		public ExprNum(TokenAST a) {
-			this.a = a;
-		}
-
+		public ExprNum(TokenAST a) { this.a = a; }
 		readonly TokenAST a;
 
 		public override string EvalRight(Context ctx, string rdest) {
@@ -353,10 +343,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprId : ExprRoot {
-		public ExprId(TokenAST a) {
-			this.a = a;
-		}
-
+		public ExprId(TokenAST a) { this.a = a; }
 		readonly TokenAST a;
 
 		public override string EvalLeft(Context ctx) {
@@ -366,7 +353,11 @@ namespace LLParserGenTest
 		public override string EvalRight(Context ctx, string rdest) {
 			string rvar = ctx.GerVar(a.v);
 			if (rdest == null) rdest = rvar;
-			if (rdest != rvar) ctx.add(rdest, "r0", rvar);
+			if (rdest != rvar) {
+				var rz = ctx.NewTmp();
+				ctx.ld(rz, 0);
+				ctx.add(rdest, rz, rvar);
+			}
 			return rdest;
 		}
 	}
@@ -378,7 +369,7 @@ namespace LLParserGenTest
 			: base(0) {
 		}
 
-		public StmtRoot Start(LexReader rd) {
+		public Fun Start(LexReader rd) {
 			this.init(rd);
 			return this.start(null);
 		}

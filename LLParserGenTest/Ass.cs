@@ -175,7 +175,9 @@ namespace LLParserGenTest
 
 		public override void ComputeSucc(Context ctx)
 		{
-			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) };
+			_succ = new U.Set<AssRoot>();
+			var succ = ctx.GetSuccOp(this);
+			if (succ != null) _succ.Add(succ);
 		}
 
 
@@ -236,7 +238,11 @@ namespace LLParserGenTest
 			{
 			case OpCode.J_jmp: _succ = new U.Set<AssRoot>() { ctx.GetOp(this.addr) }; break;
 			case OpCode.J_ret: _succ = new U.Set<AssRoot>(); break;
-			case OpCode.J_js: _succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) }; break;
+			case OpCode.J_js: 
+				_succ = new U.Set<AssRoot>() { }; 
+				var succ = ctx.GetSuccOp(this);
+				if (succ != null) _succ.Add(succ);
+				break;
 			default: Debug.Assert(false); break;
 			}
 		}
@@ -300,7 +306,9 @@ namespace LLParserGenTest
 
 		public override void ComputeSucc(Context ctx)
 		{
-			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this), ctx.GetOp(this.addr) };
+			_succ = new U.Set<AssRoot>() { ctx.GetOp(this.addr) };
+			var succ = ctx.GetSuccOp(this);
+			if (succ != null) _succ.Add(succ);
 		}
 
 
@@ -357,7 +365,9 @@ namespace LLParserGenTest
 
 		public override void ComputeSucc(Context ctx)
 		{
-			_succ = new U.Set<AssRoot>() { ctx.GetSuccOp(this) };
+			_succ = new U.Set<AssRoot>() {  };
+			var succ = ctx.GetSuccOp(this);
+			if (succ != null) _succ.Add(succ);
 		}
 
 
