@@ -10,6 +10,13 @@ fun leo(a, b, c)
 	}
 	a = a + (1+6) * c;
 	a = b + a * d;
-	if (1*2 < 0)
+	if (b > 0)
 		a = 3;
+	b = 5;
+
+	while(a > 0) {
+		b = b + a;
+		a = a - 1;
+	}
 }
+

@@ -8,7 +8,7 @@
       <File FileName="U.cs" Line="1" Column="1" />
       <File FileName="Ass.cs" Line="3" Column="3" />
       <File FileName="Context.cs" Line="3" Column="3" />
-      <File FileName="main.cs" Line="1" Column="1" />
+      <File FileName="main.cs" Line="6" Column="6" />
       <File FileName="../LLParserGenLib/U_LLParserLexerLib.cs" Line="1" Column="1" />
       <File FileName="m.txt" Line="1" Column="1" />
       <File FileName="M.cs" Line="1" Column="1" />
@@ -25,11 +25,12 @@
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="532" column="1" />
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="528" column="1" />
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="131" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="547" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="543" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="135" column="1" />
       <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/Ass.cs" line="298" column="1" />
       <RunToCursorBreakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="349" column="13" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="10" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
