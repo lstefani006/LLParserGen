@@ -14,7 +14,7 @@ fun leo(a, b, c)
 		a = 3;
 	b = 5;
 
-	while(a > 0) {
+	while(1 > 0) {
 		b = b + a;
 		a = a - 1;
 	}

@@ -164,8 +164,12 @@ namespace LLParserGenTest
 
 		public override void GenCode(Context ctx) {
 			if (this.e.IsConstExpr()) {
-				if (this.e.EvalRight(ctx, null).c != 0)
+				if (this.e.EvalRight(ctx, null).c != 0) {
+					var lbl_true = ctx.NewLbl();
+					ctx.emit(lbl_true);
 					s.GenCode(ctx);
+					ctx.jmp(lbl_true);
+				}
 			} else {
 				var lbl_true = ctx.NewLbl();
 				var lbl_loop = ctx.NewLbl();
