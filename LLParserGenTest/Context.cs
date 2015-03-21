@@ -15,20 +15,24 @@ namespace LLParserGenTest
 		public Context() { }
 		public void Dispose() { }
 
-		public void add(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_add, rd, rs, rt)); emitNextLbl = null; }
-		public void sub(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_sub, rd, rs, rt)); emitNextLbl = null; }
-		public void mul(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_mul, rd, rs, rt)); emitNextLbl = null; }
-		public void div(string rd, string rs, string rt) { e(); _ass.Add(new AssI(this, emitNextLbl, OpCode.I_div, rd, rs, rt)); emitNextLbl = null; }
 
-		public void jmp(string addr)                       { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
-		public void beq(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_beq, rs, rt, addr)); emitNextLbl = null; }
-		public void bne(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_bne, rs, rt, addr)); emitNextLbl = null; }
-		public void blt(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_blt, rs, rt, addr)); emitNextLbl = null; }
-		public void ble(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_ble, rs, rt, addr)); emitNextLbl = null; }
-		public void bgt(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_bgt, rs, rt, addr)); emitNextLbl = null; }
-		public void bge(string rs, string rt, string addr) { e(); _ass.Add(new AssB(this, emitNextLbl, OpCode.B_bge, rs, rt, addr)); emitNextLbl = null; }
+		public void add(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_add_rr, rd, rs, rt)); emitNextLbl = null; }
+		public void sub(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_sub_rr, rd, rs, rt)); emitNextLbl = null; }
+		public void mul(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_mul_rr, rd, rs, rt)); emitNextLbl = null; }
+		public void div(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_div_rr, rd, rs, rt)); emitNextLbl = null; }
 
-		public void ld(string rs, int c) { e(); _ass.Add(new AssLd(this, emitNextLbl, rs, c)); emitNextLbl = null; }
+		public void jmp(string addr)                             { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
+
+		public void beq(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_beq_rr, rs, rt, addr)); emitNextLbl = null; }
+		public void bne(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bne_rr, rs, rt, addr)); emitNextLbl = null; }
+		public void blt(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_blt_rr, rs, rt, addr)); emitNextLbl = null; }
+		public void ble(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_ble_rr, rs, rt, addr)); emitNextLbl = null; }
+		public void bgt(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bgt_rr, rs, rt, addr)); emitNextLbl = null; }
+		public void bge(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bge_rr, rs, rt, addr)); emitNextLbl = null; }
+
+
+		public void ld(string rs, int c) { e(); _ass.Add(new AssLdConst(this, emitNextLbl, rs, c)); emitNextLbl = null; }
+
 
 		U.Set<string> emitNextLbl;
 		public void emit(string lbl) { if (emitNextLbl == null) emitNextLbl = new U.Set<string>(); emitNextLbl.Add(lbl); }
