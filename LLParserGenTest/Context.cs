@@ -16,10 +16,16 @@ namespace LLParserGenTest
 		public void Dispose() { }
 
 
-		public void add(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_add_rr, rd, rs, rt)); emitNextLbl = null; }
-		public void sub(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_sub_rr, rd, rs, rt)); emitNextLbl = null; }
-		public void mul(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_mul_rr, rd, rs, rt)); emitNextLbl = null; }
-		public void div(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_div_rr, rd, rs, rt)); emitNextLbl = null; }
+		public void add(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_add, rd, rs, rt)); emitNextLbl = null; }
+		public void sub(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_sub, rd, rs, rt)); emitNextLbl = null; }
+		public void mul(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_mul, rd, rs, rt)); emitNextLbl = null; }
+		public void rem(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_rem, rd, rs, rt)); emitNextLbl = null; }
+		public void div(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_div, rd, rs, rt)); emitNextLbl = null; }
+		public void or_(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I__or, rd, rs, rt)); emitNextLbl = null; }
+		public void xor(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_xor, rd, rs, rt)); emitNextLbl = null; }
+		public void and(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_and, rd, rs, rt)); emitNextLbl = null; }
+		public void shl(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_shl, rd, rs, rt)); emitNextLbl = null; }
+		public void shr(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_shr, rd, rs, rt)); emitNextLbl = null; }
 
 		public void jmp(string addr)                             { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
 

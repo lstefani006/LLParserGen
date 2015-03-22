@@ -12,6 +12,10 @@ while                                 ^WHILE
 "+"									  ^(+)
 "-"									  ^(-)
 "*"									  ^(*)
+"%"									  ^(%)
+"|"									  ^(|)
+"^"									  ^(^)
+"&"									  ^(&)
 "/"									  ^(/)
 "("									  ^(()
 ")"									  ^())
@@ -24,6 +28,10 @@ while                                 ^WHILE
 "<="	    						  ^LE
 "=="	    						  ^EQ
 "!="	    						  ^NE
+">>"	    						  ^SHR
+"<<"	    						  ^SHL
+"&&"	    						  ^ANDAND
+"||"	    						  ^OROR
 
 (_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])* ^ID
 [0-9]+                                ^NUM
@@ -73,35 +81,67 @@ stmtlist<StmtList>
 	;
 
 e_ass<ExprRoot>
-	: e_lt '=' e_ass   ^new ExprAss($1, $3)
-	| e_lt             ^$1
+	: e_oror '=' e_ass   ^new ExprAss($1, $3)
+	| e_oror             ^$1
 	;
 
-e_lt<ExprRoot>
-	: e_lt LT e_eq    ^new ExprEq("<",  $1, $3)
-	| e_lt LE e_eq    ^new ExprEq("<=", $1, $3)
-	| e_lt GT e_eq    ^new ExprEq(">",  $1, $3)
-	| e_lt GE e_eq    ^new ExprEq(">=", $1, $3)
-	| e_eq            ^$1
+e_oror<ExprRoot>
+	: e_oror OROR e_andand    ^new ExprEq("||", $1, $3)
+	| e_andand                ^$1
+	;
+
+e_andand<ExprRoot>
+	: e_andand ANDAND e_or    ^new ExprEq("&&", $1, $3)
+	| e_or                    ^$1
+	;
+
+e_or<ExprRoot>
+	: e_or '|' e_xor    ^new ExprBinGen("|", $1, $3)
+	| e_xor             ^$1
+	;
+
+e_xor<ExprRoot>
+	: e_xor '^' e_and   ^new ExprBinGen("^", $1, $3)
+	| e_and             ^$1
+	;
+
+e_and<ExprRoot>
+	: e_and '&' e_eq   ^new ExprBinGen("&", $1, $3)
+	| e_eq             ^$1
 	;
 
 e_eq<ExprRoot>
-	: e_eq EQ e_add  ^new ExprEq("==", $1, $3)
-	| e_eq NE e_add  ^new ExprEq("!=", $1, $3)
-	| e_add            ^$1
+	: e_eq EQ e_lt    ^new ExprEq("==", $1, $3)
+	| e_eq NE e_lt    ^new ExprEq("!=", $1, $3)
+	| e_lt            ^$1
+	;
+
+e_lt<ExprRoot>
+	: e_lt LT e_sh    ^new ExprEq("<",  $1, $3)
+	| e_lt LE e_sh    ^new ExprEq("<=", $1, $3)
+	| e_lt GT e_sh    ^new ExprEq(">",  $1, $3)
+	| e_lt GE e_sh    ^new ExprEq(">=", $1, $3)
+	| e_sh            ^$1
+	;
+
+e_sh<ExprRoot>
+	: e_sh SHL e_add    ^new ExprBinGen("<<", $1, $3)
+	| e_sh SHR e_add    ^new ExprBinGen(">>", $1, $3)
+	| e_add             ^$1
 	;
 
 
 e_add<ExprRoot>
-	: e_add '+' e_mul  ^new ExprAdd($1, $3)
-	| e_add '-' e_mul  ^new ExprSub($1, $3)
+	: e_add '+' e_mul  ^new ExprBinGen("+", $1, $3)
+	| e_add '-' e_mul  ^new ExprBinGen("-", $1, $3)
 	| e_mul            ^$1
 	;
 
 e_mul<ExprRoot>
 	: e_una            ^$1
-	| e_mul '*' e_una  ^new ExprMul($1, $3)
-	| e_mul '/' e_una  ^new ExprDiv($1, $3)
+	| e_mul '*' e_una  ^new ExprBinGen("*", $1, $3)
+	| e_mul '/' e_una  ^new ExprBinGen("/", $1, $3)
+	| e_mul '%' e_una  ^new ExprBinGen("%", $1, $3)
 	;
 
 e_una<ExprRoot>

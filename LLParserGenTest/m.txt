@@ -10,13 +10,5 @@ fun leo(a, b, c)
 	}
 	a = a + (1+6) * c;
 	a = b + a * d;
-	if (b > 0)
-		a = 3;
-	b = 5;
-
-	while(1 > 0) {
-		b = b + a;
-		a = a - 1;
-	}
 }
 

@@ -37,10 +37,16 @@ namespace LLParserGenTest
 		J_js,
 		*/
 
-		I_add_rr,
-		I_sub_rr,
-		I_mul_rr,
-		I_div_rr,
+		I_add,
+		I_sub,
+		I_mul,
+		I_div,
+		I_rem,
+		I_and,
+		I__or,
+		I_xor,
+		I_shl,
+		I_shr,
 
 		I_add_rc,
 		I_sub_rc,
@@ -157,11 +163,10 @@ namespace LLParserGenTest
 
 		public Op_rxx(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs) : base(ctx, lbl)
 		{
-			Debug.Assert(op == OpCode.I_add_rr || op == OpCode.I_sub_rr || op == OpCode.I_mul_rr || op == OpCode.I_div_rr);
+			Debug.Assert(op == OpCode.I_add || op == OpCode.I_sub || op == OpCode.I_mul || op == OpCode.I_div);
 			Debug.Assert(rd != null);
 			Debug.Assert(rs != null);
 			Debug.Assert(rt != null);
-
 
 			this.op = op;
 
