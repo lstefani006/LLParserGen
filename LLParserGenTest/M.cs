@@ -814,7 +814,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(OROR, nt1_i);
 					var nt2_s = e_andand(nt2_i);
-					nt3_i = new ExprEq("||", ((ExprRoot)tmp_3_i), nt2_s); 
+					nt3_i = new ExprBinLogical("||", ((ExprRoot)tmp_3_i), nt2_s); 
 					var nt3_s = tmp_3(nt3_i);
 					tmp_3_s = nt3_s; 
 				}
@@ -918,7 +918,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(ANDAND, nt1_i);
 					var nt2_s = e_or(nt2_i);
-					nt3_i = new ExprEq("&&", ((ExprRoot)tmp_4_i), nt2_s); 
+					nt3_i = new ExprBinLogical("&&", ((ExprRoot)tmp_4_i), nt2_s); 
 					var nt3_s = tmp_4(nt3_i);
 					tmp_4_s = nt3_s; 
 				}
@@ -1367,7 +1367,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(EQ, nt1_i);
 					var nt2_s = e_lt(nt2_i);
-					nt3_i = new ExprEq("==", ((ExprRoot)tmp_8_i), nt2_s); 
+					nt3_i = new ExprBinCompare("==", ((ExprRoot)tmp_8_i), nt2_s); 
 					var nt3_s = tmp_8(nt3_i);
 					tmp_8_s = nt3_s; 
 				}
@@ -1380,7 +1380,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(NE, nt1_i);
 					var nt2_s = e_lt(nt2_i);
-					nt3_i = new ExprEq("!=", ((ExprRoot)tmp_8_i), nt2_s); 
+					nt3_i = new ExprBinCompare("!=", ((ExprRoot)tmp_8_i), nt2_s); 
 					var nt3_s = tmp_8(nt3_i);
 					tmp_8_s = nt3_s; 
 				}
@@ -1510,7 +1510,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(LT, nt1_i);
 					var nt2_s = e_sh(nt2_i);
-					nt3_i = new ExprEq("<",  ((ExprRoot)tmp_9_i), nt2_s); 
+					nt3_i = new ExprBinCompare("<",  ((ExprRoot)tmp_9_i), nt2_s); 
 					var nt3_s = tmp_9(nt3_i);
 					tmp_9_s = nt3_s; 
 				}
@@ -1523,7 +1523,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(LE, nt1_i);
 					var nt2_s = e_sh(nt2_i);
-					nt3_i = new ExprEq("<=", ((ExprRoot)tmp_9_i), nt2_s); 
+					nt3_i = new ExprBinCompare("<=", ((ExprRoot)tmp_9_i), nt2_s); 
 					var nt3_s = tmp_9(nt3_i);
 					tmp_9_s = nt3_s; 
 				}
@@ -1536,7 +1536,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(GT, nt1_i);
 					var nt2_s = e_sh(nt2_i);
-					nt3_i = new ExprEq(">",  ((ExprRoot)tmp_9_i), nt2_s); 
+					nt3_i = new ExprBinCompare(">",  ((ExprRoot)tmp_9_i), nt2_s); 
 					var nt3_s = tmp_9(nt3_i);
 					tmp_9_s = nt3_s; 
 				}
@@ -1549,7 +1549,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(GE, nt1_i);
 					var nt2_s = e_sh(nt2_i);
-					nt3_i = new ExprEq(">=", ((ExprRoot)tmp_9_i), nt2_s); 
+					nt3_i = new ExprBinCompare(">=", ((ExprRoot)tmp_9_i), nt2_s); 
 					var nt3_s = tmp_9(nt3_i);
 					tmp_9_s = nt3_s; 
 				}

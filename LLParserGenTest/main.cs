@@ -246,10 +246,17 @@ namespace LLParserGenTest
 		public override bool IsConstExpr() { return a.IsConstExpr(); }
 	}
 
-	public class ExprEq : ExprBin {
+	public class ExprBinLogical : ExprBin {
 		string op;
 
-		public ExprEq(string op, ExprRoot a, ExprRoot b) : base(a, b) { this.op = op; }
+		public ExprBinLogical(string op, ExprRoot a, ExprRoot b) : base(a, b) { 
+			this.op = op;
+			switch (this.op) {
+			case "&&": break;
+			case "||": break;
+			default: Debug.Assert(false); break;
+			}
+		}
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
 
@@ -257,50 +264,12 @@ namespace LLParserGenTest
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 				switch (this.op) {
-				case "==": return new ExprValue(aa.c == bb.c ? 1 : 0);
-				case "!=": return new ExprValue(aa.c != bb.c ? 1 : 0);
-				case ">":  return new ExprValue(aa.c > bb.c ? 1 : 0);
-				case ">=": return new ExprValue(aa.c >= bb.c ? 1 : 0);
-				case "<":  return new ExprValue(aa.c < bb.c ? 1 : 0);
-				case "<=": return new ExprValue(aa.c <= bb.c ? 1 : 0);
 				case "&&": return new ExprValue(aa.c != 0 && bb.c != 0 ? 1 : 0);
 				case "||": return new ExprValue(aa.c != 0 || bb.c != 0 ? 1 : 0);
 				default: Debug.Assert(false); return null;
 				}
 			} else {
-				if (op != "||" && op != "&&") {
-					var aa = a.EvalRight(ctx, null);
-					var bb = b.EvalRight(ctx, null);
-					if (rdest == null) rdest = ctx.NewTmp();
-					string lbl_false = ctx.NewLbl();
-					ctx.ld(rdest, 0);
-					switch (this.op) {
-					case "==": 
-						ctx.bne(aa, bb, lbl_false);
-						break;
-					case "!=": 
-						ctx.beq(aa, bb, lbl_false);
-						break;
-					case ">": 
-						ctx.ble(aa, bb, lbl_false);
-						break;
-					case ">=": 
-						ctx.blt(aa, bb, lbl_false);
-						break;
-					case "<": 
-						ctx.bge(aa, bb, lbl_false);
-						break;
-					case "<=": 
-						ctx.blt(aa, bb, lbl_false);
-						break;
-					default:
-						Debug.Assert(false);
-						return null;
-					}
-					ctx.ld(rdest, 1);
-					ctx.emit(lbl_false);
-					return new ExprValue(rdest); 
-				} else if (op == "||") {
+				if (op == "||") {
 					if (rdest == null) rdest = ctx.NewTmp();
 					string lbl_false = ctx.NewLbl();
 					string lbl_true = ctx.NewLbl();
@@ -331,30 +300,21 @@ namespace LLParserGenTest
 
 		public override void EvalBool(Context ctx, string lbl_true, string lbl_false) {
 			if (a.IsConstExpr() && b.IsConstExpr()) {
+
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 			
 				if (lbl_true != null) {
 					switch (this.op) {
-					case "==": if (aa.c == bb.c) ctx.jmp(lbl_true); break;
-					case "!=": if (aa.c != bb.c) ctx.jmp(lbl_true); break;
-					case ">": if (aa.c > bb.c) ctx.jmp(lbl_true); break;
-					case ">=": if (aa.c >= bb.c) ctx.jmp(lbl_true); break;
-					case "<": if (aa.c < bb.c) ctx.jmp(lbl_true); break;
-					case "<=": if (aa.c <= bb.c) ctx.jmp(lbl_true); break;
 					case "&&": if (aa.c != 0 && bb.c != 0) ctx.jmp(lbl_true); break;
 					case "||": if (aa.c != 0 || bb.c != 0) ctx.jmp(lbl_true); break;
+					default: Debug.Assert(false); break;
 					}
 				} else {
 					switch (this.op) {
-					case "==": if (aa.c != bb.c) ctx.jmp(lbl_false); break;
-					case "!=": if (aa.c == bb.c) ctx.jmp(lbl_false); break;
-					case ">": if (aa.c <= bb.c) ctx.jmp(lbl_false); break;
-					case ">=": if (aa.c < bb.c) ctx.jmp(lbl_false); break;
-					case "<": if (aa.c >= bb.c) ctx.jmp(lbl_false); break;
-					case "<=": if (aa.c > bb.c) ctx.jmp(lbl_false); break;
 					case "&&": if (!(aa.c != 0 && bb.c != 0)) ctx.jmp(lbl_false); break;
 					case "||": if (!(aa.c != 0 || bb.c != 0)) ctx.jmp(lbl_false); break;
+					default: Debug.Assert(false); break;
 					}
 				}
 			} else {
@@ -363,75 +323,125 @@ namespace LLParserGenTest
 					if (lbl_true != null) {
 						lbl_false = ctx.NewLbl();
 						a.EvalBool(ctx, null, lbl_false);
-						b.EvalBool(ctx, null, lbl_false);
-						ctx.jmp(lbl_true);
+						b.EvalBool(ctx, lbl_true, null);
 						ctx.emit(lbl_false);
 					} else {
-						lbl_true = ctx.NewLbl();
 						a.EvalBool(ctx, null, lbl_false);
 						b.EvalBool(ctx, null, lbl_false);
-						ctx.emit(lbl_true);
 					}
 
 				} else if (op == "||") {
 					if (lbl_true != null) {
-						lbl_false = ctx.NewLbl();
 						a.EvalBool(ctx, lbl_true, null);
 						b.EvalBool(ctx, lbl_true, null);
-						ctx.emit(lbl_false);
 					} else {
 						lbl_true = ctx.NewLbl();
 						a.EvalBool(ctx, lbl_true, null);
-						b.EvalBool(ctx, lbl_true, null);
-						ctx.jmp(lbl_false);
+						b.EvalBool(ctx, null, lbl_false);
 						ctx.emit(lbl_true);
 					}
 				} else {
-					var aa = a.EvalRight(ctx, null);
-					var bb = b.EvalRight(ctx, null);
+					Debug.Assert(false);
+				}
+			}
+		}
+	}
+	public class ExprBinCompare : ExprBin {
+		string op;
 
-					if (lbl_true != null) {
-						switch (this.op) {
-						case "==":
-							ctx.beq(aa, bb, lbl_true);
-							break;
-						case "!=":
-							ctx.bne(aa, bb, lbl_true);
-							break;
-						case ">":
-							ctx.bgt(aa, bb, lbl_true);
-							break;
-						case ">=":
-							ctx.bge(aa, bb, lbl_true);
-							break;
-						case "<":
-							ctx.blt(aa, bb, lbl_true);
-							break;
-						case "<=":
-							ctx.ble(aa, bb, lbl_true);
-							break;
-						}
-					} else {
-						switch (this.op) {
-						case "==":
-							ctx.bne(aa, bb, lbl_false);
-							break;
-						case "!=":
-							ctx.beq(aa, bb, lbl_false);
-							break;
-						case ">":
-							ctx.ble(aa, bb, lbl_false);
-							break;
-						case ">=":
-							ctx.blt(aa, bb, lbl_false);
-							break;
-						case "<":
-							ctx.bge(aa, bb, lbl_false);
-							break;
-						case "<=":
-							ctx.blt(aa, bb, lbl_false);
-							break;
-						}
+		public ExprBinCompare(string op, ExprRoot a, ExprRoot b) : base(a, b) {
+			this.op = op; 
+			switch (this.op) {
+			case "==": break;
+			case "!=": break;
+			case ">":  break;
+			case ">=": break;
+			case "<":  break;
+			case "<=": break;
+			default: Debug.Assert(false); break;
+			}
+		}
+
+		public override ExprValue EvalRight(Context ctx, string rdest) {
+
+			if (a.IsConstExpr() && b.IsConstExpr()) {
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+				switch (this.op) {
+				case "==": return new ExprValue(aa.c == bb.c ? 1 : 0);
+				case "!=": return new ExprValue(aa.c != bb.c ? 1 : 0);
+				case ">":  return new ExprValue(aa.c > bb.c ? 1 : 0);
+				case ">=": return new ExprValue(aa.c >= bb.c ? 1 : 0);
+				case "<":  return new ExprValue(aa.c < bb.c ? 1 : 0);
+				case "<=": return new ExprValue(aa.c <= bb.c ? 1 : 0);
+				default: Debug.Assert(false); return null;
+				}
+			} else {
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+				if (rdest == null) rdest = ctx.NewTmp();
+				string lbl_false = ctx.NewLbl();
+				ctx.ld(rdest, 0);
+				switch (this.op) {
+				case "==": ctx.bne(aa, bb, lbl_false); break;
+				case "!=": ctx.beq(aa, bb, lbl_false); break;
+				case ">": ctx.ble(aa, bb, lbl_false); break;
+				case ">=": ctx.blt(aa, bb, lbl_false); break;
+				case "<": ctx.bge(aa, bb, lbl_false); break;
+				case "<=": ctx.blt(aa, bb, lbl_false); break;
+				default: Debug.Assert(false); return null;
+				}
+				ctx.ld(rdest, 1);
+				ctx.emit(lbl_false);
+				return new ExprValue(rdest); 
+			}
+		}
+
+		public override void EvalBool(Context ctx, string lbl_true, string lbl_false) {
+			if (a.IsConstExpr() && b.IsConstExpr()) {
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+
+				if (lbl_true != null) {
+					switch (this.op) {
+					case "==": if (aa.c == bb.c) ctx.jmp(lbl_true); break;
+					case "!=": if (aa.c != bb.c) ctx.jmp(lbl_true); break;
+					case ">":  if (aa.c > bb.c) ctx.jmp(lbl_true); break;
+					case ">=": if (aa.c >= bb.c) ctx.jmp(lbl_true); break;
+					case "<":  if (aa.c < bb.c) ctx.jmp(lbl_true); break;
+					case "<=": if (aa.c <= bb.c) ctx.jmp(lbl_true); break;
+					}
+				} else {
+					switch (this.op) {
+					case "==": if (aa.c != bb.c) ctx.jmp(lbl_false); break;
+					case "!=": if (aa.c == bb.c) ctx.jmp(lbl_false); break;
+					case ">":  if (aa.c <= bb.c) ctx.jmp(lbl_false); break;
+					case ">=": if (aa.c < bb.c) ctx.jmp(lbl_false); break;
+					case "<":  if (aa.c >= bb.c) ctx.jmp(lbl_false); break;
+					case "<=": if (aa.c > bb.c) ctx.jmp(lbl_false); break;
+					}
+				}
+			} else {
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+
+				if (lbl_true != null) {
+					switch (this.op) {
+					case "==": ctx.beq(aa, bb, lbl_true); break;
+					case "!=": ctx.bne(aa, bb, lbl_true); break;
+					case ">":  ctx.bgt(aa, bb, lbl_true); break;
+					case ">=": ctx.bge(aa, bb, lbl_true); break;
+					case "<":  ctx.blt(aa, bb, lbl_true); break;
+					case "<=": ctx.ble(aa, bb, lbl_true); break;
+					}
+				} else {
+					switch (this.op) {
+					case "==": ctx.bne(aa, bb, lbl_false); break;
+					case "!=": ctx.beq(aa, bb, lbl_false); break;
+					case ">":  ctx.ble(aa, bb, lbl_false); break;
+					case ">=": ctx.blt(aa, bb, lbl_false); break;
+					case "<":  ctx.bge(aa, bb, lbl_false); break;
+					case "<=": ctx.blt(aa, bb, lbl_false); break;
 					}
 				}
 			}

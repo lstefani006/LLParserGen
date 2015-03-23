@@ -86,12 +86,12 @@ e_ass<ExprRoot>
 	;
 
 e_oror<ExprRoot>
-	: e_oror OROR e_andand    ^new ExprEq("||", $1, $3)
+	: e_oror OROR e_andand    ^new ExprBinLogical("||", $1, $3)
 	| e_andand                ^$1
 	;
 
 e_andand<ExprRoot>
-	: e_andand ANDAND e_or    ^new ExprEq("&&", $1, $3)
+	: e_andand ANDAND e_or    ^new ExprBinLogical("&&", $1, $3)
 	| e_or                    ^$1
 	;
 
@@ -111,16 +111,16 @@ e_and<ExprRoot>
 	;
 
 e_eq<ExprRoot>
-	: e_eq EQ e_lt    ^new ExprEq("==", $1, $3)
-	| e_eq NE e_lt    ^new ExprEq("!=", $1, $3)
+	: e_eq EQ e_lt    ^new ExprBinCompare("==", $1, $3)
+	| e_eq NE e_lt    ^new ExprBinCompare("!=", $1, $3)
 	| e_lt            ^$1
 	;
 
 e_lt<ExprRoot>
-	: e_lt LT e_sh    ^new ExprEq("<",  $1, $3)
-	| e_lt LE e_sh    ^new ExprEq("<=", $1, $3)
-	| e_lt GT e_sh    ^new ExprEq(">",  $1, $3)
-	| e_lt GE e_sh    ^new ExprEq(">=", $1, $3)
+	: e_lt LT e_sh    ^new ExprBinCompare("<",  $1, $3)
+	| e_lt LE e_sh    ^new ExprBinCompare("<=", $1, $3)
+	| e_lt GT e_sh    ^new ExprBinCompare(">",  $1, $3)
+	| e_lt GE e_sh    ^new ExprBinCompare(">=", $1, $3)
 	| e_sh            ^$1
 	;
 
