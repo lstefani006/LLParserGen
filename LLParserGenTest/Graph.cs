@@ -65,6 +65,8 @@ namespace LLParserGenTest
 			while (gr._nodes.Count > 0) {
 				NodeReg nd = gr._nodes.Find(n => n.Neighbors.Count < k);
 				if (nd == null) {
+					// ci è andata male con la ricerca del nodo con meno di k vicini.
+					//
 					// proviamo con l'optimistic coloring
 					// scegliamo un nodo qualunque, sperando che i suoi vicini
 					// vengano assegnati a registri in comune.
@@ -150,11 +152,11 @@ namespace LLParserGenTest
 	}
 
 	class NodeReg {
-		public NodeReg(string rg, bool giaFissato) {
+		public NodeReg(string rg, bool giaAllocato) {
 			this._name = rg;
 			this._neighbors = new List<NodeReg>();
 
-			if (giaFissato)
+			if (giaAllocato)
 				this.Reg = rg;
 		}
 

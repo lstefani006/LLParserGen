@@ -63,7 +63,7 @@ namespace LLParserGenTest
 		}
 
 
-		private void ComputeLive(int istart, int iend)
+		private void ComputeLive(int istart, int iend, List<string> alwaysLive)
 		{
 			// capisco per ogni istruzione quale sono
 			// le istruzioni che la seguono.
@@ -86,13 +86,9 @@ namespace LLParserGenTest
 					foreach (var t in c.Succ)
 						rout = rout + t.In;
 
-					// tentativo per dire che r0 non deve essere toccato
-					// e che r1 è il ritorno;
-					//if (i == iend - 1) {
-					//	rout.Add("r0");
-					//	rout.Add("r1");
-					//}
-
+					if (i == iend - 1)  // TODO oppure return oppure halt oppure throw
+						alwaysLive.ForEach(rout.Add);
+						
 					bool b = c.ComputeLive(rout);
 					if (b) changed = true;
 				}
@@ -204,8 +200,7 @@ namespace LLParserGenTest
 		}
 
 
-		public bool GenerateCode(Fun f)
-		{
+		public bool GenerateCode(Fun f) {
 			/*StartFunction(f);
 
 			foreach (var v in f.args)
@@ -224,11 +219,18 @@ namespace LLParserGenTest
 			this.emit(f.name);
 			f.body.GenCode(this);
 
+			if (_ass.Count > 0) {
+			
+				foreach (var a in f.args.args)
+					_ass[_ass.Count - 1].Out.Add(a);
+			}
 			Console.WriteLine("{0}", this.ToString());
 
 			int istart = 0;
-			int iend = _ass.Count; ;
-			this.ComputeLive(istart, iend);
+			int iend = _ass.Count;
+			var live = new List<string>();
+			f.args.args.ForEach(v => live.Add(this.GerVar(v)));
+			this.ComputeLive(istart, iend, live);
 
 			Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
 			Console.WriteLine("Live variables");

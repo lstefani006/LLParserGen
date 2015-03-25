@@ -2246,6 +2246,7 @@ namespace LLParserGenTest
 			acts.Add(new RegToken('*'), '*');
 			acts.Add(new RegToken('%'), '%');
 			acts.Add(new RegToken('|'), '|');
+			acts.Add(new RegToken('!'), '!');
 			acts.Add(new RegToken('^'), '^');
 			acts.Add(new RegToken('&'), '&');
 			acts.Add(new RegToken('/'), '/');
@@ -2267,6 +2268,7 @@ namespace LLParserGenTest
 			acts.Add(new RegAnd(new RegOr(new RegOr(new RegToken('_'), new RegTokenRange(97, 122)), new RegTokenRange(65, 90)), new RegZeroOrMore(new RegOr(new RegOr(new RegOr(new RegToken('_'), new RegTokenRange(97, 122)), new RegTokenRange(65, 90)), new RegTokenRange(48, 57)))), ID);
 			acts.Add(new RegOneOrMore(new RegTokenRange(48, 57)), NUM);
 			acts.Add(new RegOneOrMore(new RegOr(new RegOr(new RegOr(new RegToken(' '), new RegToken(10)), new RegToken(13)), new RegToken(9))));
+			acts.Add(new RegAnd(new RegAnd(new RegToken('/'), new RegToken('/')), new RegZeroOrMore(new RegTokenOutsideRange(10, 10))));
 			return acts;
 		}
 	}

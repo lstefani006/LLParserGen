@@ -123,10 +123,6 @@ namespace LLParserGenTest
 					else
 						this.sb.GenCode(ctx);
 				}
-				if (e.EvalRight(ctx, null).c != 0)
-					this.sa.GenCode(ctx);
-				else if (sb != null)
-					this.sb.GenCode(ctx);
 			} else {
 				if (this.sb == null) {
 					var lbl_false = ctx.NewLbl();
@@ -179,18 +175,23 @@ namespace LLParserGenTest
 		public override void GenCode(Context ctx) { e.EvalRight(ctx, null); }
 	}
 
+	///////////////////////////////////////////////////////////
+
 	public abstract class ExprRoot : IAST {
 		public abstract ExprValue EvalRight(Context ctx, string rdest);
 		public abstract bool IsConstExpr();
 
 		public virtual void EvalBool(Context ctx, string lbl_true, string lbl_false) {
-			var s = EvalRight(ctx, null);
-			if (s.IsConst) {
-				if (s.c != 0)
-					ctx.jmp(lbl_true);
-				else
-					ctx.jmp(lbl_false);
+			if (this.IsConstExpr()) {
+				var s = EvalRight(ctx, null);
+				if (lbl_true != null) {
+					if (s.c != 0) ctx.jmp(lbl_true);
+				}
+				else {
+					if (s.c == 0) ctx.jmp(lbl_false);
+				}
 			} else {
+				var s = EvalRight(ctx, null);
 				if (lbl_true != null)
 					ctx.bne(s, new ExprValue(0), lbl_true);
 				else
@@ -211,25 +212,13 @@ namespace LLParserGenTest
 		public ExprAss(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
 
 		public override string EvalLeft(Context ctx) { return a.EvalLeft(ctx); }
-		public override bool IsConstExpr() { return a.IsConstExpr(); }
+		public override bool IsConstExpr() { return false; } // comunque NON è una espressione constante
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
-			string ra = a.EvalLeft(ctx);
-			var rb = b.EvalRight(ctx, ra);
-			if (rb.IsReg) {
-				if (rdest == null) rdest = rb.reg;
-				if (rdest != rb.reg) ctx.add(rdest, new ExprValue(0), rb);
-				return new ExprValue(rdest);
-			} else {
-				if (rdest != null) {
-					ctx.ld(rdest, rb.c);
-					ctx.ld(ra, rb.c);
-					return new ExprValue(rdest);
-				} else {
-					ctx.ld(ra, rb.c);
-					return new ExprValue(ra);
-				}
-			}
+			// ignoro volutamente il const.
+			var ra = a.EvalLeft(ctx);
+			var rb = b.EvalRight(ctx, ra); // rdest DEVE essere risolto.
+			return rb;  // qui posso ritornare la costante (se è const oppure la var...)
 		}
 	}
 
@@ -263,11 +252,14 @@ namespace LLParserGenTest
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
+				ExprValue rr;
 				switch (this.op) {
-				case "&&": return new ExprValue(aa.c != 0 && bb.c != 0 ? 1 : 0);
-				case "||": return new ExprValue(aa.c != 0 || bb.c != 0 ? 1 : 0);
+				case "&&": rr = new ExprValue(aa.c != 0 && bb.c != 0 ? 1 : 0); break;
+				case "||": rr = new ExprValue(aa.c != 0 || bb.c != 0 ? 1 : 0); break;
 				default: Debug.Assert(false); return null;
 				}
+				if (rdest != null) ctx.ld(rdest, rr.c);
+				return rr;
 			} else {
 				if (op == "||") {
 					if (rdest == null) rdest = ctx.NewTmp();
@@ -367,15 +359,18 @@ namespace LLParserGenTest
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
+				ExprValue rr;
 				switch (this.op) {
-				case "==": return new ExprValue(aa.c == bb.c ? 1 : 0);
-				case "!=": return new ExprValue(aa.c != bb.c ? 1 : 0);
-				case ">":  return new ExprValue(aa.c > bb.c ? 1 : 0);
-				case ">=": return new ExprValue(aa.c >= bb.c ? 1 : 0);
-				case "<":  return new ExprValue(aa.c < bb.c ? 1 : 0);
-				case "<=": return new ExprValue(aa.c <= bb.c ? 1 : 0);
+				case "==": rr = new ExprValue(aa.c == bb.c ? 1 : 0); break;
+				case "!=": rr = new ExprValue(aa.c != bb.c ? 1 : 0); break;
+				case ">":  rr = new ExprValue(aa.c > bb.c ? 1 : 0); break;
+				case ">=": rr = new ExprValue(aa.c >= bb.c ? 1 : 0); break;
+				case "<":  rr = new ExprValue(aa.c < bb.c ? 1 : 0); break;
+				case "<=": rr = new ExprValue(aa.c <= bb.c ? 1 : 0); break;
 				default: Debug.Assert(false); return null;
 				}
+				if (rdest != null) ctx.ld(rdest, rr.c);
+				return rr;
 			} else {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
@@ -385,9 +380,9 @@ namespace LLParserGenTest
 				switch (this.op) {
 				case "==": ctx.bne(aa, bb, lbl_false); break;
 				case "!=": ctx.beq(aa, bb, lbl_false); break;
-				case ">": ctx.ble(aa, bb, lbl_false); break;
+				case ">":  ctx.ble(aa, bb, lbl_false); break;
 				case ">=": ctx.blt(aa, bb, lbl_false); break;
-				case "<": ctx.bge(aa, bb, lbl_false); break;
+				case "<":  ctx.bge(aa, bb, lbl_false); break;
 				case "<=": ctx.blt(aa, bb, lbl_false); break;
 				default: Debug.Assert(false); return null;
 				}
@@ -406,9 +401,9 @@ namespace LLParserGenTest
 					switch (this.op) {
 					case "==": if (aa.c == bb.c) ctx.jmp(lbl_true); break;
 					case "!=": if (aa.c != bb.c) ctx.jmp(lbl_true); break;
-					case ">":  if (aa.c > bb.c) ctx.jmp(lbl_true); break;
+					case ">":  if (aa.c > bb.c)  ctx.jmp(lbl_true); break;
 					case ">=": if (aa.c >= bb.c) ctx.jmp(lbl_true); break;
-					case "<":  if (aa.c < bb.c) ctx.jmp(lbl_true); break;
+					case "<":  if (aa.c < bb.c)  ctx.jmp(lbl_true); break;
 					case "<=": if (aa.c <= bb.c) ctx.jmp(lbl_true); break;
 					}
 				} else {
@@ -416,9 +411,9 @@ namespace LLParserGenTest
 					case "==": if (aa.c != bb.c) ctx.jmp(lbl_false); break;
 					case "!=": if (aa.c == bb.c) ctx.jmp(lbl_false); break;
 					case ">":  if (aa.c <= bb.c) ctx.jmp(lbl_false); break;
-					case ">=": if (aa.c < bb.c) ctx.jmp(lbl_false); break;
+					case ">=": if (aa.c < bb.c)  ctx.jmp(lbl_false); break;
 					case "<":  if (aa.c >= bb.c) ctx.jmp(lbl_false); break;
-					case "<=": if (aa.c > bb.c) ctx.jmp(lbl_false); break;
+					case "<=": if (aa.c > bb.c)  ctx.jmp(lbl_false); break;
 					}
 				}
 			} else {
@@ -500,14 +495,14 @@ namespace LLParserGenTest
 
 		public ExprBinGen(string op, ExprRoot a, ExprRoot b) : base(a, b) { 
 			switch (op) {
-			case "+": sop = new BinAdd(); break;
-			case "-": sop = new BinSub(); break;
-			case "*": sop = new BinMul(); break;
-			case "/": sop = new BinDiv(); break;
-			case "%": sop = new BinRem(); break;
-			case "|": sop = new BinOr_(); break;
-			case "&": sop = new BinAnd(); break;
-			case "^": sop = new BinXor(); break;
+			case "+":  sop = new BinAdd(); break;
+			case "-":  sop = new BinSub(); break;
+			case "*":  sop = new BinMul(); break;
+			case "/":  sop = new BinDiv(); break;
+			case "%":  sop = new BinRem(); break;
+			case "|":  sop = new BinOr_(); break;
+			case "&":  sop = new BinAnd(); break;
+			case "^":  sop = new BinXor(); break;
 			case "<<": sop = new BinShL(); break;
 			case ">>": sop = new BinShR(); break;
 			default: Debug.Assert(false); break;
@@ -515,14 +510,16 @@ namespace LLParserGenTest
 		}
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
-			var aa = a.EvalRight(ctx, null);
-			var bb = b.EvalRight(ctx, null);
-
-			if (aa.IsConst && bb.IsConst) {
-				if (rdest != null) ctx.ld(rdest, sop.c_op(aa.c, bb.c));
-				return new ExprValue(sop.c_op(aa.c, bb.c));
+			if (a.IsConstExpr() && b.IsConstExpr()) {
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+				var rr = sop.c_op(aa.c, bb.c);
+				if (rdest != null) ctx.ld(rdest, rr);
+				return new ExprValue(rr);
 			} else {
-					if (rdest == null) rdest = ctx.NewTmp();
+				var aa = a.EvalRight(ctx, null);
+				var bb = b.EvalRight(ctx, null);
+				if (rdest == null) rdest = ctx.NewTmp();
 				sop.a_op(ctx, rdest, aa, bb);
 				return new ExprValue(rdest); 
 			}
@@ -532,27 +529,23 @@ namespace LLParserGenTest
 
 	public class ExprPlus : ExprUni {
 		public ExprPlus(ExprRoot a) : base(a) { }
-
-		public override ExprValue EvalRight(Context ctx, string rdest) {
-			return a.EvalRight(ctx, rdest);
-		}
+		public override ExprValue EvalRight(Context ctx, string rdest) { return a.EvalRight(ctx, rdest); }
 	}
 
 	public class ExprNeg : ExprUni {
 		public ExprNeg(ExprRoot a) : base(a) { }
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
-			var ra = a.EvalRight(ctx, rdest);
-			if (ra.IsReg) {
+			if (a.IsConstExpr()) {
+				var n = a.EvalRight(ctx, null);
+				if (rdest != null) ctx.ld(rdest, -n.c);
+				return n;
+			}
+			else {
+				var ra = a.EvalRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
 				ctx.sub(rdest, new ExprValue(0), ra);
 				return new ExprValue(rdest);
-			} else {
-				if (rdest != null) {
-					ctx.ld(rdest, -ra.c);
-					return new ExprValue(rdest);
-				} else 
-					return new ExprValue(-ra.c);
 			}
 		}
 	}
@@ -562,7 +555,9 @@ namespace LLParserGenTest
 		readonly TokenAST a;
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
-			return new ExprValue(int.Parse(a.v));
+			var n = new ExprValue(int.Parse(a.v));
+			if (rdest != null) ctx.ld(rdest, n.c);
+			return n;
 		}
 		public override bool IsConstExpr() { return true; }
 	}
@@ -571,15 +566,13 @@ namespace LLParserGenTest
 		public ExprId(TokenAST a) { this.a = a; }
 		readonly TokenAST a;
 
-		public override string EvalLeft(Context ctx) {
-			return ctx.GerVar(a.v);
-		}
+		public override string EvalLeft(Context ctx) { return ctx.GerVar(a.v); }
 
 		public override ExprValue EvalRight(Context ctx, string rdest) {
 			string rvar = ctx.GerVar(a.v);
 			if (rdest == null) rdest = rvar;
 			if (rdest != rvar) ctx.add(rdest, new ExprValue(rvar), new ExprValue(0));
-			return new ExprValue(rdest);
+			return new ExprValue(rvar);
 		}
 		public override bool IsConstExpr() { return false; }
 	}
@@ -587,9 +580,7 @@ namespace LLParserGenTest
 	////////////////////////
 
 	public partial class MParser {
-		public MParser()
-			: base(0) {
-		}
+		public MParser() : base(0) { }
 
 		public Fun Start(LexReader rd) {
 			this.init(rd);
