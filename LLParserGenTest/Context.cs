@@ -125,48 +125,46 @@ namespace LLParserGenTest
 			return ToString(0, _ass.Count);
 		}
 
-		private Graph ComputeGraph(int istart, int iend)
+		private Graph CreateGraph(int istart, int iend)
 		{
 			Graph gr = new Graph();
 
+			// creo i nodi
 			for (int i = istart; i < iend; ++i)
 			{
 				var c = _ass[i];
-
-				for (int j = 0; j < c.In.Count; ++j)
+				foreach (var n in c.In)
 				{
-					bool giaFissato = c.In[j].StartsWith("r");
-					if (gr.ExistsNode(c.In[j]) == false)
-						gr.CreateNode(c.In[j], giaFissato);
+					if (gr.ExistsNode(n) == false) {
+						string reg = n.StartsWith("r") ? n : null;
+						gr.CreateNode(n, reg);
+					}
 				}
 			}
 
-
+			// creo gli archi 
 			for (int i = istart; i < iend; ++i)
 			{
 				var c = _ass[i];
 
 				for (int j = 0; j < c.In.Count; ++j)
 				{
-					if (gr.ExistsNode(c.In[j]) == true)
-					{
-						for (int k = j + 1; k < c.In.Count; ++k)
-							if (gr.ExistsNode(c.In[k]) == true)
-								gr.AddEdge(c.In[j], c.In[k]);
-					}
+					Debug.Assert(gr.ExistsNode(c.In[j]) == true);
+
+					for (int k = j + 1; k < c.In.Count; ++k)
+						if (gr.ExistsNode(c.In[k]) == true)
+							gr.AddEdge(c.In[j], c.In[k]);
 				}
 			}
 
 			var rr = _ass[iend - 1].Out;
 			for (int j = 0; j < rr.Count; ++j)
 			{
-				if (gr.ExistsNode(rr[j]) == true)
-				{
-					for (int k = j + 1; k < rr.Count; ++k)
-					{
-						if (gr.ExistsNode(rr[k]))
-							gr.AddEdge(rr[j], rr[k]);
-					}
+				Debug.Assert(gr.ExistsNode(rr[j]) == true);
+
+				for (int k = j + 1; k < rr.Count; ++k) {
+					if (gr.ExistsNode(rr[k]))
+						gr.AddEdge(rr[j], rr[k]);
 				}
 			}
 
@@ -199,6 +197,41 @@ namespace LLParserGenTest
 			return null;
 		}
 
+		Stack<StackData> _tk = new Stack<StackData>();
+		public struct StackData {
+			public StmtTk tk;
+			public string lblBreak;
+			public string lblContinue;
+			public string varName;
+		}
+		public enum StmtTk {
+			While, For,
+			Var
+		}
+		public void Push(StmtTk tk, string lblBreak, string lblContinue, string vv)
+		{
+			StackData r = new StackData();
+			r.tk = tk;
+			r.lblBreak = lblBreak;
+			r.lblContinue = lblContinue;
+			r.varName = vv;
+			_tk.Push(r);
+		}
+		public void Pop() { _tk.Pop(); }
+
+		public void Break() {
+			while (_tk.Count > 0) {
+				var r = _tk.Pop();
+				if (r.tk == StmtTk.While || r.tk == StmtTk.For)  {
+					jmp(r.lblBreak);
+					return;
+				} else if (r.tk == StmtTk.Var) {
+					ld(r.varName, 0);
+				}
+			}
+			throw new ApplicationException("continue");
+		}
+
 
 		public bool GenerateCode(Fun f) {
 			/*StartFunction(f);
@@ -229,6 +262,9 @@ namespace LLParserGenTest
 			int istart = 0;
 			int iend = _ass.Count;
 			var live = new List<string>();
+
+			// le var in ingresso anche se non servono più non vengono sovrascritte
+			// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
 			f.args.args.ForEach(v => live.Add(this.GerVar(v)));
 			this.ComputeLive(istart, iend, live);
 
@@ -236,21 +272,22 @@ namespace LLParserGenTest
 			Console.WriteLine("Live variables");
 			Console.WriteLine(this.ToString(istart, iend));
 
-			var gr = this.ComputeGraph(istart, iend);
+			var gr = this.CreateGraph(istart, iend);
 			Console.WriteLine("Grafo");
 			Console.WriteLine(gr);
 
 			bool ok = false;
 			int k;
-			for (k = 0; k < 32; ++k)
-				if (gr.Color(k))
-				{
+			for (k = 0; k < 32; ++k) {
+				var col = gr.Color(k);
+				if (col != null) {
 					Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per var locali/parametri r{0}", k, k - 1);
-					var regs = gr.GetRegs();
+					var regs = col.GetRegs();
 					this.SetTemps(istart, iend, regs);
 					ok = true;
 					break;
 				}
+			}
 
 			if (ok == false)
 			{

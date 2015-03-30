@@ -12,24 +12,22 @@ namespace LLParserGenTest
 
 		readonly List<NodeReg> _nodes = new List<NodeReg>();
 
-		public NodeReg CreateNode(string reg, bool giaAssegnato) {
-			Debug.Assert(ExistsNode(reg) == false);
+		public NodeReg CreateNode(string name, string reg) {
+			Debug.Assert(ExistsNode(name) == false);
 
-			NodeReg n = new NodeReg(reg, giaAssegnato);
+			NodeReg n = new NodeReg(name, reg);
 			_nodes.Add(n);
 			return n;
 		}
 
-		public NodeReg GetNode(string reg) {
-			var nn = _nodes.Find(r => r.Name == reg);
-			if (nn != null)
-				return nn;
-			Debug.Assert(false);
-			return null;
+		public NodeReg GetNode(string name) {
+			var nn = _nodes.Find(r => r.Name == name);
+			Debug.Assert(nn != null);
+			return nn;
 		}
 
-		public bool ExistsNode(string reg) {
-			return _nodes.Find(r => r.Name == reg) != null;
+		public bool ExistsNode(string name) {
+			return _nodes.Find(r => r.Name == name) != null;
 		}
 
 		public void AddEdge(string a, string b) {
@@ -53,94 +51,140 @@ namespace LLParserGenTest
 		}
 
 
-		public bool Color(int k) {
+		public Graph Color(int k) {
 			var st = new Stack<string>();
 			return Color(k, st);
 		}
 
-		bool Color(int k, Stack<string> st) {
-			// rimuovo dal grafo un nodo nodo
-			// il nodo da rimuovere deve avere meno di k vicini
-			Graph gr = this;
-			while (gr._nodes.Count > 0) {
-				NodeReg nd = gr._nodes.Find(n => n.Neighbors.Count < k);
-				if (nd == null) {
-					// ci è andata male con la ricerca del nodo con meno di k vicini.
-					//
-					// proviamo con l'optimistic coloring
-					// scegliamo un nodo qualunque, sperando che i suoi vicini
-					// vengano assegnati a registri in comune.
+		Graph Color(int k, Stack<string> st) {
 
-					// cerco il nodo nel grafo che ha meno vicini
-					var q = from nn in gr._nodes
-					        orderby nn.Neighbors.Count ascending
-					        select nn;
+			// riduco il grafo this scegliendo un nodo da togliere dallo stesso
+			// grafo ed ottenendo un grafo più piccolo.... finchè non ci
+			// sono più nodi da togliere.
+			if (true) {
+				// rimuovo dal grafo un nodo nodo
+				// il nodo da rimuovere deve avere meno di k vicini
+				Graph gr = this;
+				while (gr._nodes.Count > 0) {
+					NodeReg nd = gr._nodes.Find(n => n.Neighbors.Count < k);
+					if (nd == null) {
+						// ci è andata male con la ricerca del nodo con meno di k vicini.
+						//
+						// proviamo con l'optimistic coloring
+						// scegliamo un nodo qualunque, sperando che i suoi vicini
+						// vengano assegnati a registri in comune.
 
-					nd = q.FirstOrDefault();
-					if (nd == null)
-						return false;
-				}
+						// cerco il nodo nel grafo che ha meno vicini
+						var q = from nn in gr._nodes
+						       orderby nn.Neighbors.Count ascending
+						       select nn;
 
-				st.Push(nd.Name);
-				gr = gr.Remove(nd);
-			}
-
-			while (st.Count > 0) {
-				var nd = st.Pop();
-
-				// se inizia per r e` un registro gia` assegnato
-				// i registri da assegnare iniziano per Tn
-				if (nd.StartsWith("r"))
-					continue;
-
-				// assegno un registro non assegnato gia` ai vicini
-				// rg = lista dei registri assegnati ai vicini
-				U.Set<string> rg = new U.Set<string>();
-				foreach (var nv in this.GetNode(nd).Neighbors)
-					if (nv.Reg != null)
-						rg.Add(nv.Reg);
-
-				if (rg.Count >= k) {
-					// siamo nel caso dell'optimistic coloring, ma ci e` andata male
-					return false;
-				}
-
-				// fra tutti i registri disponibili prendo il primo
-				// non assegnato ai vicini.
-				for (int i = 0; i < 32; ++i) {
-					string r = U.F("r{0}", i);
-					if (rg.Contains(r) == false) {
-						this.GetNode(nd).Reg = r;
-						break;
+						nd = q.FirstOrDefault();
+						if (nd == null)
+							return null;
 					}
-				}
 
-				Debug.Assert(this.GetNode(nd).Reg != null);
+					// metto il nodo rimosso nello stack
+					st.Push(nd.Name);
+					// creo un nuovo grafo rimuovendo il nodo
+					// il nuovo grafo è una copia profonda del vecchio grafo
+					gr = gr.Remove(nd);
+				}
 			}
 
-			return true;
+			if (true) {
+				// a questo punto provo a colorare i nodi.
+				// a meno che un nodo non sia già colorato
+				// scelgo un colore non utilizzati dai suoi vicini.
+				// Questa operazione può fallire non caso di optimistic coloring
+				Graph gr = this.Clone();
+				while (st.Count > 0) {
+					var nodeName = st.Pop();
+
+					var nd = gr.GetNode(nodeName);
+
+					// se inizia per r e` un registro gia` assegnato
+					// i registri da assegnare iniziano per Tn
+					if (nd.Reg != null)
+						continue;
+
+					// determino la lista <rg> dei registri gia' assegnati ai vicini
+					U.Set<string> rg = new U.Set<string>();
+					foreach (var nv in nd.Neighbors)
+						if (nv.Reg != null)
+							rg.Add(nv.Reg);
+
+					// se i registri gia' assegnati superano il numero dei registri disponibili
+					// vuol dire che non abbiamo posto per un nuovo registro....
+					if (rg.Count >= k) {
+						// siamo nel caso dell'optimistic coloring, ma ci e` andata male
+
+						// resetto i nodi colorati.
+						return null;
+					}
+
+					// fra tutti i registri disponibili 
+					// (ossia tra quelli non assegnati gia' ai vicini) 
+					// prendo il primo disponibile
+					for (int i = 0; i < k; ++i) {
+						string r = U.F("r{0}", i);
+						if (rg.Contains(r) == false) {
+							nd.Reg = r;
+							break;
+						}
+					}
+
+					Debug.Assert(nd.Reg != null);
+				}
+
+				return gr;
+			}
 		}
 
-		Graph Remove(NodeReg src) {
+		/// <summary>
+		/// creo un nuovo grafo ottenuto dal grafo corrente rimuovendo il nono src
+		/// </summary>
+		/// <param name="nd">Nodo da rimuovere.</param>
+		Graph Remove(NodeReg nd) {
 			Graph gr = new Graph();
 			foreach (var s in this._nodes) {
-				if (s == src) continue;
+				if (s.Name == nd.Name) continue;
 
 				// creo il nodo nel nuovo grafo
 				if (gr.ExistsNode(s.Name) == false)
-					gr.CreateNode(s.Name, s.Name.StartsWith("r"));
+					gr.CreateNode(s.Name, s.OriReg);
 
 				// e tutti gli altri nodi, purche non siano il nodo di ingresso.
-				foreach (var s_neighbor in s.Neighbors) {
-					if (s_neighbor.Name != src.Name) {
-						if (gr.ExistsNode(s_neighbor.Name) == false)
-							gr.CreateNode(s_neighbor.Name, s.Name.StartsWith("r"));
-						gr.AddEdge(s.Name, s_neighbor.Name);
+				foreach (var t in s.Neighbors) {
+					if (t.Name != nd.Name) {
+						if (gr.ExistsNode(t.Name) == false)
+							gr.CreateNode(t.Name, t.OriReg);
+						gr.AddEdge(s.Name, t.Name);
 					}
 				}
 			}
 			return gr;
 		}
+
+		/// <summary>
+		/// creo un nuovo grafo copia profonda
+		/// </summary>
+		Graph Clone() {
+			Graph gr = new Graph();
+			foreach (var s in this._nodes) {
+				// creo il nodo nel nuovo grafo
+				if (gr.ExistsNode(s.Name) == false)
+					gr.CreateNode(s.Name, s.OriReg);
+
+				foreach (var t in s.Neighbors) {
+					if (gr.ExistsNode(t.Name) == false)
+						gr.CreateNode(t.Name, t.OriReg);
+						gr.AddEdge(s.Name, t.Name);
+				}
+			}
+			return gr;
+		}
+
 
 		public Dictionary<string, string> GetRegs() {
 			Dictionary<string, string> ret = new Dictionary<string, string>();
@@ -152,14 +196,13 @@ namespace LLParserGenTest
 	}
 
 	class NodeReg {
-		public NodeReg(string rg, bool giaAllocato) {
-			this._name = rg;
+		public NodeReg(string name, string reg) {
+			this._name = name;
+			this._oriReg = reg;
 			this._neighbors = new List<NodeReg>();
-
-			if (giaAllocato)
-				this.Reg = rg;
+			this.Reg = reg;
 		}
-
+			
 		public void AddEdge(NodeReg nd) {
 			if (_neighbors.Contains(nd) == false)
 				_neighbors.Add(nd);
@@ -184,8 +227,12 @@ namespace LLParserGenTest
 			get;
 			set;
 		}
+		public string OriReg {
+			get { return _oriReg; }
+		}
 
 		readonly string _name;
-		List<NodeReg> _neighbors;
+		readonly string _oriReg;
+		readonly List<NodeReg> _neighbors;
 	};
 }

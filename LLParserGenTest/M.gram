@@ -6,6 +6,8 @@ var                                   ^VAR
 if                                    ^IF
 else                                  ^ELSE
 while                                 ^WHILE
+break                                 ^BREAK
+continue                              ^CONTINUE
 
 ","									  ^(,)
 ";"									  ^(;)
@@ -70,6 +72,8 @@ stmt<StmtRoot>
 	| VAR ID ';'                        ^new StmtDecl($2)
 	| '{' stmtliste '}'                 ^$2
 	| WHILE '(' e_ass ')' stmt          ^new StmtWhile($3, $5)
+	| BREAK ';'                         ^new StmtBreak();
+	| CONTINUE ';'                      ^new StmtContinue();
 	;
 
 stmtliste<StmtList>

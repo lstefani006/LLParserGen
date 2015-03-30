@@ -168,6 +168,18 @@ namespace LLParserGenTest
 			}
 		}
 	}
+	public class StmtBreak : StmtRoot {
+		public StmtBreak() {}
+
+		public override void GenCode(Context ctx) {
+		}
+	}
+	public class StmtContinue : StmtRoot {
+		public StmtContinue() {}
+
+		public override void GenCode(Context ctx) {
+		}
+	}
 		
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;

@@ -14,18 +14,20 @@ namespace LLParserGenTest
 		public const int IF = -4;
 		public const int VAR = -5;
 		public const int WHILE = -6;
-		public const int ELSE = -7;
-		public const int OROR = -8;
-		public const int ANDAND = -9;
-		public const int EQ = -10;
-		public const int NE = -11;
-		public const int LT = -12;
-		public const int LE = -13;
-		public const int GT = -14;
-		public const int GE = -15;
-		public const int SHL = -16;
-		public const int SHR = -17;
-		public const int NUM = -18;
+		public const int BREAK = -7;
+		public const int CONTINUE = -8;
+		public const int ELSE = -9;
+		public const int OROR = -10;
+		public const int ANDAND = -11;
+		public const int EQ = -12;
+		public const int NE = -13;
+		public const int LT = -14;
+		public const int LE = -15;
+		public const int GT = -16;
+		public const int GE = -17;
+		public const int SHL = -18;
+		public const int SHR = -19;
+		public const int NUM = -20;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -41,18 +43,20 @@ namespace LLParserGenTest
 					_token.Add(-4, "IF");
 					_token.Add(-5, "VAR");
 					_token.Add(-6, "WHILE");
-					_token.Add(-7, "ELSE");
-					_token.Add(-8, "OROR");
-					_token.Add(-9, "ANDAND");
-					_token.Add(-10, "EQ");
-					_token.Add(-11, "NE");
-					_token.Add(-12, "LT");
-					_token.Add(-13, "LE");
-					_token.Add(-14, "GT");
-					_token.Add(-15, "GE");
-					_token.Add(-16, "SHL");
-					_token.Add(-17, "SHR");
-					_token.Add(-18, "NUM");
+					_token.Add(-7, "BREAK");
+					_token.Add(-8, "CONTINUE");
+					_token.Add(-9, "ELSE");
+					_token.Add(-10, "OROR");
+					_token.Add(-11, "ANDAND");
+					_token.Add(-12, "EQ");
+					_token.Add(-13, "NE");
+					_token.Add(-14, "LT");
+					_token.Add(-15, "LE");
+					_token.Add(-16, "GT");
+					_token.Add(-17, "GE");
+					_token.Add(-18, "SHL");
+					_token.Add(-19, "SHR");
+					_token.Add(-20, "NUM");
 				}
 				return _token;
 			}
@@ -309,6 +313,12 @@ namespace LLParserGenTest
 			case WHILE:
 				alt = 4;
 				break;
+			case BREAK:
+				alt = 5;
+				break;
+			case CONTINUE:
+				alt = 6;
+				break;
 			default:
 				Error();
 				break;
@@ -385,6 +395,26 @@ namespace LLParserGenTest
 					stmt_s = new StmtWhile(nt3_s, nt5_s);
 				}
 				break;
+			case 5:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					TokenAST nt1_s = Match(BREAK, nt1_i);
+					TokenAST nt2_s = Match(';', nt2_i);
+					stmt_s = new StmtBreak();;
+				}
+				break;
+			case 6:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					TokenAST nt1_s = Match(CONTINUE, nt1_i);
+					TokenAST nt2_s = Match(';', nt2_i);
+					stmt_s = new StmtContinue();;
+				}
+				break;
 			}
 			
 			switch (Next.ch)
@@ -394,6 +424,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -417,6 +449,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -462,6 +496,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -485,6 +521,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -540,6 +578,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -591,6 +631,8 @@ namespace LLParserGenTest
 			case VAR:
 			case '{':
 			case WHILE:
+			case BREAK:
+			case CONTINUE:
 			case '-':
 			case '+':
 			case NUM:
@@ -2239,6 +2281,8 @@ namespace LLParserGenTest
 			acts.Add(new RegAnd(new RegToken('i'), new RegToken('f')), IF);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('e'), new RegToken('l')), new RegToken('s')), new RegToken('e')), ELSE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('w'), new RegToken('h')), new RegToken('i')), new RegToken('l')), new RegToken('e')), WHILE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('b'), new RegToken('r')), new RegToken('e')), new RegToken('a')), new RegToken('k')), BREAK);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('c'), new RegToken('o')), new RegToken('n')), new RegToken('t')), new RegToken('i')), new RegToken('n')), new RegToken('u')), new RegToken('e')), CONTINUE);
 			acts.Add(new RegToken(','), ',');
 			acts.Add(new RegToken(';'), ';');
 			acts.Add(new RegToken('+'), '+');

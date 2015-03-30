@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace LLParserGenTest
 {
@@ -48,6 +49,7 @@ namespace LLParserGenTest
 
 			public void Add(T v)
 			{
+				Debug.Assert(v != null);
 				if (Contains(v) == false)
 					_r.Add(v);
 			}
