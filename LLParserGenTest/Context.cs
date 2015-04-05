@@ -197,7 +197,7 @@ namespace LLParserGenTest
 			return null;
 		}
 
-		Stack<StackData> _tk = new Stack<StackData>();
+		List<StackData> _tk = new List<StackData>();
 		public struct StackData {
 			public StmtTk tk;
 			public string lblBreak;
@@ -205,6 +205,7 @@ namespace LLParserGenTest
 			public string varName;
 		}
 		public enum StmtTk {
+			Block,
 			While, For,
 			Var
 		}
@@ -215,21 +216,33 @@ namespace LLParserGenTest
 			r.lblBreak = lblBreak;
 			r.lblContinue = lblContinue;
 			r.varName = vv;
-			_tk.Push(r);
+			_tk.Add(r);
 		}
-		public void Pop() { _tk.Pop(); }
+		public void Pop(StmtTk tk) { 
+			int i = _tk.Count - 1;
+			while (_tk[i].tk != tk) {
+				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				_tk.RemoveRange(i, 1);
+				i -= 1;
+			}
+			_tk.RemoveRange(i, 1);
+		}
 
 		public void Break() {
-			while (_tk.Count > 0) {
-				var r = _tk.Pop();
-				if (r.tk == StmtTk.While || r.tk == StmtTk.For)  {
-					jmp(r.lblBreak);
-					return;
-				} else if (r.tk == StmtTk.Var) {
-					ld(r.varName, 0);
-				}
+			int i = _tk.Count - 1;
+			while (_tk[i].lblBreak == null) {
+				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				i -= 1;
 			}
-			throw new ApplicationException("continue");
+			this.jmp(_tk[i].lblBreak);
+		}
+		public void Continue() {
+			int i = _tk.Count - 1;
+			while (_tk[i].lblContinue == null) {
+				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				i -= 1;
+			}
+			this.jmp(_tk[i].lblContinue);
 		}
 
 

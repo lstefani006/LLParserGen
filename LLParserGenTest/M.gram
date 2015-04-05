@@ -66,12 +66,12 @@ funargs<FunArgList>
 	;
 
 stmt<StmtRoot>
-	: IF '(' e_ass ')' stmt             ^new StmtIf($3, $5)
-	| IF '(' e_ass ')' stmt *ELSE stmt  ^new StmtIf($3, $5, $7)
+	: IF '(' e_ass ')' stmt             ^new StmtBlock(new StmtIf($3, new StmtBlock($5)))
+	| IF '(' e_ass ')' stmt *ELSE stmt  ^new StmtBlock(new StmtIf($3, new StmtBlock($5), new StmtBlock($7)))
 	| e_ass ';'                         ^new StmtExpr($1)
 	| VAR ID ';'                        ^new StmtDecl($2)
-	| '{' stmtliste '}'                 ^$2
-	| WHILE '(' e_ass ')' stmt          ^new StmtWhile($3, $5)
+	| '{' stmtliste '}'                 ^new StmtBlock($2)
+	| WHILE '(' e_ass ')' stmt          ^new StmtBlock(new StmtWhile($3, new StmtBlock($5)))
 	| BREAK ';'                         ^new StmtBreak();
 	| CONTINUE ';'                      ^new StmtContinue();
 	;

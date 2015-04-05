@@ -98,6 +98,20 @@ namespace LLParserGenTest
 
 		public override void GenCode(Context ctx) {
 			ctx.AddDefVar(this.a.v);
+			ctx.Push(Context.StmtTk.Var, null, null, this.a.v);
+		}
+	}
+	public class StmtBlock : StmtRoot {
+		readonly StmtRoot sa;
+
+		public StmtBlock(StmtRoot a) {
+			this.sa = a;
+		}
+
+		public override void GenCode(Context ctx) {
+			ctx.Push(Context.StmtTk.Block, null, null, null);
+			sa.GenCode(ctx);
+			ctx.Pop(Context.StmtTk.Block);
 		}
 	}
 
@@ -150,34 +164,46 @@ namespace LLParserGenTest
 		public StmtWhile(ExprRoot e, StmtRoot s) { this.e = e; this.s = s; }
 
 		public override void GenCode(Context ctx) {
+			var lbl_break = ctx.NewLbl();
+			var lbl_continue = ctx.NewLbl();
+			ctx.Push(Context.StmtTk.While, lbl_break, lbl_continue, null);
+
 			if (this.e.IsConstExpr()) {
 				if (this.e.EvalRight(ctx, null).c != 0) {
 					var lbl_true = ctx.NewLbl();
+					ctx.emit(lbl_continue);
 					ctx.emit(lbl_true);
 					s.GenCode(ctx);
 					ctx.jmp(lbl_true);
+					ctx.emit(lbl_break);
 				}
 			} else {
 				var lbl_true = ctx.NewLbl();
 				var lbl_loop = ctx.NewLbl();
 				ctx.jmp(lbl_loop);
 				ctx.emit(lbl_true);
+				ctx.emit(lbl_continue);
 				this.s.GenCode(ctx);
 				ctx.emit(lbl_loop);
 				this.e.EvalBool(ctx, lbl_true, null);
+				ctx.emit(lbl_break);
 			}
+
+			ctx.Pop(Context.StmtTk.While);
 		}
 	}
 	public class StmtBreak : StmtRoot {
 		public StmtBreak() {}
 
 		public override void GenCode(Context ctx) {
+			ctx.Break();
 		}
 	}
 	public class StmtContinue : StmtRoot {
 		public StmtContinue() {}
 
 		public override void GenCode(Context ctx) {
+			ctx.Continue();
 		}
 	}
 		

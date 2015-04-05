@@ -376,7 +376,7 @@ namespace LLParserGenTest
 					TokenAST nt1_s = Match('{', nt1_i);
 					var nt2_s = stmtliste(nt2_i);
 					TokenAST nt3_s = Match('}', nt3_i);
-					stmt_s = nt2_s;
+					stmt_s = new StmtBlock(nt2_s);
 				}
 				break;
 			case 4:
@@ -392,7 +392,7 @@ namespace LLParserGenTest
 					var nt3_s = e_ass(nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					var nt5_s = stmt(nt5_i);
-					stmt_s = new StmtWhile(nt3_s, nt5_s);
+					stmt_s = new StmtBlock(new StmtWhile(nt3_s, new StmtBlock(nt5_s)));
 				}
 				break;
 			case 5:
@@ -474,7 +474,7 @@ namespace LLParserGenTest
 				{
 					var nt6_i = default(IAST);
 					
-					tmp_13_s = new StmtIf(((ExprRoot)nt3_s), ((StmtRoot)nt5_s));
+					tmp_13_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s))));
 				}
 				break;
 			case 1:
@@ -484,7 +484,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt6_s = Match(ELSE, nt6_i);
 					var nt7_s = stmt(nt7_i);
-					tmp_13_s = new StmtIf(((ExprRoot)nt3_s), ((StmtRoot)nt5_s), nt7_s);
+					tmp_13_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s)), new StmtBlock(nt7_s)));
 				}
 				break;
 			}
