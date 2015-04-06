@@ -5,21 +5,12 @@
       <File FileName="Graph.cs" Line="1" Column="1" />
       <File FileName="U.cs" Line="1" Column="1" />
       <File FileName="Ass.cs" Line="1" Column="1" />
-      <File FileName="main.cs" Line="37" Column="37" />
+      <File FileName="main.cs" Line="1" Column="1" />
       <File FileName="../LLParserGenLib/U_LLParserLexerLib.cs" Line="1" Column="1" />
       <File FileName="m.txt" Line="1" Column="1" />
-      <File FileName="M.cs" Line="30" Column="30" />
-      <File FileName="Context.cs" Line="3" Column="3" />
+      <File FileName="M.cs" Line="1" Column="1" />
+      <File FileName="Context.cs" Line="1" Column="1" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="LLParserGenTest" expanded="True">
-            <Node name="Context.cs" selected="True" />
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>

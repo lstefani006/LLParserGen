@@ -50,6 +50,10 @@ namespace LLParserGenTest
 				throw new Exception(U.F("duplicated variable {0}", name));
 			_vars[name] = NewTmp();
 		}
+		public void UnDefVar(string name) {
+			Debug.Assert(_vars.ContainsKey(name));
+			_vars.Remove(name);
+		}
 		int nvar = 0;
 		public void AddArgVar(string name) { 
 			if (_vars.ContainsKey(name) == true)
@@ -221,7 +225,11 @@ namespace LLParserGenTest
 		public void Pop(StmtTk tk) { 
 			int i = _tk.Count - 1;
 			while (_tk[i].tk != tk) {
-				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				if (_tk[i].varName != null)
+				{
+					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+					this.UnDefVar(_tk[i].varName);
+				}		
 				_tk.RemoveRange(i, 1);
 				i -= 1;
 			}
@@ -231,7 +239,9 @@ namespace LLParserGenTest
 		public void Break() {
 			int i = _tk.Count - 1;
 			while (_tk[i].lblBreak == null) {
-				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				if (_tk[i].varName != null) {
+					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+				}
 				i -= 1;
 			}
 			this.jmp(_tk[i].lblBreak);
@@ -239,7 +249,9 @@ namespace LLParserGenTest
 		public void Continue() {
 			int i = _tk.Count - 1;
 			while (_tk[i].lblContinue == null) {
-				if (_tk[i].varName != null) ld(this.GerVar(_tk[i].varName), 0);
+				if (_tk[i].varName != null) {
+					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+				}
 				i -= 1;
 			}
 			this.jmp(_tk[i].lblContinue);
