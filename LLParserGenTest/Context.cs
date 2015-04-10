@@ -15,7 +15,6 @@ namespace LLParserGenTest
 		public Context() { }
 		public void Dispose() { }
 
-
 		public void add(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_add, rd, rs, rt)); emitNextLbl = null; }
 		public void sub(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_sub, rd, rs, rt)); emitNextLbl = null; }
 		public void mul(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_mul, rd, rs, rt)); emitNextLbl = null; }
@@ -28,6 +27,8 @@ namespace LLParserGenTest
 		public void shr(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_shr, rd, rs, rt)); emitNextLbl = null; }
 
 		public void jmp(string addr)                             { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
+		public void js(string addr)                              { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_js, addr));          emitNextLbl = null; }
+		public void ret(ExprValue rt)                            { e(); _ass.Add(new Op_Ret(this, emitNextLbl, rt)); emitNextLbl = null; }
 
 		public void beq(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_beq_rr, rs, rt, addr)); emitNextLbl = null; }
 		public void bne(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bne_rr, rs, rt, addr)); emitNextLbl = null; }
@@ -36,36 +37,11 @@ namespace LLParserGenTest
 		public void bgt(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bgt_rr, rs, rt, addr)); emitNextLbl = null; }
 		public void bge(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_bge_rr, rs, rt, addr)); emitNextLbl = null; }
 
-
 		public void ld(string rs, int c) { e(); _ass.Add(new AssLdConst(this, emitNextLbl, rs, c)); emitNextLbl = null; }
-
 
 		U.Set<string> emitNextLbl;
 		public void emit(string lbl) { if (emitNextLbl == null) emitNextLbl = new U.Set<string>(); emitNextLbl.Add(lbl); }
 		private void e() { if (emitNextLbl == null) { emitNextLbl = new U.Set<string>(); emitNextLbl.Add(NewLbl()); } }
-
-		private Dictionary<string, string> _vars = new Dictionary<string, string>();
-		public void AddDefVar(string name) { 
-			if (_vars.ContainsKey(name) == true)
-				throw new Exception(U.F("duplicated variable {0}", name));
-			_vars[name] = NewTmp();
-		}
-		public void UnDefVar(string name) {
-			Debug.Assert(_vars.ContainsKey(name));
-			_vars.Remove(name);
-		}
-		int nvar = 0;
-		public void AddArgVar(string name) { 
-			if (_vars.ContainsKey(name) == true)
-				throw new Exception(U.F("duplicated variable {0}", name));
-			_vars[name] = U.F("r{0}", nvar++); 
-		}
-		public string GerVar(string name) { 
-			if (_vars.ContainsKey(name) == false)
-				throw new Exception(U.F("variable {0} not found", name));
-			return _vars[name];
-		}
-
 
 		private void ComputeLive(int istart, int iend, List<string> alwaysLive)
 		{
@@ -201,112 +177,63 @@ namespace LLParserGenTest
 			return null;
 		}
 
-		List<StackData> _tk = new List<StackData>();
-		public struct StackData {
-			public StmtTk tk;
-			public string lblBreak;
-			public string lblContinue;
-			public string varName;
-		}
-		public enum StmtTk {
-			Block,
-			While, For,
-			Var
-		}
-		public void Push(StmtTk tk, string lblBreak, string lblContinue, string vv)
-		{
-			StackData r = new StackData();
-			r.tk = tk;
-			r.lblBreak = lblBreak;
-			r.lblContinue = lblContinue;
-			r.varName = vv;
-			_tk.Add(r);
-		}
-		public void Pop(StmtTk tk) { 
-			int i = _tk.Count - 1;
-			while (_tk[i].tk != tk) {
-				if (_tk[i].varName != null)
-				{
-					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
-					this.UnDefVar(_tk[i].varName);
-				}		
-				_tk.RemoveRange(i, 1);
-				i -= 1;
-			}
-			_tk.RemoveRange(i, 1);
-		}
-
-		public void Break() {
-			int i = _tk.Count - 1;
-			while (_tk[i].lblBreak == null) {
-				if (_tk[i].varName != null) {
-					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
-				}
-				i -= 1;
-			}
-			this.jmp(_tk[i].lblBreak);
-		}
-		public void Continue() {
-			int i = _tk.Count - 1;
-			while (_tk[i].lblContinue == null) {
-				if (_tk[i].varName != null) {
-					xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
-				}
-				i -= 1;
-			}
-			this.jmp(_tk[i].lblContinue);
-		}
 
 
+		public bool GenerateCode(FunList fl) {
+			foreach (var f in fl)
+				if (GenerateCode(f) == false)
+					return false;
+			return true;
+		}
 		public bool GenerateCode(Fun f) {
-			/*StartFunction(f);
 
-			foreach (var v in f.args)
-				AddParameter(v.Item1, v.Item2);
+			bool debug = false;
+
+			var fctx = new FunctionContex(this);
+
+			foreach (var a in f.args.args)
+				fctx.AddArgVar(a);
 
 			int istart = _ass.Count;
-			L(f.name.v);
-			f.s.GenerateCode(this);
-			if (f.IsVoid)
-				J(OpCode.J_ret);
-			int iend = _ass.Count;
-			*/
-			foreach (var a in f.args.args)
-				this.AddArgVar(a);
-
 			this.emit(f.name);
-			f.body.GenCode(this);
+			f.body.GenCode(fctx);
 
 			if (_ass.Count > 0) {
-			
 				foreach (var a in f.args.args)
 					_ass[_ass.Count - 1].Out.Add(a);
 			}
-			Console.WriteLine("{0}", this.ToString());
 
-			int istart = 0;
+			if (debug) Console.WriteLine("{0}", this.ToString());
+
 			int iend = _ass.Count;
 			var live = new List<string>();
 
 			// le var in ingresso anche se non servono più non vengono sovrascritte
 			// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
-			f.args.args.ForEach(v => live.Add(this.GerVar(v)));
+			f.args.args.ForEach(v => live.Add(fctx.GerVar(v)));
 			this.ComputeLive(istart, iend, live);
 
-			Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
-			Console.WriteLine("Live variables");
-			Console.WriteLine(this.ToString(istart, iend));
-
+			if (debug) {
+				Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
+				Console.WriteLine("Live variables");
+				Console.WriteLine(this.ToString(istart, iend));
+			}
 			var gr = this.CreateGraph(istart, iend);
-			Console.WriteLine("Grafo");
-			Console.WriteLine(gr);
+
+			if (debug) {
+				Console.WriteLine("Grafo");
+				Console.WriteLine(gr);
+			}
 
 			bool ok = false;
 			int k;
 			for (k = 0; k < 32; ++k) {
 				var col = gr.Color(k);
 				if (col != null) {
-					Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per var locali/parametri r{0}", k, k - 1);
+					if (k > 0)
+						Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per var locali/parametri r{0}", k, k - 1);
+					else 
+						Console.WriteLine("Ci vogliono k={0}", k);
 					var regs = col.GetRegs();
 					this.SetTemps(istart, iend, regs);
 					ok = true;
@@ -320,33 +247,110 @@ namespace LLParserGenTest
 				return false;
 			}
 
-			if (true)
-			{
-				// calcolo il maggiore dei registri r utilizzati (es r4)
-				// c0 iniziera` con r5
-
-				var rrr = new Dictionary<string, string>();
-				for (int ci = 0; ci < 1024; ci++)
-				{
-					string cc = U.F("c{0}", ci);
-					string ff = U.F("r{0}", ci + k);
-					rrr[cc] = ff;
-				}
-				this.SetTemps(istart, iend, rrr);
-
-				// ora assegno i valori del wnd
-				/*foreach (MipsI t in _sw) {
-					Debug.Assert(t.Window.StartsWith("c"));
-					string w = rrr[t.Window];
-					Debug.Assert(w.StartsWith("r"));
-					int b = int.Parse(w.Substring(1), System.Globalization.CultureInfo.InvariantCulture);
-					t.SetC(b);
-				}*/
-
-			}
-
 			Console.WriteLine(this.ToString(istart, iend));
 			return ok;
+		}
+	}
+	public class FunctionContex {
+
+		readonly Context ctx;
+
+		public Context Context { get { return ctx; } }
+
+
+		public string NewLbl() { return ctx.NewLbl(); }
+		public void emit(string lbl) {
+			ctx.emit(lbl);
+		}
+
+		public FunctionContex(Context ctx)
+		{
+			this.ctx = ctx;
+		}
+		private Dictionary<string, string> _vars = new Dictionary<string, string>();
+		public void AddDefVar(string name) { 
+			if (_vars.ContainsKey(name) == true)
+				throw new Exception(U.F("duplicated variable {0}", name));
+			_vars[name] = ctx.NewTmp();
+		}
+		public void UnDefVar(string name) {
+			Debug.Assert(_vars.ContainsKey(name));
+			_vars.Remove(name);
+		}
+		int nvar = 0;
+		public void AddArgVar(string name) { 
+			if (_vars.ContainsKey(name) == true)
+				throw new Exception(U.F("duplicated variable {0}", name));
+			_vars[name] = U.F("r{0}", nvar++); 
+		}
+		public string GerVar(string name) { 
+			if (_vars.ContainsKey(name) == false)
+				throw new Exception(U.F("variable {0} not found", name));
+			return _vars[name];
+		}
+
+		public enum StmtTk {
+			Block,
+			While, For,
+			Var
+		}
+
+
+		List<StackData> _tk = new List<StackData>();
+		public struct StackData {
+			public StmtTk tk;
+			public string lblBreak;
+			public string lblContinue;
+			public string varName;
+		}
+		public void Push(StmtTk tk, string lblBreak, string lblContinue, string vv)
+		{
+			StackData r = new StackData();
+			r.tk = tk;
+			r.lblBreak = lblBreak;
+			r.lblContinue = lblContinue;
+			r.varName = vv;
+			_tk.Add(r);
+		}
+
+		public void Pop(StmtTk tk) { 
+			int i = _tk.Count - 1;
+			while (_tk[i].tk != tk) {
+				if (_tk[i].varName != null) {
+					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+					this.UnDefVar(_tk[i].varName);
+				}		
+				_tk.RemoveRange(i, 1);
+				i -= 1;
+			}
+			_tk.RemoveRange(i, 1);
+		}
+
+		public void Break() {
+			int i = _tk.Count - 1;
+			while (_tk[i].lblBreak == null) {
+				if (_tk[i].varName != null)
+					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+				i -= 1;
+			}
+			this.Context.jmp(_tk[i].lblBreak);
+		}
+		public void Continue() {
+			int i = _tk.Count - 1;
+			while (_tk[i].lblContinue == null) {
+				if (_tk[i].varName != null)
+					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+				i -= 1;
+			}
+			this.Context.jmp(_tk[i].lblContinue);
+		}
+		public void Return(ExprValue rr) {
+			for (int i = _tk.Count - 1; i >= 0; --i) {
+				if (_tk[i].varName != null) {
+					if (rr != null && rr.IsReg && rr.reg == this.GerVar(_tk[i].varName)) continue;
+					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
+				}
+			}
 		}
 	}
 }

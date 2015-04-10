@@ -42,6 +42,17 @@ namespace LLParserGenTest
 		}
 	}
 
+	public class FunList : IAST, IEnumerable<Fun> {
+
+		public IEnumerator<Fun> GetEnumerator() { return _lst.GetEnumerator(); }
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _lst.GetEnumerator(); }
+
+		public FunList() { _lst = new List<Fun>(); }
+		public FunList Add(Fun a) { _lst.Add(a); return this; }
+		List<Fun> _lst;
+	}
+
 	public class Fun : IAST
 	{
 		public readonly string name;
@@ -53,6 +64,7 @@ namespace LLParserGenTest
 			this.body = body;
 		}
 	}
+
 	public class FunArgList : IAST {
 		public readonly List<string> args = new List<string>();
 
@@ -69,7 +81,7 @@ namespace LLParserGenTest
 	}
 
 	public abstract class StmtRoot : IAST {
-		public abstract void GenCode(Context ctx);
+		public abstract void GenCode(FunctionContex ctx);
 	}
 
 	public class StmtList : StmtRoot {
@@ -83,7 +95,7 @@ namespace LLParserGenTest
 			return this;
 		}
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			foreach (var s in a)
 				s.GenCode(ctx);
 		}
@@ -96,9 +108,9 @@ namespace LLParserGenTest
 			this.a = a;
 		}
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			ctx.AddDefVar(this.a.v);
-			ctx.Push(Context.StmtTk.Var, null, null, this.a.v);
+			ctx.Push(FunctionContex.StmtTk.Var, null, null, this.a.v);
 		}
 	}
 	public class StmtBlock : StmtRoot {
@@ -108,10 +120,10 @@ namespace LLParserGenTest
 			this.sa = a;
 		}
 
-		public override void GenCode(Context ctx) {
-			ctx.Push(Context.StmtTk.Block, null, null, null);
+		public override void GenCode(FunctionContex ctx) {
+			ctx.Push(FunctionContex.StmtTk.Block, null, null, null);
 			sa.GenCode(ctx);
-			ctx.Pop(Context.StmtTk.Block);
+			ctx.Pop(FunctionContex.StmtTk.Block);
 		}
 	}
 
@@ -126,7 +138,7 @@ namespace LLParserGenTest
 			this.sb = sb;
 		}
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			if (e.IsConstExpr()) {
 				if (sb == null) {
 					if (e.EvalRight(ctx, null).c != 0)
@@ -149,7 +161,7 @@ namespace LLParserGenTest
 					var lbl_false = ctx.NewLbl();
 					e.EvalBool(ctx, null, lbl_false);
 					this.sa.GenCode(ctx);
-					ctx.jmp(lbl_out);
+					ctx.Context.jmp(lbl_out);
 					ctx.emit(lbl_false);
 					this.sb.GenCode(ctx);
 					ctx.emit(lbl_out);
@@ -163,24 +175,24 @@ namespace LLParserGenTest
 		readonly StmtRoot s;
 		public StmtWhile(ExprRoot e, StmtRoot s) { this.e = e; this.s = s; }
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			var lbl_break = ctx.NewLbl();
 			var lbl_continue = ctx.NewLbl();
-			ctx.Push(Context.StmtTk.While, lbl_break, lbl_continue, null);
+			ctx.Push(FunctionContex.StmtTk.While, lbl_break, lbl_continue, null);
 
 			if (this.e.IsConstExpr()) {
 				if (this.e.EvalRight(ctx, null).c != 0) {
-					var lbl_true = ctx.NewLbl();
+					var lbl_true = ctx.Context.NewLbl();
 					ctx.emit(lbl_continue);
 					ctx.emit(lbl_true);
 					s.GenCode(ctx);
-					ctx.jmp(lbl_true);
+					ctx.Context.jmp(lbl_true);
 					ctx.emit(lbl_break);
 				}
 			} else {
 				var lbl_true = ctx.NewLbl();
 				var lbl_loop = ctx.NewLbl();
-				ctx.jmp(lbl_loop);
+				ctx.Context.jmp(lbl_loop);
 				ctx.emit(lbl_true);
 				ctx.emit(lbl_continue);
 				this.s.GenCode(ctx);
@@ -189,55 +201,73 @@ namespace LLParserGenTest
 				ctx.emit(lbl_break);
 			}
 
-			ctx.Pop(Context.StmtTk.While);
+			ctx.Pop(FunctionContex.StmtTk.While);
 		}
 	}
 	public class StmtBreak : StmtRoot {
 		public StmtBreak() {}
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			ctx.Break();
 		}
 	}
 	public class StmtContinue : StmtRoot {
 		public StmtContinue() {}
 
-		public override void GenCode(Context ctx) {
+		public override void GenCode(FunctionContex ctx) {
 			ctx.Continue();
 		}
 	}
-		
+
+
+	public class StmtReturn : StmtRoot {
+		readonly ExprRoot e;
+		public StmtReturn() { e = null; }
+		public StmtReturn(ExprRoot e) { this.e = e; }
+
+		public override void GenCode(FunctionContex ctx) {
+			if (e != null) {
+				var r = e.EvalRight(ctx, null);
+				ctx.Return(r);
+				ctx.Context.ret(r);
+			} else {
+				ctx.Return(null);
+				ctx.Context.ret(new ExprValue(0));
+			}
+		}
+	}
+
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;
 		public StmtExpr(ExprRoot e) { this.e = e; }
-		public override void GenCode(Context ctx) { e.EvalRight(ctx, null); }
+		public override void GenCode(FunctionContex ctx) { e.EvalRight(ctx, null); }
 	}
 
 	///////////////////////////////////////////////////////////
 
 	public abstract class ExprRoot : IAST {
-		public abstract ExprValue EvalRight(Context ctx, string rdest);
+		public abstract ExprValue EvalRight(FunctionContex ctx, string rdest);
 		public abstract bool IsConstExpr();
 
-		public virtual void EvalBool(Context ctx, string lbl_true, string lbl_false) {
+		public virtual void EvalBool(FunctionContex ctx, string lbl_true, string lbl_false) {
 			if (this.IsConstExpr()) {
 				var s = EvalRight(ctx, null);
 				if (lbl_true != null) {
-					if (s.c != 0) ctx.jmp(lbl_true);
+					if (s.c != 0) ctx.Context.jmp(lbl_true);
 				}
 				else {
-					if (s.c == 0) ctx.jmp(lbl_false);
+					if (s.c == 0) ctx.Context.jmp(lbl_false);
 				}
 			} else {
 				var s = EvalRight(ctx, null);
 				if (lbl_true != null)
-					ctx.bne(s, new ExprValue(0), lbl_true);
+					ctx.Context.bne(s, new ExprValue(0), lbl_true);
 				else
-					ctx.beq(s, new ExprValue(0), lbl_false);
+					ctx.Context.beq(s, new ExprValue(0), lbl_false);
 			}
 		}
 
-		public virtual string EvalLeft(Context ctx) {
+		public virtual string EvalLeft(FunctionContex ctx) {
 			throw new Exception("errore - no left side");
 		}
 	}
@@ -249,10 +279,10 @@ namespace LLParserGenTest
 
 		public ExprAss(ExprRoot a, ExprRoot b) { this.a = a; this.b = b; }
 
-		public override string EvalLeft(Context ctx) { return a.EvalLeft(ctx); }
+		public override string EvalLeft(FunctionContex ctx) { return a.EvalLeft(ctx); }
 		public override bool IsConstExpr() { return false; } // comunque NON è una espressione constante
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			// ignoro volutamente il const.
 			var ra = a.EvalLeft(ctx);
 			var rb = b.EvalRight(ctx, ra); // rdest DEVE essere risolto.
@@ -285,7 +315,7 @@ namespace LLParserGenTest
 			}
 		}
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
@@ -296,29 +326,29 @@ namespace LLParserGenTest
 				case "||": rr = new ExprValue(aa.c != 0 || bb.c != 0 ? 1 : 0); break;
 				default: Debug.Assert(false); return null;
 				}
-				if (rdest != null) ctx.ld(rdest, rr.c);
+				if (rdest != null) ctx.Context.ld(rdest, rr.c);
 				return rr;
 			} else {
 				if (op == "||") {
-					if (rdest == null) rdest = ctx.NewTmp();
+					if (rdest == null) rdest = ctx.Context.NewTmp();
 					string lbl_false = ctx.NewLbl();
 					string lbl_true = ctx.NewLbl();
-					ctx.ld(rdest, 0);
+					ctx.Context.ld(rdest, 0);
 					a.EvalBool(ctx, lbl_true, null);
 					b.EvalBool(ctx, null, lbl_false);
 					ctx.emit(lbl_true);
-					ctx.ld(rdest, 1);
+					ctx.Context.ld(rdest, 1);
 					ctx.emit(lbl_false);
 					return new ExprValue(rdest); 
 				} else if (op == "&&") {
-					if (rdest == null) rdest = ctx.NewTmp();
+					if (rdest == null) rdest = ctx.Context.NewTmp();
 					string lbl_false = ctx.NewLbl();
 					string lbl_true = ctx.NewLbl();
-					ctx.ld(rdest, 1);
+					ctx.Context.ld(rdest, 1);
 					a.EvalBool(ctx, null, lbl_false);
 					b.EvalBool(ctx, lbl_true, null);
 					ctx.emit(lbl_false);
-					ctx.ld(rdest, 0);
+					ctx.Context.ld(rdest, 0);
 					ctx.emit(lbl_true);
 					return new ExprValue(rdest); 
 				} else {
@@ -328,7 +358,7 @@ namespace LLParserGenTest
 			}
 		}
 
-		public override void EvalBool(Context ctx, string lbl_true, string lbl_false) {
+		public override void EvalBool(FunctionContex ctx, string lbl_true, string lbl_false) {
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 
 				var aa = a.EvalRight(ctx, null);
@@ -336,14 +366,14 @@ namespace LLParserGenTest
 			
 				if (lbl_true != null) {
 					switch (this.op) {
-					case "&&": if (aa.c != 0 && bb.c != 0) ctx.jmp(lbl_true); break;
-					case "||": if (aa.c != 0 || bb.c != 0) ctx.jmp(lbl_true); break;
+					case "&&": if (aa.c != 0 && bb.c != 0) ctx.Context.jmp(lbl_true); break;
+					case "||": if (aa.c != 0 || bb.c != 0) ctx.Context.jmp(lbl_true); break;
 					default: Debug.Assert(false); break;
 					}
 				} else {
 					switch (this.op) {
-					case "&&": if (!(aa.c != 0 && bb.c != 0)) ctx.jmp(lbl_false); break;
-					case "||": if (!(aa.c != 0 || bb.c != 0)) ctx.jmp(lbl_false); break;
+					case "&&": if (!(aa.c != 0 && bb.c != 0)) ctx.Context.jmp(lbl_false); break;
+					case "||": if (!(aa.c != 0 || bb.c != 0)) ctx.Context.jmp(lbl_false); break;
 					default: Debug.Assert(false); break;
 					}
 				}
@@ -392,7 +422,7 @@ namespace LLParserGenTest
 			}
 		}
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
@@ -407,51 +437,51 @@ namespace LLParserGenTest
 				case "<=": rr = new ExprValue(aa.c <= bb.c ? 1 : 0); break;
 				default: Debug.Assert(false); return null;
 				}
-				if (rdest != null) ctx.ld(rdest, rr.c);
+				if (rdest != null) ctx.Context.ld(rdest, rr.c);
 				return rr;
 			} else {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.NewTmp();
+				if (rdest == null) rdest = ctx.Context.NewTmp();
 				string lbl_false = ctx.NewLbl();
-				ctx.ld(rdest, 0);
+				ctx.Context.ld(rdest, 0);
 				switch (this.op) {
-				case "==": ctx.bne(aa, bb, lbl_false); break;
-				case "!=": ctx.beq(aa, bb, lbl_false); break;
-				case ">":  ctx.ble(aa, bb, lbl_false); break;
-				case ">=": ctx.blt(aa, bb, lbl_false); break;
-				case "<":  ctx.bge(aa, bb, lbl_false); break;
-				case "<=": ctx.blt(aa, bb, lbl_false); break;
+				case "==": ctx.Context.bne(aa, bb, lbl_false); break;
+				case "!=": ctx.Context.beq(aa, bb, lbl_false); break;
+				case ">":  ctx.Context.ble(aa, bb, lbl_false); break;
+				case ">=": ctx.Context.blt(aa, bb, lbl_false); break;
+				case "<":  ctx.Context.bge(aa, bb, lbl_false); break;
+				case "<=": ctx.Context.blt(aa, bb, lbl_false); break;
 				default: Debug.Assert(false); return null;
 				}
-				ctx.ld(rdest, 1);
+				ctx.Context.ld(rdest, 1);
 				ctx.emit(lbl_false);
 				return new ExprValue(rdest); 
 			}
 		}
 
-		public override void EvalBool(Context ctx, string lbl_true, string lbl_false) {
+		public override void EvalBool(FunctionContex ctx, string lbl_true, string lbl_false) {
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 
 				if (lbl_true != null) {
 					switch (this.op) {
-					case "==": if (aa.c == bb.c) ctx.jmp(lbl_true); break;
-					case "!=": if (aa.c != bb.c) ctx.jmp(lbl_true); break;
-					case ">":  if (aa.c > bb.c)  ctx.jmp(lbl_true); break;
-					case ">=": if (aa.c >= bb.c) ctx.jmp(lbl_true); break;
-					case "<":  if (aa.c < bb.c)  ctx.jmp(lbl_true); break;
-					case "<=": if (aa.c <= bb.c) ctx.jmp(lbl_true); break;
+					case "==": if (aa.c == bb.c) ctx.Context.jmp(lbl_true); break;
+					case "!=": if (aa.c != bb.c) ctx.Context.jmp(lbl_true); break;
+					case ">":  if (aa.c > bb.c)  ctx.Context.jmp(lbl_true); break;
+					case ">=": if (aa.c >= bb.c) ctx.Context.jmp(lbl_true); break;
+					case "<":  if (aa.c < bb.c)  ctx.Context.jmp(lbl_true); break;
+					case "<=": if (aa.c <= bb.c) ctx.Context.jmp(lbl_true); break;
 					}
 				} else {
 					switch (this.op) {
-					case "==": if (aa.c != bb.c) ctx.jmp(lbl_false); break;
-					case "!=": if (aa.c == bb.c) ctx.jmp(lbl_false); break;
-					case ">":  if (aa.c <= bb.c) ctx.jmp(lbl_false); break;
-					case ">=": if (aa.c < bb.c)  ctx.jmp(lbl_false); break;
-					case "<":  if (aa.c >= bb.c) ctx.jmp(lbl_false); break;
-					case "<=": if (aa.c > bb.c)  ctx.jmp(lbl_false); break;
+					case "==": if (aa.c != bb.c) ctx.Context.jmp(lbl_false); break;
+					case "!=": if (aa.c == bb.c) ctx.Context.jmp(lbl_false); break;
+					case ">":  if (aa.c <= bb.c) ctx.Context.jmp(lbl_false); break;
+					case ">=": if (aa.c < bb.c)  ctx.Context.jmp(lbl_false); break;
+					case "<":  if (aa.c >= bb.c) ctx.Context.jmp(lbl_false); break;
+					case "<=": if (aa.c > bb.c)  ctx.Context.jmp(lbl_false); break;
 					}
 				}
 			} else {
@@ -460,21 +490,21 @@ namespace LLParserGenTest
 
 				if (lbl_true != null) {
 					switch (this.op) {
-					case "==": ctx.beq(aa, bb, lbl_true); break;
-					case "!=": ctx.bne(aa, bb, lbl_true); break;
-					case ">":  ctx.bgt(aa, bb, lbl_true); break;
-					case ">=": ctx.bge(aa, bb, lbl_true); break;
-					case "<":  ctx.blt(aa, bb, lbl_true); break;
-					case "<=": ctx.ble(aa, bb, lbl_true); break;
+					case "==": ctx.Context.beq(aa, bb, lbl_true); break;
+					case "!=": ctx.Context.bne(aa, bb, lbl_true); break;
+					case ">":  ctx.Context.bgt(aa, bb, lbl_true); break;
+					case ">=": ctx.Context.bge(aa, bb, lbl_true); break;
+					case "<":  ctx.Context.blt(aa, bb, lbl_true); break;
+					case "<=": ctx.Context.ble(aa, bb, lbl_true); break;
 					}
 				} else {
 					switch (this.op) {
-					case "==": ctx.bne(aa, bb, lbl_false); break;
-					case "!=": ctx.beq(aa, bb, lbl_false); break;
-					case ">":  ctx.ble(aa, bb, lbl_false); break;
-					case ">=": ctx.blt(aa, bb, lbl_false); break;
-					case "<":  ctx.bge(aa, bb, lbl_false); break;
-					case "<=": ctx.blt(aa, bb, lbl_false); break;
+					case "==": ctx.Context.bne(aa, bb, lbl_false); break;
+					case "!=": ctx.Context.beq(aa, bb, lbl_false); break;
+					case ">":  ctx.Context.ble(aa, bb, lbl_false); break;
+					case ">=": ctx.Context.blt(aa, bb, lbl_false); break;
+					case "<":  ctx.Context.bge(aa, bb, lbl_false); break;
+					case "<=": ctx.Context.blt(aa, bb, lbl_false); break;
 					}
 				}
 			}
@@ -547,18 +577,18 @@ namespace LLParserGenTest
 			}
 		}
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			if (a.IsConstExpr() && b.IsConstExpr()) {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 				var rr = sop.c_op(aa.c, bb.c);
-				if (rdest != null) ctx.ld(rdest, rr);
+				if (rdest != null) ctx.Context.ld(rdest, rr);
 				return new ExprValue(rr);
 			} else {
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.NewTmp();
-				sop.a_op(ctx, rdest, aa, bb);
+				if (rdest == null) rdest = ctx.Context.NewTmp();
+				sop.a_op(ctx.Context, rdest, aa, bb);
 				return new ExprValue(rdest); 
 			}
 		}
@@ -567,22 +597,22 @@ namespace LLParserGenTest
 
 	public class ExprPlus : ExprUni {
 		public ExprPlus(ExprRoot a) : base(a) { }
-		public override ExprValue EvalRight(Context ctx, string rdest) { return a.EvalRight(ctx, rdest); }
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) { return a.EvalRight(ctx, rdest); }
 	}
 
 	public class ExprNeg : ExprUni {
 		public ExprNeg(ExprRoot a) : base(a) { }
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			if (a.IsConstExpr()) {
 				var n = a.EvalRight(ctx, null);
-				if (rdest != null) ctx.ld(rdest, -n.c);
+				if (rdest != null) ctx.Context.ld(rdest, -n.c);
 				return n;
 			}
 			else {
 				var ra = a.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.NewTmp();
-				ctx.sub(rdest, new ExprValue(0), ra);
+				if (rdest == null) rdest = ctx.Context.NewTmp();
+				ctx.Context.sub(rdest, new ExprValue(0), ra);
 				return new ExprValue(rdest);
 			}
 		}
@@ -592,9 +622,9 @@ namespace LLParserGenTest
 		public ExprNum(TokenAST a) { this.a = a; }
 		readonly TokenAST a;
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			var n = new ExprValue(int.Parse(a.v));
-			if (rdest != null) ctx.ld(rdest, n.c);
+			if (rdest != null) ctx.Context.ld(rdest, n.c);
 			return n;
 		}
 		public override bool IsConstExpr() { return true; }
@@ -604,12 +634,12 @@ namespace LLParserGenTest
 		public ExprId(TokenAST a) { this.a = a; }
 		readonly TokenAST a;
 
-		public override string EvalLeft(Context ctx) { return ctx.GerVar(a.v); }
+		public override string EvalLeft(FunctionContex ctx) { return ctx.GerVar(a.v); }
 
-		public override ExprValue EvalRight(Context ctx, string rdest) {
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			string rvar = ctx.GerVar(a.v);
 			if (rdest == null) rdest = rvar;
-			if (rdest != rvar) ctx.add(rdest, new ExprValue(rvar), new ExprValue(0));
+			if (rdest != rvar) ctx.Context.add(rdest, new ExprValue(rvar), new ExprValue(0));
 			return new ExprValue(rvar);
 		}
 		public override bool IsConstExpr() { return false; }
@@ -620,7 +650,7 @@ namespace LLParserGenTest
 	public partial class MParser {
 		public MParser() : base(0) { }
 
-		public Fun Start(LexReader rd) {
+		public FunList Start(LexReader rd) {
 			this.init(rd);
 			return this.start(null);
 		}

@@ -8,6 +8,7 @@ else                                  ^ELSE
 while                                 ^WHILE
 break                                 ^BREAK
 continue                              ^CONTINUE
+return                                ^RETURN
 
 ","									  ^(,)
 ";"									  ^(;)
@@ -47,8 +48,9 @@ continue                              ^CONTINUE
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<Fun>
-	: fun                ^$1
+start<FunList>
+	:                    ^new FunList()
+	| start fun          ^$1.Add($2)
 	;
 
 fun<Fun>
@@ -74,6 +76,8 @@ stmt<StmtRoot>
 	| WHILE '(' e_ass ')' stmt          ^new StmtBlock(new StmtWhile($3, new StmtBlock($5)))
 	| BREAK ';'                         ^new StmtBreak();
 	| CONTINUE ';'                      ^new StmtContinue();
+	| RETURN ';'                        ^new StmtReturn();
+	| RETURN e_ass ';'                  ^new StmtReturn($2);
 	;
 
 stmtliste<StmtList>

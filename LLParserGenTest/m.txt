@@ -26,11 +26,19 @@ fun leo(a, b, c)
 	}
 	a = 0;
 
-	if (a > 0) {
+	while (a > 0) {
 		var f;
 		f = a - 1;
 		a = f -1;
+		if (a > 2) return d;
 	}
 	a = a + 1;
 }
 
+fun ww(a,b) {
+	if (a > b)
+		a = b;
+	else
+		b = a;
+	
+}
