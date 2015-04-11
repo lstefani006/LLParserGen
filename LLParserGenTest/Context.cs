@@ -27,7 +27,7 @@ namespace LLParserGenTest
 		public void shr(string rd, ExprValue rs, ExprValue rt)   { e(); _ass.Add(new Op_rxx(this, emitNextLbl, OpCode.I_shr, rd, rs, rt)); emitNextLbl = null; }
 
 		public void jmp(string addr)                             { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_jmp, addr));         emitNextLbl = null; }
-		public void js(string addr)                              { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_js, addr));          emitNextLbl = null; }
+		public void js(string rd, string addr)                   { e(); _ass.Add(new AssJ(this, emitNextLbl, OpCode.J_js, rd, addr));      emitNextLbl = null; }
 		public void ret(ExprValue rt)                            { e(); _ass.Add(new Op_Ret(this, emitNextLbl, rt)); emitNextLbl = null; }
 
 		public void beq(ExprValue rs, ExprValue rt, string addr) { e(); _ass.Add(new Br_xx(this, emitNextLbl, OpCode.B_beq_rr, rs, rt, addr)); emitNextLbl = null; }
@@ -61,14 +61,16 @@ namespace LLParserGenTest
 				{
 					var c = _ass[i];
 
-					// cerco gli stmt 
 					U.Set<string> rout = new U.Set<string>();
+
+					// per ogni ret devo aggiungere il codice che mi tiene viva le var in uscita
+					if (i == iend - 1 || c is Op_Ret)
+						alwaysLive.ForEach(rout.Add);
+						
+					// cerco gli stmt da eseguire DOPO questa istruzione
 					foreach (var t in c.Succ)
 						rout = rout + t.In;
 
-					if (i == iend - 1)  // TODO oppure return oppure halt oppure throw
-						alwaysLive.ForEach(rout.Add);
-						
 					bool b = c.ComputeLive(rout);
 					if (b) changed = true;
 				}
@@ -110,12 +112,13 @@ namespace LLParserGenTest
 			Graph gr = new Graph();
 
 			// creo i nodi
-			for (int i = istart; i < iend; ++i)
-			{
+			for (int i = istart; i < iend; ++i) {
 				var c = _ass[i];
-				foreach (var n in c.In)
-				{
+				foreach (var n in c.In) {
 					if (gr.ExistsNode(n) == false) {
+						// se inizia con T e' un registro da allocare
+						// see inizia con "r" e' un registro gia' allocato
+						Debug.Assert(n.StartsWith("r") || n.StartsWith("T"));
 						string reg = n.StartsWith("r") ? n : null;
 						gr.CreateNode(n, reg);
 					}
@@ -123,12 +126,10 @@ namespace LLParserGenTest
 			}
 
 			// creo gli archi 
-			for (int i = istart; i < iend; ++i)
-			{
+			for (int i = istart; i < iend; ++i) {
 				var c = _ass[i];
 
-				for (int j = 0; j < c.In.Count; ++j)
-				{
+				for (int j = 0; j < c.In.Count; ++j) {
 					Debug.Assert(gr.ExistsNode(c.In[j]) == true);
 
 					for (int k = j + 1; k < c.In.Count; ++k)
@@ -138,8 +139,7 @@ namespace LLParserGenTest
 			}
 
 			var rr = _ass[iend - 1].Out;
-			for (int j = 0; j < rr.Count; ++j)
-			{
+			for (int j = 0; j < rr.Count; ++j) {
 				Debug.Assert(gr.ExistsNode(rr[j]) == true);
 
 				for (int k = j + 1; k < rr.Count; ++k) {
@@ -178,8 +178,10 @@ namespace LLParserGenTest
 		}
 
 
-
+		FunList _fl;
 		public bool GenerateCode(FunList fl) {
+			_fl = fl;
+
 			foreach (var f in fl)
 				if (GenerateCode(f) == false)
 					return false;
@@ -188,52 +190,45 @@ namespace LLParserGenTest
 		public bool GenerateCode(Fun f) {
 
 			bool debug = false;
+			bool optimize = true;
 
 			var fctx = new FunctionContex(this);
 
+			int regAllocati = f.args.args.Count;
 			foreach (var a in f.args.args)
 				fctx.AddArgVar(a);
 
 			int istart = _ass.Count;
 			this.emit(f.name);
-			f.body.GenCode(fctx);
-
-			if (_ass.Count > 0) {
-				foreach (var a in f.args.args)
-					_ass[_ass.Count - 1].Out.Add(a);
-			}
-
-			if (debug) Console.WriteLine("{0}", this.ToString());
-
+			bool unreachable = f.body.GenCode(fctx);
+			if (unreachable == false) fctx.Context.ret(new ExprValue(0));
 			int iend = _ass.Count;
-			var live = new List<string>();
+
+			// if (debug) Console.WriteLine("{0}", this.ToString(istart, iend));
+
 
 			// le var in ingresso anche se non servono più non vengono sovrascritte
 			// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
-			f.args.args.ForEach(v => live.Add(fctx.GerVar(v)));
+			var live = new List<string>();
+			if (optimize == false) f.args.args.ForEach(v => live.Add(fctx.GerVar(v)));
 			this.ComputeLive(istart, iend, live);
-
 			if (debug) {
 				Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
 				Console.WriteLine("Live variables");
 				Console.WriteLine(this.ToString(istart, iend));
 			}
-			var gr = this.CreateGraph(istart, iend);
 
+			var gr = this.CreateGraph(istart, iend);
 			if (debug) {
 				Console.WriteLine("Grafo");
 				Console.WriteLine(gr);
 			}
 
 			bool ok = false;
-			int k;
-			for (k = 0; k < 32; ++k) {
+			for (int k = regAllocati; k < 32; ++k) {
 				var col = gr.Color(k);
 				if (col != null) {
-					if (k > 0)
-						Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per var locali/parametri r{0}", k, k - 1);
-					else 
-						Console.WriteLine("Ci vogliono k={0}", k);
+					Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per push/js r{0}", k, k - 1);
 					var regs = col.GetRegs();
 					this.SetTemps(istart, iend, regs);
 					ok = true;
@@ -241,14 +236,21 @@ namespace LLParserGenTest
 				}
 			}
 
-			if (ok == false)
-			{
+			if (ok == false) {
 				Console.WriteLine("Cannot allocate registers");
 				return false;
 			}
 
 			Console.WriteLine(this.ToString(istart, iend));
+			Console.WriteLine("#####################");
 			return ok;
+		}
+
+		public string GetFun(string name) {
+			foreach (var f in _fl) {
+				if (f.name == name) return name;
+			}
+			throw new ApplicationException(U.F("function {0} not found", name));
 		}
 	}
 	public class FunctionContex {
@@ -287,6 +289,14 @@ namespace LLParserGenTest
 			if (_vars.ContainsKey(name) == false)
 				throw new Exception(U.F("variable {0} not found", name));
 			return _vars[name];
+		}
+		public string TryGerVar(string name) { 
+			if (_vars.ContainsKey(name) == false)
+				return null;
+			return _vars[name];
+		}
+		public string GerFun(string name) { 
+			return this.Context.GetFun(name);
 		}
 
 		public enum StmtTk {
@@ -328,20 +338,22 @@ namespace LLParserGenTest
 
 		public void Break() {
 			int i = _tk.Count - 1;
-			while (_tk[i].lblBreak == null) {
+			while (i >= 0 && _tk[i].lblBreak == null) {
 				if (_tk[i].varName != null)
 					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
 				i -= 1;
 			}
+			if (i < 0) throw new ApplicationException("illegal break");
 			this.Context.jmp(_tk[i].lblBreak);
 		}
 		public void Continue() {
 			int i = _tk.Count - 1;
-			while (_tk[i].lblContinue == null) {
+			while (i >= 0 && _tk[i].lblContinue == null) {
 				if (_tk[i].varName != null)
 					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
 				i -= 1;
 			}
+			if (i < 0) throw new ApplicationException("illegal break");
 			this.Context.jmp(_tk[i].lblContinue);
 		}
 		public void Return(ExprValue rr) {

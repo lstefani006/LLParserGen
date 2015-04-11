@@ -1,44 +1,30 @@
 
-fun leo(a, b, c)
-{
-	var d;
-
-	d = 0;
-	d = a + b;
-	while (a>1) {
-		var e;
-		e = a;
-		d = a - 1;
-		if (d > 0) break;
-		a = a + 1;
-		if (a < 0) continue;
-		a = a + 1;
-		a = e;
-	}
-	b=1;
-	a = d;
-
-	while (a >0) {
-		a = a - 1;
-		if (a % 2 == 0)
-			break;
-		b = b + 1;
-	}
-	a = 0;
-
-	while (a > 0) {
-		var f;
-		f = a - 1;
-		a = f -1;
-		if (a > 2) return d;
-	}
-	a = a + 1;
-}
 
 fun ww(a,b) {
-	if (a > b)
-		a = b;
-	else
-		b = a;
+	var d;
+	a = ww(a, b+1);
+	ww(a, b+1);
+	fact(3);
+	d = 3;
+	if (d > 0)
+		a = 3;
 	
+	while (Fibonacci(a) > a)
+		a = a-1;
+}
+
+fun fact(n) {
+	if (n == 0) return 1;
+	return n * fact(n-1);
+}
+
+fun Fibonacci(n)
+{
+	if (n == 0)
+		return 0;
+	else if (n == 1)
+		return 1;
+	
+	return Fibonacci(n-1) + Fibonacci(n-2);
+	n = 0;
 }

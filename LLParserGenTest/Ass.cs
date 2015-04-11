@@ -230,12 +230,17 @@ namespace LLParserGenTest
 	class AssJ : AssRoot {
 		OpCode op;
 		string addr;
+		string rd;
 
 		public AssJ(Context ctx, U.Set<string> lbl, OpCode op, string addr)
+			: this(ctx, lbl, op, null, addr) {
+		}
+		public AssJ(Context ctx, U.Set<string> lbl, OpCode op, string rd, string addr)
 			: base(ctx, lbl) {
 			Debug.Assert(op == OpCode.J_jmp || op == OpCode.J_js);
 
 			this.op = op;
+			this.rd = rd;
 			this.addr = addr;
 		}
 
@@ -250,6 +255,7 @@ namespace LLParserGenTest
 			var rin = new U.Set<string>(prev);
 
 			if (true) {
+				if (rd != null) rin.Remove(rd);
 			}
 
 			bool changed = (rin != _in || rout != _out);
@@ -280,11 +286,17 @@ namespace LLParserGenTest
 
 		public override string ToString() {
 			string f = Enum.GetName(typeof(OpCode), op).Substring(2);
-			string r = U.F("{0,-6} {1}", f, this.addr);
-			return U.F("{0} {1}", InToString(), r);
+			if (rd == null) {
+				string r = U.F("{0,-6} {1}", f, this.addr);
+				return U.F("{0} {1}", InToString(), r);
+			} else {
+				string r = U.F("{0,-6} {1}, {2}", f, this.rd, this.addr);
+				return U.F("{0} {1}", InToString(), r);
+			}
 		}
 
 		public override void Substitute(string temp, string reg) {
+			if (rd != null && rd == temp) rd = reg;
 		}
 	}
 

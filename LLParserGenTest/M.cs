@@ -447,7 +447,7 @@ namespace LLParserGenTest
 					var nt3_s = e_ass(nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					var nt5_s = stmt(nt5_i);
-					var nt6_s = tmp_15(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
+					var nt6_s = tmp_16(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
 					stmt_s = nt6_s;
 				}
 				break;
@@ -527,7 +527,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(RETURN, nt1_i);
-					var nt2_s = tmp_16(nt1_s, nt2_i);
+					var nt2_s = tmp_17(nt1_s, nt2_i);
 					stmt_s = nt2_s;
 				}
 				break;
@@ -557,7 +557,7 @@ namespace LLParserGenTest
 			return stmt_s;
 		}
 		
-		StmtRoot tmp_15(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST tmp_15_i)
+		StmtRoot tmp_16(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST tmp_16_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -578,72 +578,6 @@ namespace LLParserGenTest
 				alt = 0;
 				break;
 			case ELSE:
-				alt = 1;
-				break;
-			default:
-				Error();
-				break;
-			}
-			
-			StmtRoot tmp_15_s = default(StmtRoot);
-			switch (alt)
-			{
-			case 0:
-				{
-					var nt6_i = default(IAST);
-					
-					tmp_15_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s))));
-				}
-				break;
-			case 1:
-				{
-					var nt6_i = default(IAST);
-					var nt7_i = default(IAST);
-					
-					TokenAST nt6_s = Match(ELSE, nt6_i);
-					var nt7_s = stmt(nt7_i);
-					tmp_15_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s)), new StmtBlock(nt7_s)));
-				}
-				break;
-			}
-			
-			switch (Next.ch)
-			{
-			case ELSE:
-			case IF:
-			case VAR:
-			case '{':
-			case WHILE:
-			case BREAK:
-			case CONTINUE:
-			case RETURN:
-			case '-':
-			case '+':
-			case NUM:
-			case ID:
-			case '(':
-			case '}':
-				break;
-			default:
-				Error();
-				break;
-			}
-			return tmp_15_s;
-		}
-		
-		StmtRoot tmp_16(IAST nt1_s, IAST tmp_16_i)
-		{
-			int alt = 0;
-			switch (Next.ch)
-			{
-			case ';':
-				alt = 0;
-				break;
-			case '-':
-			case '+':
-			case NUM:
-			case ID:
-			case '(':
 				alt = 1;
 				break;
 			default:
@@ -656,20 +590,19 @@ namespace LLParserGenTest
 			{
 			case 0:
 				{
-					var nt2_i = default(IAST);
+					var nt6_i = default(IAST);
 					
-					TokenAST nt2_s = Match(';', nt2_i);
-					tmp_16_s = new StmtReturn();;
+					tmp_16_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s))));
 				}
 				break;
 			case 1:
 				{
-					var nt2_i = default(IAST);
-					var nt3_i = default(IAST);
+					var nt6_i = default(IAST);
+					var nt7_i = default(IAST);
 					
-					var nt2_s = e_ass(nt2_i);
-					TokenAST nt3_s = Match(';', nt3_i);
-					tmp_16_s = new StmtReturn(nt2_s);;
+					TokenAST nt6_s = Match(ELSE, nt6_i);
+					var nt7_s = stmt(nt7_i);
+					tmp_16_s = new StmtBlock(new StmtIf(((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s)), new StmtBlock(nt7_s)));
 				}
 				break;
 			}
@@ -696,6 +629,73 @@ namespace LLParserGenTest
 				break;
 			}
 			return tmp_16_s;
+		}
+		
+		StmtRoot tmp_17(IAST nt1_s, IAST tmp_17_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case ';':
+				alt = 0;
+				break;
+			case '-':
+			case '+':
+			case NUM:
+			case ID:
+			case '(':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			StmtRoot tmp_17_s = default(StmtRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt2_i = default(IAST);
+					
+					TokenAST nt2_s = Match(';', nt2_i);
+					tmp_17_s = new StmtReturn();;
+				}
+				break;
+			case 1:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					
+					var nt2_s = e_ass(nt2_i);
+					TokenAST nt3_s = Match(';', nt3_i);
+					tmp_17_s = new StmtReturn(nt2_s);;
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case ELSE:
+			case IF:
+			case VAR:
+			case '{':
+			case WHILE:
+			case BREAK:
+			case CONTINUE:
+			case RETURN:
+			case '-':
+			case '+':
+			case NUM:
+			case ID:
+			case '(':
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_17_s;
 		}
 		
 		StmtList stmtliste(IAST stmtliste_i)
@@ -894,7 +894,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					var nt1_s = e_oror(nt1_i);
-					var nt2_s = tmp_17(nt1_s, nt2_i);
+					var nt2_s = tmp_18(nt1_s, nt2_i);
 					e_ass_s = nt2_s;
 				}
 				break;
@@ -904,6 +904,7 @@ namespace LLParserGenTest
 			{
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -912,7 +913,7 @@ namespace LLParserGenTest
 			return e_ass_s;
 		}
 		
-		ExprRoot tmp_17(IAST nt1_s, IAST tmp_17_i)
+		ExprRoot tmp_18(IAST nt1_s, IAST tmp_18_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -922,6 +923,7 @@ namespace LLParserGenTest
 				break;
 			case ')':
 			case ';':
+			case ',':
 				alt = 1;
 				break;
 			default:
@@ -929,7 +931,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			ExprRoot tmp_17_s = default(ExprRoot);
+			ExprRoot tmp_18_s = default(ExprRoot);
 			switch (alt)
 			{
 			case 0:
@@ -939,14 +941,14 @@ namespace LLParserGenTest
 					
 					TokenAST nt2_s = Match('=', nt2_i);
 					var nt3_s = e_ass(nt3_i);
-					tmp_17_s = new ExprAss(((ExprRoot)nt1_s), nt3_s);
+					tmp_18_s = new ExprAss(((ExprRoot)nt1_s), nt3_s);
 				}
 				break;
 			case 1:
 				{
 					var nt2_i = default(IAST);
 					
-					tmp_17_s = ((ExprRoot)nt1_s);
+					tmp_18_s = ((ExprRoot)nt1_s);
 				}
 				break;
 			}
@@ -955,12 +957,13 @@ namespace LLParserGenTest
 			{
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
 				break;
 			}
-			return tmp_17_s;
+			return tmp_18_s;
 		}
 		
 		ExprRoot e_oror(IAST e_oror_i)
@@ -1001,6 +1004,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1017,6 +1021,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case OROR:
@@ -1057,6 +1062,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1104,6 +1110,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1121,6 +1128,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case ANDAND:
@@ -1162,6 +1170,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1210,6 +1219,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1228,6 +1238,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case '|':
@@ -1270,6 +1281,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1319,6 +1331,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1338,6 +1351,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case '^':
@@ -1381,6 +1395,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1431,6 +1446,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1451,6 +1467,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case '&':
@@ -1495,6 +1512,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1546,6 +1564,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1567,6 +1586,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case EQ:
@@ -1628,6 +1648,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1681,6 +1702,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1704,6 +1726,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case LT:
@@ -1799,6 +1822,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1856,6 +1880,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -1883,6 +1908,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case SHL:
@@ -1950,6 +1976,7 @@ namespace LLParserGenTest
 			case '=':
 			case ')':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2009,6 +2036,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2038,6 +2066,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case '+':
@@ -2107,6 +2136,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2168,6 +2198,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2199,6 +2230,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				alt = 0;
 				break;
 			case '*':
@@ -2286,6 +2318,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2371,6 +2404,7 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
@@ -2412,9 +2446,11 @@ namespace LLParserGenTest
 			case 1:
 				{
 					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(ID, nt1_i);
-					e_prim_s = new ExprId(nt1_s);
+					var nt2_s = tmp_19(nt1_s, nt2_i);
+					e_prim_s = nt2_s;
 				}
 				break;
 			case 2:
@@ -2454,12 +2490,253 @@ namespace LLParserGenTest
 			case OROR:
 			case '=':
 			case ';':
+			case ',':
 				break;
 			default:
 				Error();
 				break;
 			}
 			return e_prim_s;
+		}
+		
+		ExprRoot tmp_19(IAST nt1_s, IAST tmp_19_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case '*':
+			case '/':
+			case '%':
+			case '+':
+			case '-':
+			case SHL:
+			case SHR:
+			case ')':
+			case LT:
+			case LE:
+			case GT:
+			case GE:
+			case EQ:
+			case NE:
+			case '&':
+			case '^':
+			case '|':
+			case ANDAND:
+			case OROR:
+			case '=':
+			case ';':
+			case ',':
+				alt = 0;
+				break;
+			case '(':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			ExprRoot tmp_19_s = default(ExprRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt2_i = default(IAST);
+					
+					tmp_19_s = new ExprId(((TokenAST)nt1_s));
+				}
+				break;
+			case 1:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					
+					TokenAST nt2_s = Match('(', nt2_i);
+					var nt3_s = e_list_opz(nt3_i);
+					TokenAST nt4_s = Match(')', nt4_i);
+					tmp_19_s = new ExprFun(((TokenAST)nt1_s), nt3_s);
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case '*':
+			case '/':
+			case '%':
+			case '+':
+			case '-':
+			case SHL:
+			case SHR:
+			case ')':
+			case LT:
+			case LE:
+			case GT:
+			case GE:
+			case EQ:
+			case NE:
+			case '&':
+			case '^':
+			case '|':
+			case ANDAND:
+			case OROR:
+			case '=':
+			case ';':
+			case ',':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_19_s;
+		}
+		
+		ExprList e_list_opz(IAST e_list_opz_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case ')':
+				alt = 0;
+				break;
+			case '-':
+			case '+':
+			case NUM:
+			case ID:
+			case '(':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			ExprList e_list_opz_s = default(ExprList);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					e_list_opz_s = new ExprList();
+				}
+				break;
+			case 1:
+				{
+					var nt1_i = default(IAST);
+					
+					var nt1_s = e_list(nt1_i);
+					e_list_opz_s = nt1_s;
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case ')':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return e_list_opz_s;
+		}
+		
+		ExprList e_list(IAST e_list_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case '-':
+			case '+':
+			case NUM:
+			case ID:
+			case '(':
+				alt = 0;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			ExprList e_list_s = default(ExprList);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					var nt1_s = e_ass(nt1_i);
+					nt2_i = new ExprList(nt1_s); 
+					var nt2_s = tmp_15(nt2_i);
+					e_list_s = nt2_s; 
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case ')':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return e_list_s;
+		}
+		
+		ExprList tmp_15(IAST tmp_15_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case ')':
+				alt = 0;
+				break;
+			case ',':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			ExprList tmp_15_s = default(ExprList);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					tmp_15_s = (ExprList)tmp_15_i; 
+				}
+				break;
+			case 1:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					
+					TokenAST nt1_s = Match(',', nt1_i);
+					var nt2_s = e_ass(nt2_i);
+					nt3_i = ((ExprList)tmp_15_i).Add(nt2_s); 
+					var nt3_s = tmp_15(nt3_i);
+					tmp_15_s = nt3_s; 
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case ')':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_15_s;
 		}
 		
 		protected override RegAcceptList CreateRegAcceptList()

@@ -8,11 +8,17 @@ namespace LLParserGenTest
 	class _ {
 		public static void Main(string[] args) {
 			using (var rd = (args.Length == 1 ? new LexReader(args[0]) : new LexReader(Console.In, "stdin"))) {
-				var p = new MParser();
-				var s = p.Start(rd);
 
-				using (Context ctx = new Context()) {
-					ctx.GenerateCode(s);
+				try {
+					var p = new MParser();
+					var s = p.Start(rd);
+
+					using (Context ctx = new Context()) {
+						ctx.GenerateCode(s);
+					}
+				}
+				catch (ApplicationException ex) {
+					Console.WriteLine(ex.Message);
 				}
 			}
 		}
@@ -81,7 +87,8 @@ namespace LLParserGenTest
 	}
 
 	public abstract class StmtRoot : IAST {
-		public abstract void GenCode(FunctionContex ctx);
+		// ritorna true se next unreachable
+		public abstract bool GenCode(FunctionContex ctx);
 	}
 
 	public class StmtList : StmtRoot {
@@ -95,9 +102,16 @@ namespace LLParserGenTest
 			return this;
 		}
 
-		public override void GenCode(FunctionContex ctx) {
-			foreach (var s in a)
-				s.GenCode(ctx);
+		public override bool GenCode(FunctionContex ctx) {
+			bool nu = false;
+			foreach (var s in a) {
+				if (nu == true) {
+					Console.WriteLine("unreachable code");
+					break;
+				}
+				nu = s.GenCode(ctx);
+			}
+			return nu;
 		}
 	}
 
@@ -108,9 +122,10 @@ namespace LLParserGenTest
 			this.a = a;
 		}
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			ctx.AddDefVar(this.a.v);
 			ctx.Push(FunctionContex.StmtTk.Var, null, null, this.a.v);
+			return false;
 		}
 	}
 	public class StmtBlock : StmtRoot {
@@ -120,10 +135,11 @@ namespace LLParserGenTest
 			this.sa = a;
 		}
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			ctx.Push(FunctionContex.StmtTk.Block, null, null, null);
-			sa.GenCode(ctx);
+			bool nu = sa.GenCode(ctx);
 			ctx.Pop(FunctionContex.StmtTk.Block);
+			return nu;
 		}
 	}
 
@@ -138,16 +154,24 @@ namespace LLParserGenTest
 			this.sb = sb;
 		}
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
+			bool nua = false;
+			bool nub = false;
+
 			if (e.IsConstExpr()) {
 				if (sb == null) {
-					if (e.EvalRight(ctx, null).c != 0)
-						this.sa.GenCode(ctx);
+					if (e.EvalRight(ctx, null).c != 0) {
+						nua = this.sa.GenCode(ctx);
+						nub = true;
+					}
 				} else {
-					if (e.EvalRight(ctx, null).c != 0)
-						this.sa.GenCode(ctx);
-					else
-						this.sb.GenCode(ctx);
+					if (e.EvalRight(ctx, null).c != 0) {
+						nua = this.sa.GenCode(ctx);
+						nub = true;
+					} else {
+						nua = true;
+						nub = this.sb.GenCode(ctx);
+					}
 				}
 			} else {
 				if (this.sb == null) {
@@ -155,18 +179,21 @@ namespace LLParserGenTest
 					e.EvalBool(ctx, null, lbl_false);
 					this.sa.GenCode(ctx);
 					ctx.emit(lbl_false);
+					nua = false;
+					nub = false;
 
 				} else {
 					var lbl_out = ctx.NewLbl();
 					var lbl_false = ctx.NewLbl();
 					e.EvalBool(ctx, null, lbl_false);
-					this.sa.GenCode(ctx);
-					ctx.Context.jmp(lbl_out);
+					nua = this.sa.GenCode(ctx);
+					if (nua == false) ctx.Context.jmp(lbl_out);
 					ctx.emit(lbl_false);
-					this.sb.GenCode(ctx);
-					ctx.emit(lbl_out);
+					nub = this.sb.GenCode(ctx);
+					if (nub == false) ctx.emit(lbl_out);
 				}
 			}
+			return nua && nub;
 		}
 	}
 
@@ -175,47 +202,51 @@ namespace LLParserGenTest
 		readonly StmtRoot s;
 		public StmtWhile(ExprRoot e, StmtRoot s) { this.e = e; this.s = s; }
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			var lbl_break = ctx.NewLbl();
 			var lbl_continue = ctx.NewLbl();
 			ctx.Push(FunctionContex.StmtTk.While, lbl_break, lbl_continue, null);
 
+			bool nu = false;
 			if (this.e.IsConstExpr()) {
 				if (this.e.EvalRight(ctx, null).c != 0) {
 					var lbl_true = ctx.Context.NewLbl();
 					ctx.emit(lbl_continue);
 					ctx.emit(lbl_true);
-					s.GenCode(ctx);
-					ctx.Context.jmp(lbl_true);
+					nu = s.GenCode(ctx);
+					if (nu == false) ctx.Context.jmp(lbl_true);
 					ctx.emit(lbl_break);
+					nu = false;
 				}
 			} else {
 				var lbl_true = ctx.NewLbl();
-				var lbl_loop = ctx.NewLbl();
-				ctx.Context.jmp(lbl_loop);
+				ctx.Context.jmp(lbl_continue);
 				ctx.emit(lbl_true);
-				ctx.emit(lbl_continue);
 				this.s.GenCode(ctx);
-				ctx.emit(lbl_loop);
+				ctx.emit(lbl_continue);
 				this.e.EvalBool(ctx, lbl_true, null);
 				ctx.emit(lbl_break);
+				nu = false;
 			}
 
 			ctx.Pop(FunctionContex.StmtTk.While);
+			return nu;
 		}
 	}
 	public class StmtBreak : StmtRoot {
 		public StmtBreak() {}
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			ctx.Break();
+			return true;
 		}
 	}
 	public class StmtContinue : StmtRoot {
 		public StmtContinue() {}
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			ctx.Continue();
+			return true;
 		}
 	}
 
@@ -225,7 +256,7 @@ namespace LLParserGenTest
 		public StmtReturn() { e = null; }
 		public StmtReturn(ExprRoot e) { this.e = e; }
 
-		public override void GenCode(FunctionContex ctx) {
+		public override bool GenCode(FunctionContex ctx) {
 			if (e != null) {
 				var r = e.EvalRight(ctx, null);
 				ctx.Return(r);
@@ -234,13 +265,14 @@ namespace LLParserGenTest
 				ctx.Return(null);
 				ctx.Context.ret(new ExprValue(0));
 			}
+			return true;
 		}
 	}
 
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;
 		public StmtExpr(ExprRoot e) { this.e = e; }
-		public override void GenCode(FunctionContex ctx) { e.EvalRight(ctx, null); }
+		public override bool GenCode(FunctionContex ctx) { e.EvalRight(ctx, null); return false; }
 	}
 
 	///////////////////////////////////////////////////////////
@@ -363,7 +395,7 @@ namespace LLParserGenTest
 
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
-			
+
 				if (lbl_true != null) {
 					switch (this.op) {
 					case "&&": if (aa.c != 0 && bb.c != 0) ctx.Context.jmp(lbl_true); break;
@@ -645,6 +677,44 @@ namespace LLParserGenTest
 		public override bool IsConstExpr() { return false; }
 	}
 
+	public class ExprFun : ExprRoot {
+		public ExprFun(TokenAST f, ExprList a) { this.f = f; this.a = a; }
+		readonly TokenAST f;
+		readonly ExprList a;
+
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
+			foreach (var ea in this.a) {
+				ea.EvalRight(ctx, "rp");
+			}
+			if (rdest == null) rdest = ctx.Context.NewTmp();
+			ctx.Context.js(rdest, this.f.v);
+			return new ExprValue(rdest);
+		}
+		public override bool IsConstExpr() { return false; }
+	}
+
+	public class ExprList : IAST, IEnumerable<ExprRoot> {
+		readonly List<ExprRoot> a;
+
+		public ExprList() {
+			a = new List<ExprRoot>();
+		}
+		public ExprList(ExprRoot e) {
+			a = new List<ExprRoot>();
+			Add(e);
+		}
+		public ExprList Add(ExprRoot e) {
+			a.Add(e);
+			return this;
+		}
+
+		public IEnumerator<ExprRoot> GetEnumerator() {
+			return a.GetEnumerator();
+		}
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
+			return a.GetEnumerator();
+		}
+	}
 	////////////////////////
 
 	public partial class MParser {

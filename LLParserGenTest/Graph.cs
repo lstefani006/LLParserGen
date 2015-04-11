@@ -73,7 +73,7 @@ namespace LLParserGenTest
 						// proviamo con l'optimistic coloring
 						// scegliamo un nodo qualunque, sperando che i suoi vicini
 						// vengano assegnati a registri in comune.
-
+						//
 						// cerco il nodo nel grafo che ha meno vicini
 						var q = from nn in gr._nodes
 						       orderby nn.Neighbors.Count ascending
