@@ -2,30 +2,12 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Ass.cs">
     <Files>
-      <File FileName="Graph.cs" Line="3" Column="3" />
-      <File FileName="U.cs" Line="1" Column="1" />
-      <File FileName="Ass.cs" Line="1" Column="1" />
-      <File FileName="main.cs" Line="1" Column="1" />
-      <File FileName="../LLParserGenLib/U_LLParserLexerLib.cs" Line="1" Column="1" />
-      <File FileName="m.txt" Line="1" Column="1" />
-      <File FileName="M.cs" Line="13" Column="13" />
       <File FileName="Context.cs" Line="1" Column="1" />
+      <File FileName="Ass.cs" Line="32" Column="32" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State expanded="True">
-          <Node name="LLParserGenTest" expanded="True">
-            <Node name="Ass.cs" selected="True" />
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="654" column="1" />
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="657" column="1" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MonoDevelop.Ide.ItemProperties.LLParserGenTest>

@@ -10,7 +10,10 @@ fun ww(a,b) {
 		a = 3;
 	
 	while (Fibonacci(a) > a)
+	{
 		a = a-1;
+		if (a > b) break;
+	}
 }
 
 fun fact(n) {
@@ -26,5 +29,4 @@ fun Fibonacci(n)
 		return 1;
 	
 	return Fibonacci(n-1) + Fibonacci(n-2);
-	n = 0;
 }

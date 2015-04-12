@@ -336,25 +336,27 @@ namespace LLParserGenTest
 			_tk.RemoveRange(i, 1);
 		}
 
-		public void Break() {
+		public bool Break() {
 			int i = _tk.Count - 1;
 			while (i >= 0 && _tk[i].lblBreak == null) {
 				if (_tk[i].varName != null)
 					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
 				i -= 1;
 			}
-			if (i < 0) throw new ApplicationException("illegal break");
+			if (i < 0) return false;
 			this.Context.jmp(_tk[i].lblBreak);
+			return true;
 		}
-		public void Continue() {
+		public bool Continue() {
 			int i = _tk.Count - 1;
 			while (i >= 0 && _tk[i].lblContinue == null) {
 				if (_tk[i].varName != null)
 					Context.xor(this.GerVar(_tk[i].varName), new ExprValue(this.GerVar(_tk[i].varName)), new ExprValue(this.GerVar(_tk[i].varName)));
 				i -= 1;
 			}
-			if (i < 0) throw new ApplicationException("illegal break");
+			if (i < 0) return false;
 			this.Context.jmp(_tk[i].lblContinue);
+			return true;
 		}
 		public void Return(ExprValue rr) {
 			for (int i = _tk.Count - 1; i >= 0; --i) {

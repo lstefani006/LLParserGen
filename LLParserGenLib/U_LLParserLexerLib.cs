@@ -49,6 +49,20 @@ namespace LLParserLexerLib
 
 		public string fileName { get { return _fileName; } }
 		public int lineNu { get { return _lineNu; } }
+
+		public override string ToString() { return TrackMsg; }
+
+		public string TrackMsg {
+			get {
+				if (_fileName != null && _lineNu > 0)
+					return U.F("{0}({1}):", _fileName, _lineNu);
+				if (_fileName != null && _lineNu == 0)
+					return U.F("{0}:", _fileName);
+				if (_fileName == null && _lineNu > 0)
+					return U.F("<unknown file>({0}):", _lineNu);
+				return "";
+			}
+		}
 	}
 
 	[Serializable]
@@ -58,26 +72,15 @@ namespace LLParserLexerLib
 		public TokenAST(ISourceTrackable sc, char ch) : base(sc) { this.ch = ch; this.id = U.F("{0}", ch); this.v = this.id; }
 
 		public readonly int ch;
-		public readonly string v;
-		public readonly string id;
+		public readonly string v;    // es while (quello che ha letto)
+		public readonly string id;   // es WHILE (il token)
 
 		public override string ToString()
 		{
 			if (id == null)
-				return U.F("{0}({1}): {2} - \"{3}\"", fileName, lineNu, ch, v);
+				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, ch, v);
 			else
-				return U.F("{0}({1}): {2} - \"{3}\"", fileName, lineNu, id, v);
-		}
-
-		public string Value
-		{
-			get
-			{
-				if (id == null)
-					return U.F("{0} - \"{1}\"", ch, v);
-				else
-					return U.F("{0} - \"{1}\"", id, v);
-			}
+				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, id, v);
 		}
 	}
 
@@ -145,7 +148,7 @@ namespace LLParserLexerLib
 		protected virtual TokenAST Match(int ch, IAST v)
 		{
 			if (Next.ch != ch)
-				throw new SyntaxError(_next.fileName, _next.lineNu, "expected char '{0}' read {1}", (char)ch, Next.Value);
+				throw new SyntaxError(_next.fileName, _next.lineNu, "expected char '{0}' read {1}", (char)ch, Next.ToString());
 
 			var ret = _next;
 			_next = null;

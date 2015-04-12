@@ -17,7 +17,7 @@ namespace LLParserGenTest
 						ctx.GenerateCode(s);
 					}
 				}
-				catch (ApplicationException ex) {
+				catch (SyntaxError ex) {
 					Console.WriteLine(ex.Message);
 				}
 			}
@@ -41,7 +41,6 @@ namespace LLParserGenTest
 		public bool IsReg { get { return _reg != null; } }
 		public bool IsConst { get { return _reg == null; } }
 
-
 		public override string ToString() {
 			if (IsReg) return this._reg;
 			return this._c.ToString();
@@ -56,7 +55,7 @@ namespace LLParserGenTest
 
 		public FunList() { _lst = new List<Fun>(); }
 		public FunList Add(Fun a) { _lst.Add(a); return this; }
-		List<Fun> _lst;
+		readonly List<Fun> _lst;
 	}
 
 	public class Fun : IAST
@@ -74,39 +73,39 @@ namespace LLParserGenTest
 	public class FunArgList : IAST {
 		public readonly List<string> args = new List<string>();
 
-		public FunArgList() {
-		}
-		public FunArgList(TokenAST a) {
-			this.Add(a);
-		}
-
-		public FunArgList Add(TokenAST arg) {
-			args.Add(arg.v);
-			return this;
-		}
+		public FunArgList() {}
+		public FunArgList(TokenAST a) { this.Add(a); }
+		public FunArgList Add(TokenAST arg) { args.Add(arg.v); return this; }
 	}
 
 	public abstract class StmtRoot : IAST {
 		// ritorna true se next unreachable
 		public abstract bool GenCode(FunctionContex ctx);
+		public readonly TokenAST tk;
+
+		protected StmtRoot(TokenAST tk) { this.tk = tk; }
+	
+		public void Warning(string msg, params object [] args) {
+			Console.WriteLine("{0} Warning: {1}", this.tk.TrackMsg, U.F(msg, args)); 
+		}
+		public void Error(string msg, params object [] args) {
+			throw new SyntaxError(this.tk, msg, args);
+		}
 	}
 
 	public class StmtList : StmtRoot {
 		readonly List<StmtRoot> a;
 
-		public StmtList() { this.a = new List<StmtRoot>(); }
-		public StmtList(StmtRoot s) { this.a = new List<StmtRoot>(); this.Add(s); }
+		public StmtList() : base(null) { this.a = new List<StmtRoot>(); }
+		public StmtList(StmtRoot s) : base(s.tk) { this.a = new List<StmtRoot>(); this.Add(s); }
 
-		public StmtList Add(StmtRoot s) {
-			this.a.Add(s); 
-			return this;
-		}
+		public StmtList Add(StmtRoot s) { this.a.Add(s); return this; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			bool nu = false;
 			foreach (var s in a) {
 				if (nu == true) {
-					Console.WriteLine("unreachable code");
+					s.Warning("Unreachable code");
 					break;
 				}
 				nu = s.GenCode(ctx);
@@ -115,12 +114,10 @@ namespace LLParserGenTest
 		}
 	}
 
-	public class StmtDecl : StmtRoot {
-		TokenAST a;
+	public class StmtVar : StmtRoot {
+		readonly TokenAST a;
 
-		public StmtDecl(LLParserLexerLib.TokenAST a) {
-			this.a = a;
-		}
+		public StmtVar(TokenAST tk, TokenAST a) : base(tk) { this.a = a; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			ctx.AddDefVar(this.a.v);
@@ -131,9 +128,8 @@ namespace LLParserGenTest
 	public class StmtBlock : StmtRoot {
 		readonly StmtRoot sa;
 
-		public StmtBlock(StmtRoot a) {
-			this.sa = a;
-		}
+		public StmtBlock(TokenAST tk, StmtRoot a) : base(tk) { this.sa = a; }
+		public StmtBlock(StmtRoot a) : base(a.tk) { this.sa = a; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			ctx.Push(FunctionContex.StmtTk.Block, null, null, null);
@@ -148,7 +144,7 @@ namespace LLParserGenTest
 		readonly StmtRoot sa;
 		readonly StmtRoot sb;
 
-		public StmtIf(ExprRoot e, StmtRoot sa, StmtRoot sb = null) {
+		public StmtIf(TokenAST tk, ExprRoot e, StmtRoot sa, StmtRoot sb = null) : base(tk) {
 			this.e = e;
 			this.sa = sa;
 			this.sb = sb;
@@ -159,6 +155,8 @@ namespace LLParserGenTest
 			bool nub = false;
 
 			if (e.IsConstExpr()) {
+				this.Warning("Const expression");
+
 				if (sb == null) {
 					if (e.EvalRight(ctx, null).c != 0) {
 						nua = this.sa.GenCode(ctx);
@@ -200,7 +198,7 @@ namespace LLParserGenTest
 	public class StmtWhile : StmtRoot {
 		readonly ExprRoot e;
 		readonly StmtRoot s;
-		public StmtWhile(ExprRoot e, StmtRoot s) { this.e = e; this.s = s; }
+		public StmtWhile(TokenAST tk, ExprRoot e, StmtRoot s) : base(tk) { this.e = e; this.s = s; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			var lbl_break = ctx.NewLbl();
@@ -209,6 +207,8 @@ namespace LLParserGenTest
 
 			bool nu = false;
 			if (this.e.IsConstExpr()) {
+				this.Warning("Const expression");
+
 				if (this.e.EvalRight(ctx, null).c != 0) {
 					var lbl_true = ctx.Context.NewLbl();
 					ctx.emit(lbl_continue);
@@ -234,18 +234,20 @@ namespace LLParserGenTest
 		}
 	}
 	public class StmtBreak : StmtRoot {
-		public StmtBreak() {}
+		public StmtBreak(TokenAST tk) : base(tk) {}
 
 		public override bool GenCode(FunctionContex ctx) {
-			ctx.Break();
+			if (ctx.Break() == false)
+				Error("Illegal break");
 			return true;
 		}
 	}
 	public class StmtContinue : StmtRoot {
-		public StmtContinue() {}
+		public StmtContinue(TokenAST tk) : base(tk) {}
 
 		public override bool GenCode(FunctionContex ctx) {
-			ctx.Continue();
+			if (ctx.Continue() == false)
+				Error("Illegal continue");
 			return true;
 		}
 	}
@@ -253,8 +255,8 @@ namespace LLParserGenTest
 
 	public class StmtReturn : StmtRoot {
 		readonly ExprRoot e;
-		public StmtReturn() { e = null; }
-		public StmtReturn(ExprRoot e) { this.e = e; }
+		public StmtReturn(TokenAST tk) : base(tk) { e = null; }
+		public StmtReturn(TokenAST tk, ExprRoot e) : base(tk) { this.e = e; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			if (e != null) {
@@ -271,7 +273,7 @@ namespace LLParserGenTest
 
 	public class StmtExpr : StmtRoot {
 		readonly ExprRoot e;
-		public StmtExpr(ExprRoot e) { this.e = e; }
+		public StmtExpr(TokenAST tk, ExprRoot e) : base(tk) { this.e = e; }
 		public override bool GenCode(FunctionContex ctx) { e.EvalRight(ctx, null); return false; }
 	}
 
@@ -304,7 +306,6 @@ namespace LLParserGenTest
 		}
 	}
 
-
 	public class ExprAss : ExprRoot {
 		protected ExprRoot a;
 		protected ExprRoot b;
@@ -336,7 +337,7 @@ namespace LLParserGenTest
 	}
 
 	public class ExprBinLogical : ExprBin {
-		string op;
+		readonly string op;
 
 		public ExprBinLogical(string op, ExprRoot a, ExprRoot b) : base(a, b) { 
 			this.op = op;
@@ -696,24 +697,12 @@ namespace LLParserGenTest
 	public class ExprList : IAST, IEnumerable<ExprRoot> {
 		readonly List<ExprRoot> a;
 
-		public ExprList() {
-			a = new List<ExprRoot>();
-		}
-		public ExprList(ExprRoot e) {
-			a = new List<ExprRoot>();
-			Add(e);
-		}
-		public ExprList Add(ExprRoot e) {
-			a.Add(e);
-			return this;
-		}
+		public ExprList() { a = new List<ExprRoot>(); }
+		public ExprList(ExprRoot e) { a = new List<ExprRoot>(); Add(e); }
+		public ExprList Add(ExprRoot e) { a.Add(e); return this; }
 
-		public IEnumerator<ExprRoot> GetEnumerator() {
-			return a.GetEnumerator();
-		}
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() {
-			return a.GetEnumerator();
-		}
+		public IEnumerator<ExprRoot> GetEnumerator() { return a.GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return a.GetEnumerator(); }
 	}
 	////////////////////////
 
