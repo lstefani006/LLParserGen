@@ -24,19 +24,42 @@ namespace LLParserGenTest
 		}
 	}
 
+	public abstract class Type : IAST {
+		public virtual bool IsBool   { get { return false; } }
+		public virtual bool IsInt    { get { return false; } }
+		public virtual bool IsVoid   { get { return false; } }
+		public virtual bool IsArray  { get { return false; } }
+		public virtual bool IsObject { get { return false; } }
+	}
+	public class SimpleType : Type {
+		public SimpleType(TokenAST id) { this.id = id.v; }
+		public SimpleType(string id)   { this.id = id;   }
+
+		public override bool IsBool { get { return this.id == "bool"; } }
+		public override bool IsInt  { get { return this.id == "int";  } }
+		public override bool IsVoid { get { return this.id == "void"; } }
+		public override bool IsObject { get { return !(IsBool || IsInt || IsVoid); } }
+		readonly string id;
+	}
+	public class ArrayType : Type {
+		public ArrayType(Type t) { this.t = t; }
+		public readonly Type t;
+		public override bool IsArray { get { return true; } }
+	}
+
 	public class ExprValue {
 		public ExprValue(string s) { this._reg = s; }
-		public ExprValue(int c) { this._c = c; }
+		public ExprValue(int c) { this._c = c; this.type = new SimpleType("int"); }
+		public ExprValue(bool c) { this._c = c ? 1 : 0; this.type = new SimpleType("bool"); }
 
 		string _reg;
 		int _c;
+		public Type type;
 
 		public int c { get { return _c; } }
 		public string reg { get { return _reg; } }
 
-		public void SetReg(string r) {
-			_reg = r;
-		}
+		public void SetReg(string r) { _reg = r; }
 
 		public bool IsReg { get { return _reg != null; } }
 		public bool IsConst { get { return _reg == null; } }
@@ -62,20 +85,23 @@ namespace LLParserGenTest
 	{
 		public readonly string name;
 		public readonly FunArgList args;
+		public readonly Type ret;
 		public readonly StmtRoot body;
-		public Fun(TokenAST name, FunArgList args, StmtRoot body) {
+		public Fun(TokenAST name, FunArgList args, Type ret, StmtRoot body) {
 			this.name = name.v;
 			this.args = args;
+			this.ret = ret;
 			this.body = body;
 		}
 	}
 
 	public class FunArgList : IAST {
 		public readonly List<string> args = new List<string>();
+		public readonly List<Type> type = new List<Type>();
 
 		public FunArgList() {}
-		public FunArgList(TokenAST a) { this.Add(a); }
-		public FunArgList Add(TokenAST arg) { args.Add(arg.v); return this; }
+		public FunArgList(TokenAST a, Type ty) { this.Add(a, ty); }
+		public FunArgList Add(TokenAST arg, Type ty) { args.Add(arg.v); type.Add(ty); return this; }
 	}
 
 	public abstract class StmtRoot : IAST {
@@ -115,9 +141,9 @@ namespace LLParserGenTest
 	}
 
 	public class StmtVar : StmtRoot {
-		readonly TokenAST a;
-
-		public StmtVar(TokenAST tk, TokenAST a) : base(tk) { this.a = a; }
+		public readonly TokenAST a;
+		public readonly Type type;
+		public StmtVar(TokenAST tk, TokenAST a, Type ty) : base(tk) { this.a = a; this.type = ty; }
 
 		public override bool GenCode(FunctionContex ctx) {
 			ctx.AddDefVar(this.a.v);
@@ -657,6 +683,17 @@ namespace LLParserGenTest
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
 			var n = new ExprValue(int.Parse(a.v));
+			if (rdest != null) ctx.Context.ld(rdest, n.c);
+			return n;
+		}
+		public override bool IsConstExpr() { return true; }
+	}
+	public class ExprBool : ExprRoot {
+		public ExprBool(bool v) { this.v = v; }
+		readonly bool v;
+
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest) {
+			var n = new ExprValue(v);
 			if (rdest != null) ctx.Context.ld(rdest, n.c);
 			return n;
 		}

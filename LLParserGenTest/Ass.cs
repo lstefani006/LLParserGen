@@ -6,37 +6,7 @@ using System.Linq;
 
 namespace LLParserGenTest
 {
-	/*
-	 * r0-r14-rp
-	 * 
-	 * add r2, r3, r4
-	 * add r2, r3, 232
-	 * add r2, 53, r4
-	 *  
-	 * ld  r3, 345
-	 * ld  r3, b1[r4]
-	 * ld  r3, b1[r4 + off]
-	 * ld  r3, b1[r4 + off + r5*1]
-	 * ld  r3, b2[r4 + off + r5*2]
-	 * ld  r3, b4[r4 + off + r5*4]
-	 * 
-	 * beq r2, r5,  lbl
-	 * beq r2, 434, lbl
-	 * beq 34, r4,  lbl
-	 * br  lbl
-	 * js  lbl
-	 * js  obj-addr, id-int, off
-	 * 
-	 */
 	public enum OpCode {
-		/*
-		X_sti, X_stiu,
-		X_ldi,
-		X_ldiu,
-		J_ret,
-		J_js,
-		*/
-
 		I_add,
 		I_sub,
 		I_mul,
@@ -84,30 +54,6 @@ namespace LLParserGenTest
 		B_ble_cr,
 
 		L_ld
-
-	
-		/*
-		I_lw,
-		I_lh,
-		I_lb,
-		I_lhu,
-		I_lbu,
-		I_sw,
-		I_sh,
-		I_sb,
-		I_lui,
-		I_beq,
-		I_bne,
-		I_bgt,
-		I_bge,
-		I_blt,
-		I_ble,
-
-	
-		I_mvw,
-		I_lr,
-		I_sr,
-		*/
 	}
 
 	public abstract class AssRoot : IEquatable<AssRoot> {
@@ -180,15 +126,16 @@ namespace LLParserGenTest
 			this.rs = rs;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive(U.Set<string> inSucc) {
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			var rout = new U.Set<string>(inSucc);
+			var rin  = new U.Set<string>(inSucc);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
@@ -199,7 +146,7 @@ namespace LLParserGenTest
 			}
 
 			bool changed = (rin != _in || rout != _out);
-			_in = rin;
+			_in  = rin;
 			_out = rout;
 
 			return changed;
@@ -311,6 +258,14 @@ namespace LLParserGenTest
 		}
 
 		public override bool ComputeLive(U.Set<string> prev) {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U out(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
@@ -318,7 +273,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 
 			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			var rin  = new U.Set<string>(prev);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction

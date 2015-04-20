@@ -1,7 +1,6 @@
 
-
-fun ww(a,b) {
-	var d;
+fun ww(a : int,b : int) : void {
+	var d : int;
 	a = ww(a, b+1);
 	ww(a, b+1);
 	fact(3);
@@ -16,12 +15,12 @@ fun ww(a,b) {
 	}
 }
 
-fun fact(n) {
+fun fact(n : int) : int {
 	if (n == 0) return 1;
 	return n * fact(n-1);
 }
 
-fun Fibonacci(n)
+fun Fibonacci(n : int) : int
 {
 	if (n == 0)
 		return 0;
@@ -29,4 +28,15 @@ fun Fibonacci(n)
 		return 1;
 	
 	return Fibonacci(n-1) + Fibonacci(n-2);
+}
+
+fun gcd(a : int, b : int) : int
+{
+	while (a != b) 
+		if (a > b)
+			a = a - b;
+		else
+			b = b - a;
+	return a;
+
 }
