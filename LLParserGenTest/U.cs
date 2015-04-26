@@ -53,6 +53,11 @@ namespace LLParserGenTest
 				if (Contains(v) == false)
 					_r.Add(v);
 			}
+			public void Add(Set<T> v)
+			{
+				foreach (var b in v)
+					this.Add(b);
+			}
 			public bool Contains(T v)
 			{
 				foreach (var r in _r)

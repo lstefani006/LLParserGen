@@ -58,17 +58,14 @@ namespace LLParserGenTest
 
 	public abstract class AssRoot : IEquatable<AssRoot> {
 
-		protected U.Set<string> _in = new U.Set<string>();
+		protected U.Set<string> _in  = new U.Set<string>();
 		protected U.Set<string> _out = new U.Set<string>();
 		protected U.Set<string> _lbl = new U.Set<string>();
-
-		public U.Set<AssRoot> _succ;
+		protected U.Set<AssRoot> _succ;
 
 		public U.Set<AssRoot> Succ { get { return _succ; } }
 
-		protected AssRoot(Context ctx, U.Set<string> lbl) {
-			_lbl = lbl;
-		}
+		protected AssRoot(Context ctx, U.Set<string> lbl) { _lbl = lbl; }
 
 		public bool Equals(AssRoot other) {
 			foreach (var a in this._lbl)
@@ -78,9 +75,7 @@ namespace LLParserGenTest
 		}
 
 		public abstract void ComputeSucc(Context ctx);
-
-		public abstract bool ComputeLive(U.Set<string> prev);
-
+		public abstract bool ComputeLive();
 		public abstract void Substitute(string temp, string reg);
 
 		protected string InToString() {
@@ -99,10 +94,8 @@ namespace LLParserGenTest
 			return r + U.F("{0,-6}", this._lbl);
 		}
 
-		public U.Set<string> In { get { return _in; } }
-
+		public U.Set<string> In  { get { return _in; } }
 		public U.Set<string> Out { get { return _out; } }
-
 		public U.Set<string> Lbl { get { return this._lbl; } }
 	}
 
@@ -126,7 +119,14 @@ namespace LLParserGenTest
 			this.rs = rs;
 		}
 
-		public override bool ComputeLive(U.Set<string> inSucc) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
 			//
 			// in = (out - def) u use
 			//
@@ -134,8 +134,9 @@ namespace LLParserGenTest
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
 			//
-			var rout = new U.Set<string>(inSucc);
-			var rin  = new U.Set<string>(inSucc);
+			var rin  = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
@@ -145,9 +146,8 @@ namespace LLParserGenTest
 				if (rt.IsReg) rin.Add(rt.reg);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in  = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -191,23 +191,31 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				if (rd != null) rin.Remove(rd);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -257,23 +265,25 @@ namespace LLParserGenTest
 			this.rt = rt;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive()
+		{
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
 			// used = variabili usate
 			// def  = variabili scritte.
 			// 
-			// out(s) = U out(s1)     con s1 appartente a succ(s)
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
 			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin  = new U.Set<string>(prev);
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
@@ -281,9 +291,8 @@ namespace LLParserGenTest
 				if (rt.IsReg) rin.Add(rt.reg);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = rin != _in;
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -322,15 +331,25 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ) 
+				rin.Add(b.In);
 
 			if (true) {
 				// rs/rt are read ==> they must be live for this instruction
@@ -338,9 +357,8 @@ namespace LLParserGenTest
 				if (rt.IsReg) rin.Add(this.rt.reg);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -383,15 +401,24 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
@@ -399,9 +426,8 @@ namespace LLParserGenTest
 				rin.Add(rt);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -443,15 +469,24 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
@@ -459,9 +494,8 @@ namespace LLParserGenTest
 				rin.Add(rs);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}
@@ -496,24 +530,32 @@ namespace LLParserGenTest
 			this.c = c;
 		}
 
-		public override bool ComputeLive(U.Set<string> prev) {
+		public override bool ComputeLive() {
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
 			// in = (out - def) u use
 			//
 			// out variabili vive dopo l'istruzione
 			// def variabili definite (scritte) nell'istruzione
 			// use variabili argomenti (lette) nell'instruzione
-
-			var rout = new U.Set<string>(prev);
-			var rin = new U.Set<string>(prev);
+			//
+			var rin = new U.Set<string>();
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
 
 			if (true) {
 				// rd is written  ==> is not live before this instruction
 				rin.Remove(rd);
 			}
 
-			bool changed = (rin != _in || rout != _out);
+			bool changed = (rin != _in);
 			_in = rin;
-			_out = rout;
 
 			return changed;
 		}

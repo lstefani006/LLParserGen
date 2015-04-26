@@ -51,8 +51,7 @@ namespace LLParserGenTest
 			// o un jmp da qualche parte nel codice.
 			for (int i = istart; i < iend; ++i)
 				_ass[i].ComputeSucc(this);
-
-
+				
 			bool changed;
 			do
 			{
@@ -68,11 +67,11 @@ namespace LLParserGenTest
 						alwaysLive.ForEach(rout.Add);
 						
 					// cerco gli stmt da eseguire DOPO questa istruzione
-					foreach (var t in c.Succ)
-						rout = rout + t.In;
+					//foreach (var t in c.Succ)
+					//	rout = rout + t.In;
 
-					bool b = c.ComputeLive(rout);
-					if (b) changed = true;
+					if (c.ComputeLive())
+						changed = true;
 				}
 			} while (changed);
 		}
