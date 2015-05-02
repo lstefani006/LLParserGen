@@ -283,7 +283,7 @@ namespace LLParserGenTest
 			ctx.Push(FunctionContex.StmtTk.While, lbl_break, lbl_continue, null);
 
 			if (e.ExprType(ctx).IsBool == false)
-				this.Error("while require bool expression");
+				this.Error("while statments require bool expression");
 
 			bool nu = false;
 			if (this.e.IsConstExpr()) {

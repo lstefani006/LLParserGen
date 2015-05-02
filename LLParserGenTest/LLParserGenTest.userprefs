@@ -2,17 +2,25 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.Workbench ActiveDocument="main.cs">
     <Files>
-      <File FileName="Context.cs" Line="34" Column="34" />
+      <File FileName="Context.cs" Line="3" Column="3" />
       <File FileName="Ass.cs" Line="1" Column="1" />
-      <File FileName="main.cs" Line="19" Column="19" />
+      <File FileName="main.cs" Line="1" Column="1" />
       <File FileName="../LLParserGenLib/U_LLParserLexerLib.cs" Line="1" Column="1" />
       <File FileName="M.cs" Line="1" Column="1" />
       <File FileName="../LLParserGenLib/U_Lexer.cs" Line="1" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True" selected="True">
+          <Node name="LLParserGenTest" expanded="True" />
+        </State>
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="212" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="233" column="1" />
+      <Breakpoint file="/home/leo/src/LLParserGen/LLParserGenTest/main.cs" line="861" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
