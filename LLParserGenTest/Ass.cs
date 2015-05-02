@@ -75,7 +75,7 @@ namespace LLParserGenTest
 		}
 
 		public abstract void ComputeSucc(Context ctx);
-		public abstract bool ComputeLive();
+		public abstract bool ComputeLive(U.Set<string> force);
 		public abstract void Substitute(string temp, string reg);
 
 		protected string InToString() {
@@ -119,7 +119,7 @@ namespace LLParserGenTest
 			this.rs = rs;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -135,6 +135,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin  = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 
@@ -191,7 +192,7 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -207,6 +208,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 
@@ -265,7 +267,7 @@ namespace LLParserGenTest
 			this.rt = rt;
 		}
 
-		public override bool ComputeLive()
+		public override bool ComputeLive(U.Set<string> force)
 		{
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
@@ -282,6 +284,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 
@@ -331,7 +334,7 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -348,6 +351,7 @@ namespace LLParserGenTest
 			//
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ) 
 				rin.Add(b.In);
 
@@ -401,7 +405,7 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -417,6 +421,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 
@@ -469,7 +474,7 @@ namespace LLParserGenTest
 			this.addr = addr;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -485,6 +490,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 
@@ -530,7 +536,7 @@ namespace LLParserGenTest
 			this.c = c;
 		}
 
-		public override bool ComputeLive() {
+		public override bool ComputeLive(U.Set<string> force) {
 			//
 			// in(s) = gen(s)  U (out(s) - kill(s))
 			// in(s) = used(s) U (out(s) - def(s))
@@ -546,6 +552,7 @@ namespace LLParserGenTest
 			// use variabili argomenti (lette) nell'instruzione
 			//
 			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
 			foreach (var b in this.Succ)
 				rin.Add(b.In);
 

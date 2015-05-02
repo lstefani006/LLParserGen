@@ -98,80 +98,80 @@ stmtlist<StmtList>
 	;
 
 e_ass<ExprRoot>
-	: e_oror '=' e_ass   ^new ExprAss($1, $3)
+	: e_oror '=' e_ass   ^new ExprAss($1, $2, $3)
 	| e_oror             ^$1
 	;
 
 e_oror<ExprRoot>
-	: e_oror OROR e_andand    ^new ExprBinLogical("||", $1, $3)
+	: e_oror OROR e_andand    ^new ExprBinLogical($1, $2, $3)
 	| e_andand                ^$1
 	;
 
 e_andand<ExprRoot>
-	: e_andand ANDAND e_or    ^new ExprBinLogical("&&", $1, $3)
+	: e_andand ANDAND e_or    ^new ExprBinLogical($1, $2, $3)
 	| e_or                    ^$1
 	;
 
 e_or<ExprRoot>
-	: e_or '|' e_xor    ^new ExprBinGen("|", $1, $3)
+	: e_or '|' e_xor    ^new ExprBinGen($1, $2, $3)
 	| e_xor             ^$1
 	;
 
 e_xor<ExprRoot>
-	: e_xor '^' e_and   ^new ExprBinGen("^", $1, $3)
+	: e_xor '^' e_and   ^new ExprBinGen($1, $2, $3)
 	| e_and             ^$1
 	;
 
 e_and<ExprRoot>
-	: e_and '&' e_eq   ^new ExprBinGen("&", $1, $3)
+	: e_and '&' e_eq   ^new ExprBinGen($1, $2, $3)
 	| e_eq             ^$1
 	;
 
 e_eq<ExprRoot>
-	: e_eq EQ e_lt    ^new ExprBinCompare("==", $1, $3)
-	| e_eq NE e_lt    ^new ExprBinCompare("!=", $1, $3)
+	: e_eq EQ e_lt    ^new ExprBinCompare($1, $2, $3)
+	| e_eq NE e_lt    ^new ExprBinCompare($1, $2, $3)
 	| e_lt            ^$1
 	;
 
 e_lt<ExprRoot>
-	: e_lt LT e_sh    ^new ExprBinCompare("<",  $1, $3)
-	| e_lt LE e_sh    ^new ExprBinCompare("<=", $1, $3)
-	| e_lt GT e_sh    ^new ExprBinCompare(">",  $1, $3)
-	| e_lt GE e_sh    ^new ExprBinCompare(">=", $1, $3)
+	: e_lt LT e_sh    ^new ExprBinCompare($1, $2, $3)
+	| e_lt LE e_sh    ^new ExprBinCompare($1, $2, $3)
+	| e_lt GT e_sh    ^new ExprBinCompare($1, $2, $3)
+	| e_lt GE e_sh    ^new ExprBinCompare($1, $2, $3)
 	| e_sh            ^$1
 	;
 
 e_sh<ExprRoot>
-	: e_sh SHL e_add    ^new ExprBinGen("<<", $1, $3)
-	| e_sh SHR e_add    ^new ExprBinGen(">>", $1, $3)
+	: e_sh SHL e_add    ^new ExprBinGen($1, $2, $3)
+	| e_sh SHR e_add    ^new ExprBinGen($1, $2, $3)
 	| e_add             ^$1
 	;
 
 
 e_add<ExprRoot>
-	: e_add '+' e_mul  ^new ExprBinGen("+", $1, $3)
-	| e_add '-' e_mul  ^new ExprBinGen("-", $1, $3)
+	: e_add '+' e_mul  ^new ExprBinGen($1, $2, $3)
+	| e_add '-' e_mul  ^new ExprBinGen($1, $2, $3)
 	| e_mul            ^$1
 	;
 
 e_mul<ExprRoot>
 	: e_una            ^$1
-	| e_mul '*' e_una  ^new ExprBinGen("*", $1, $3)
-	| e_mul '/' e_una  ^new ExprBinGen("/", $1, $3)
-	| e_mul '%' e_una  ^new ExprBinGen("%", $1, $3)
+	| e_mul '*' e_una  ^new ExprBinGen($1, $2, $3)
+	| e_mul '/' e_una  ^new ExprBinGen($1, $2, $3)
+	| e_mul '%' e_una  ^new ExprBinGen($1, $2, $3)
 	;
 
 e_una<ExprRoot>
 	: e_prim           ^$1
-	| '-' e_una        ^new ExprNeg($2)
-	| '+' e_una        ^new ExprPlus($2)
+	| '-' e_una        ^new ExprNeg($1, $2)
+	| '+' e_una        ^new ExprPlus($1, $2)
 	;
 
 e_prim<ExprRoot>
 	: NUM              ^new ExprNum($1)
 	| ID               ^new ExprId($1)
-	| FALSE            ^new ExprBool(false)
-	| TRUE             ^new ExprBool(true)
+	| FALSE            ^new ExprBool($1, false)
+	| TRUE             ^new ExprBool($1, true)
 	| '(' e_add ')'    ^$2
 	| ID '(' e_list_opz ')'   ^new ExprFun($1, $3)
 	;
@@ -187,7 +187,7 @@ e_list<ExprList>
 	;
 
 
-type<Type>
-	: ID                  ^new SimpleType($1)
-	| type '[' ']'        ^new ArrayType($1)
+type<ExprType>
+	: ID                  ^new SimpleExprType($1)
+	| type '[' ']'        ^new ArrayExprType($1)
 	;
