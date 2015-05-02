@@ -11,7 +11,6 @@ namespace LLParserGenTest
 		{
 			using (var rd = (args.Length == 1 ? new LexReader(args[0]) : new LexReader(Console.In, "stdin")))
 			{
-
 				try
 				{
 					var p = new MParser();
@@ -121,9 +120,7 @@ namespace LLParserGenTest
 
 	public class FunList : IAST, IEnumerable<Fun>
 	{
-
 		public IEnumerator<Fun> GetEnumerator() { return _lst.GetEnumerator(); }
-
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _lst.GetEnumerator(); }
 
 		public FunList() { _lst = new List<Fun>(); }
@@ -392,7 +389,6 @@ namespace LLParserGenTest
 		}
 	}
 
-
 	public class StmtReturn : StmtRoot
 	{
 		readonly ExprRoot e;
@@ -595,7 +591,6 @@ namespace LLParserGenTest
 		{
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 
@@ -1000,7 +995,6 @@ namespace LLParserGenTest
 			var v = ctx.GetVar(tk.v);
 			return v.Type;
 		}
-
 
 		public override string EvalLeft(FunctionContex ctx)
 		{
