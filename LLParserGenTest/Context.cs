@@ -374,21 +374,25 @@ namespace LLParserGenTest
 		}
 
 
-		FunList _fl;
+		DeclList _fl;
 
-		public bool GenerateCode(FunList fl)
+		public bool GenerateCode(DeclList fl)
 		{
 			_fl = fl;
 
 			foreach (var f in fl)
-				if (GenerateCode(f) == false)
-					return false;
+			{
+				if (f is DeclFun)
+				{
+					if (GenerateCode((DeclFun)f) == false)
+						return false;
+				}
+			}
 			return true;
 		}
 
-		public bool GenerateCode(Fun f)
+		public bool GenerateCode(DeclFun f)
 		{
-
 			bool debug = false;
 			bool optimize = true;
 
@@ -456,11 +460,14 @@ namespace LLParserGenTest
 			return ok;
 		}
 
-		public Fun GetFun(TokenAST name)
+		public DeclFun GetFun(TokenAST name)
 		{
 			foreach (var f in _fl)
 				if (f.name.v == name.v)
-					return f;
+				{
+					if (f is DeclFun)
+						return (DeclFun)f;
+				}
 			return null;
 		}
 	}
@@ -469,7 +476,7 @@ namespace LLParserGenTest
 	{
 
 		readonly Context ctx;
-		public readonly Fun fun;
+		public readonly DeclFun fun;
 
 		public Context Context { get { return ctx; } }
 
@@ -484,7 +491,7 @@ namespace LLParserGenTest
 			ctx.emit(lbl);
 		}
 
-		public FunctionContex(Context ctx, Fun fun)
+		public FunctionContex(Context ctx, DeclFun fun)
 		{
 			this.ctx = ctx;
 			this.fun = fun;
@@ -535,7 +542,7 @@ namespace LLParserGenTest
 		}
 
 
-		public Fun GetFun(TokenAST name)
+		public DeclFun GetFun(TokenAST name)
 		{
 			var f = this.Context.GetFun(name);
 			if (f == null) throw new SyntaxError(name, "unknown function called '{0}'", name.v);

@@ -53,5 +53,13 @@ fun ff(a : double, b : double) : int {
 		return 2;
 
 	return 0;
+}
 
+class String {
+	var a: int;
+
+	fun String() : int {
+		return 3;
+
+	}
 }

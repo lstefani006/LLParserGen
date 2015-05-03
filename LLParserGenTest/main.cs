@@ -226,14 +226,14 @@ namespace LLParserGenTest
 	{
 	}
 
-	public class FunList : IAST, IEnumerable<Fun>
+	public class DeclList : IAST, IEnumerable<DeclRoot>
 	{
-		public IEnumerator<Fun> GetEnumerator() { return _lst.GetEnumerator(); }
+		public IEnumerator<DeclRoot> GetEnumerator() { return _lst.GetEnumerator(); }
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _lst.GetEnumerator(); }
 
-		public FunList() { _lst = new List<Fun>(); }
-		public FunList Add(Fun a) { _lst.Add(a); return this; }
-		readonly List<Fun> _lst;
+		public DeclList() { _lst = new List<DeclRoot>(); }
+		public DeclList Add(DeclRoot a) { _lst.Add(a); return this; }
+		readonly List<DeclRoot> _lst;
 	}
 
 	public class NodeRoot : IAST
@@ -251,17 +251,33 @@ namespace LLParserGenTest
 		}
 	}
 
-	public class Fun : NodeRoot
+	public class DeclRoot : NodeRoot
 	{
 		public readonly TokenAST name;
+		public DeclRoot(TokenAST name) : base(name) { this.name = name; }
+	}
+
+	public class DeclClass : DeclRoot
+	{
+		public readonly DeclList members;
+		public DeclClass(TokenAST name, DeclList members) : base(name) { this.members = members; }
+	}
+
+	public class DeclVar : DeclRoot
+	{
+		public readonly ExprType type;
+		public DeclVar(TokenAST name, ExprType type) : base(name) { this.type = type; }
+	}
+
+	public class DeclFun : DeclRoot
+	{
 		public readonly FunArgList args;
 		public readonly ExprType ret;
 		public readonly StmtRoot body;
 		public readonly TokenAST lastCurly;
 
-		public Fun(TokenAST name, FunArgList args, ExprType ret, StmtRoot body, TokenAST lastCurly) : base(name)
+		public DeclFun(TokenAST name, FunArgList args, ExprType ret, StmtRoot body, TokenAST lastCurly) : base(name)
 		{
-			this.name = name;
 			this.args = args;
 			this.ret = ret;
 			this.body = body;
@@ -1180,7 +1196,7 @@ namespace LLParserGenTest
 	{
 		public MParser() : base(0) { }
 
-		public FunList Start(LexReader rd)
+		public DeclList Start(LexReader rd)
 		{
 			this.init(rd);
 			return this.start(null);

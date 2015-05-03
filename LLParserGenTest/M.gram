@@ -1,8 +1,9 @@
 %lexer
 
 fun                                   ^FUN
-
 var                                   ^VAR
+class                                 ^CLASS
+
 if                                    ^IF
 else                                  ^ELSE
 while                                 ^WHILE
@@ -55,13 +56,37 @@ false                                 ^FALSE
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<FunList>
-	:                    ^new FunList()
-	| start fun          ^$1.Add($2)
+start<DeclList>
+	:                    ^new DeclList()
+	| start decl_fun     ^$1.Add($2)
+	| start decl_cls     ^$1.Add($2)
 	;
 
-fun<Fun>
-	: FUN ID '(' funargse ')' ':' type '{' stmtlist '}'   ^new Fun($2, $4, $7, $9, $10)
+decl_cls<DeclClass>
+	: CLASS ID '{' cls_members_e '}'
+	;
+
+cls_members_e<DeclList>
+	:                   ^new DeclList();
+	| cls_members       ^$1
+	;
+
+cls_members<DeclList>
+	: cls_member               ^new DeclList().Add($1)
+	| cls_members cls_member   ^$1.Add($2)
+	;
+
+cls_member<DeclRoot>
+	: decl_fun               ^$1
+	| decl_var               ^$1
+	;
+
+decl_var<DeclVar>
+	: VAR ID ':' type ';'    ^new DeclVar($2, $4)
+	;
+
+decl_fun<DeclFun>
+	: FUN ID '(' funargse ')' ':' type '{' stmtliste '}'   ^new DeclFun($2, $4, $7, $9, $10)
 	;
 
 funargse<FunArgList>
