@@ -1,0 +1,20 @@
+CSC=csc
+
+LLParserGen.exe : FirstFollow.cs LexParserHelper.cs Main.cs regexp.cs
+	$(CSC) -out:LLParserGen.exe \
+		FirstFollow.cs  \
+		LexParserHelper.cs  \
+		Main.cs  \
+		regexp.cs \
+		U\U.cs \
+		U\U_CommandProcessor.cs \
+		U\U_CsStreamWriter.cs \
+		U\U_Enum.cs \
+		U\U_Num.cs \
+		U\U_Tuple.cs \
+		..\LLParserGenLib\U_LLParserLexerLib.cs \
+		..\LLParserGenLib\U_Lexer.cs
+	copy LLParserGen.exe ..
+
+clean :
+	del LLParserGen.exe

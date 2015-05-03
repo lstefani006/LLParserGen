@@ -1,0 +1,10 @@
+CSC=csc
+
+Test.exe : Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
+	$(CSC) -debug -out:.\Test.exe ..\LLParserGenLib\*.cs Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
+
+M.cs : M.gram
+	..\LLParserGen.exe M.gram
+
+clean:
+	del Test.exe M.cs
