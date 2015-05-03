@@ -33,6 +33,7 @@ namespace LLParserGenTest
 	{
 		public virtual bool IsBool { get { return false; } }
 		public virtual bool IsInt { get { return false; } }
+		public virtual bool IsDbl { get { return false; } }
 		public virtual bool IsVoid { get { return false; } }
 		public virtual bool IsArray { get { return false; } }
 		public virtual bool IsObject { get { return false; } }
@@ -63,10 +64,11 @@ namespace LLParserGenTest
 		public SimpleExprType(TokenAST id) { this.id = id.v; }
 		public SimpleExprType(string id) { this.id = id; }
 
-		public override bool IsBool { get { return this.id == "bool"; } }
-		public override bool IsInt { get { return this.id == "int"; } }
+		public override bool IsBool   { get { return this.id == "bool"; } }
+		public override bool IsInt    { get { return this.id == "int"; } }
+		public override bool IsDbl { get { return this.id == "double"; } }
 		public override bool IsVoid { get { return this.id == "void"; } }
-		public override bool IsObject { get { return !(IsBool || IsInt || IsVoid); } }
+		public override bool IsObject { get { return !(IsBool || IsInt || IsVoid || IsDbl); } }
 		readonly string id;
 
 		protected override bool TypeEqual(ExprType t)
@@ -75,6 +77,11 @@ namespace LLParserGenTest
 			if ((object)st != null)
 				return this.id == st.id;
 			return false;
+		}
+
+		public override string ToString()
+		{
+			return this.id;
 		}
 	}
 
@@ -91,19 +98,27 @@ namespace LLParserGenTest
 				return this.t == at.t;
 			return false;
 		}
+
+		public override string ToString()
+		{
+			return t.ToString() + "[]";
+		}
 	}
 
 	public class ExprValue
 	{
 		public ExprValue(string s, ExprType t) { this._reg = s; this.type = t; }
-		public ExprValue(int c) { this._c = c; this.type = new SimpleExprType("int"); }
-		public ExprValue(bool c) { this._c = c ? 1 : 0; this.type = new SimpleExprType("bool"); }
+		public ExprValue(int c) { this._v = c; this.type = new SimpleExprType("int"); }
+		public ExprValue(bool c) { this._v = c; this.type = new SimpleExprType("bool"); }
+		public ExprValue(double d) { this._v = d; this.type = new SimpleExprType("double"); }
 
 		string _reg;
-		int _c;
+		object _v;
 		public readonly ExprType type;
 
-		public int c { get { return _c; } }
+		public int Int { get { return (int)_v; } }
+		public double Dbl { get { return (double)_v; } }
+		public bool Bool { get { return (bool)_v; } }
 		public string reg { get { return _reg; } }
 
 		public void SetReg(string r) { _reg = r; }
@@ -114,8 +129,101 @@ namespace LLParserGenTest
 		public override string ToString()
 		{
 			if (IsReg) return this._reg;
-			return this._c.ToString();
+			return this._v.ToString();
 		}
+
+
+		private static int cmp(ExprValue a, ExprValue b)
+		{
+			if ((object)a == (object)b) return 0;
+			if ((object)a != null && (object)b == null) return +1;
+			if ((object)a == null && (object)b != null) return -1;
+
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return a.Int.CompareTo(b.Int);
+			if (a.type.IsDbl) return a.Dbl.CompareTo(b.Dbl);
+			if (a.type.IsBool) return a.Bool.CompareTo(b.Bool);
+			Debug.Assert(false);
+			return 0;
+		}
+
+		public static bool operator !=(ExprValue a, ExprValue b) { return cmp(a, b) != 0; }
+		public static bool operator ==(ExprValue a, ExprValue b) { return cmp(a, b) == 0; }
+		public static bool operator < (ExprValue a, ExprValue b) { return cmp(a, b) < 0; }
+		public static bool operator > (ExprValue a, ExprValue b) { return cmp(a, b) > 0; }
+		public static bool operator <=(ExprValue a, ExprValue b) { return cmp(a, b) <= 0; }
+		public static bool operator >=(ExprValue a, ExprValue b) { return cmp(a, b) >= 0; }
+
+
+		public static ExprValue operator + (ExprValue a, ExprValue b) 
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int + b.Int);
+			if (a.type.IsDbl) return new ExprValue(a.Dbl + b.Dbl);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator -(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int - b.Int);
+			if (a.type.IsDbl) return new ExprValue(a.Dbl - b.Dbl);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator *(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int * b.Int);
+			if (a.type.IsDbl) return new ExprValue(a.Dbl * b.Dbl);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator /(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int / b.Int);
+			if (a.type.IsDbl) return new ExprValue(a.Dbl / b.Dbl);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator %(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int % b.Int);
+			if (a.type.IsDbl) return new ExprValue(a.Dbl % b.Dbl);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator | (ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int | b.Int);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator &(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int & b.Int);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue operator ^(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int ^ b.Int);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue lsh(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int << b.Int);
+			throw new InvalidOperatorException();
+		}
+		public static ExprValue rsh(ExprValue a, ExprValue b)
+		{
+			Debug.Assert(a.IsConst && b.IsConst);
+			if (a.type.IsInt) return new ExprValue(a.Int >> b.Int);
+			throw new InvalidOperatorException();
+		}
+	}
+
+	public class InvalidOperatorException : Exception
+	{
 	}
 
 	public class FunList : IAST, IEnumerable<Fun>
@@ -143,29 +251,31 @@ namespace LLParserGenTest
 		}
 	}
 
-	public class Fun : IAST
+	public class Fun : NodeRoot
 	{
-		public readonly string name;
+		public readonly TokenAST name;
 		public readonly FunArgList args;
 		public readonly ExprType ret;
 		public readonly StmtRoot body;
+		public readonly TokenAST lastCurly;
 
-		public Fun(TokenAST name, FunArgList args, ExprType ret, StmtRoot body)
+		public Fun(TokenAST name, FunArgList args, ExprType ret, StmtRoot body, TokenAST lastCurly) : base(name)
 		{
-			this.name = name.v;
+			this.name = name;
 			this.args = args;
 			this.ret = ret;
 			this.body = body;
+			this.lastCurly = lastCurly;
 		}
 	}
 	public class FunArg
 	{
-		public FunArg(string argName, ExprType argType)
+		public FunArg(TokenAST argName, ExprType argType)
 		{
 			this.ArgName = argName;
 			this.ArgType = argType;
 		}
-		public readonly string ArgName;
+		public readonly TokenAST ArgName;
 		public readonly ExprType ArgType;
 	}
 
@@ -175,7 +285,7 @@ namespace LLParserGenTest
 
 		public FunArgList() { }
 		public FunArgList(TokenAST a, ExprType ty) { this.Add(a, ty); }
-		public FunArgList Add(TokenAST arg, ExprType ty) { args.Add(new FunArg(arg.v, ty)); return this; }
+		public FunArgList Add(TokenAST arg, ExprType ty) { args.Add(new FunArg(arg, ty)); return this; }
 
 		public int Count { get { return args.Count; } }
 		public FunArg this[int i] { get { return args[i]; } }
@@ -222,8 +332,8 @@ namespace LLParserGenTest
 
 		public override bool GenCode(FunctionContex ctx)
 		{
-			ctx.AddDefVar(this.a.v, type);
-			ctx.Push(FunctionContex.StmtTk.Var, null, null, this.a.v);
+			ctx.AddDefVar(this.a, type); 
+			ctx.Push(FunctionContex.StmtTk.Var, null, null, this.a);
 			return false;
 		}
 	}
@@ -267,11 +377,11 @@ namespace LLParserGenTest
 
 			if (e.IsConstExpr())
 			{
-				this.Warning("Const expression");
+				this.Warning("const expression");
 
 				if (sb == null)
 				{
-					if (e.EvalRight(ctx, null).c != 0)
+					if (e.EvalRight(ctx, null).Bool)
 					{
 						nua = this.sa.GenCode(ctx);
 						nub = true;
@@ -279,7 +389,7 @@ namespace LLParserGenTest
 				}
 				else
 				{
-					if (e.EvalRight(ctx, null).c != 0)
+					if (e.EvalRight(ctx, null).Bool)
 					{
 						nua = this.sa.GenCode(ctx);
 						nub = true;
@@ -339,7 +449,7 @@ namespace LLParserGenTest
 			{
 				this.Warning("Const expression");
 
-				if (this.e.EvalRight(ctx, null).c != 0)
+				if (this.e.EvalRight(ctx, null).Bool)
 				{
 					var lbl_true = ctx.Context.NewLbl();
 					ctx.emit(lbl_continue);
@@ -373,7 +483,7 @@ namespace LLParserGenTest
 		public override bool GenCode(FunctionContex ctx)
 		{
 			if (ctx.Break() == false)
-				Error("Illegal break");
+				Error("illegal break");
 			return true;
 		}
 	}
@@ -445,11 +555,11 @@ namespace LLParserGenTest
 				var s = EvalRight(ctx, null);
 				if (lbl_true != null)
 				{
-					if (s.c != 0) ctx.Context.jmp(lbl_true);
+					if (s.Bool) ctx.Context.jmp(lbl_true);
 				}
 				else
 				{
-					if (s.c == 0) ctx.Context.jmp(lbl_false);
+					if (s.Bool == false) ctx.Context.jmp(lbl_false);
 				}
 			}
 			else
@@ -464,7 +574,7 @@ namespace LLParserGenTest
 
 		public virtual string EvalLeft(FunctionContex ctx)
 		{
-			Error("errore - no left side");
+			Error("no left side");
 			return null;
 		}
 	}
@@ -484,7 +594,7 @@ namespace LLParserGenTest
 		{
 			if (a.ExprType(ctx) == b.ExprType(ctx))
 				return a.ExprType(ctx);
-			Error("Wrong type");
+			Error("cannot assign expression of type '{0}' to '{1}'", a, b);
 			return null;
 		}
 
@@ -536,6 +646,7 @@ namespace LLParserGenTest
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
+			ExprType(ctx);
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
@@ -544,11 +655,11 @@ namespace LLParserGenTest
 				ExprValue rr;
 				switch (this.op)
 				{
-				case "&&": rr = new ExprValue(aa.c != 0 && bb.c != 0 ? 1 : 0); break;
-				case "||": rr = new ExprValue(aa.c != 0 || bb.c != 0 ? 1 : 0); break;
+				case "&&": rr = new ExprValue(aa.Bool && bb.Bool); break;
+				case "||": rr = new ExprValue(aa.Bool || bb.Bool); break;
 				default: Debug.Assert(false); return null;
 				}
-				if (rdest != null) ctx.Context.ld(rdest, rr.c);
+				if (rdest != null) ctx.Context.ld(rdest, rr);
 				return rr;
 			}
 			else
@@ -589,6 +700,8 @@ namespace LLParserGenTest
 
 		public override void EvalBool(FunctionContex ctx, string lbl_true, string lbl_false)
 		{
+			ExprType(ctx);
+
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
 				var aa = a.EvalRight(ctx, null);
@@ -598,8 +711,8 @@ namespace LLParserGenTest
 				{
 					switch (this.op)
 					{
-					case "&&": if (aa.c != 0 && bb.c != 0) ctx.Context.jmp(lbl_true); break;
-					case "||": if (aa.c != 0 || bb.c != 0) ctx.Context.jmp(lbl_true); break;
+					case "&&": if (aa.Bool && bb.Bool) ctx.Context.jmp(lbl_true); break;
+					case "||": if (aa.Bool || bb.Bool) ctx.Context.jmp(lbl_true); break;
 					default: Debug.Assert(false); break;
 					}
 				}
@@ -607,8 +720,8 @@ namespace LLParserGenTest
 				{
 					switch (this.op)
 					{
-					case "&&": if (!(aa.c != 0 && bb.c != 0)) ctx.Context.jmp(lbl_false); break;
-					case "||": if (!(aa.c != 0 || bb.c != 0)) ctx.Context.jmp(lbl_false); break;
+					case "&&": if (!(aa.Bool && bb.Bool)) ctx.Context.jmp(lbl_false); break;
+					case "||": if (!(aa.Bool || bb.Bool)) ctx.Context.jmp(lbl_false); break;
 					default: Debug.Assert(false); break;
 					}
 				}
@@ -654,12 +767,11 @@ namespace LLParserGenTest
 	}
 	public class ExprBinCompare : ExprBin
 	{
-		string op;
+		string op { get { return tk.v; } }
 
 		public ExprBinCompare(ExprRoot a, TokenAST tk, ExprRoot b)
 			: base(a, tk, b)
 		{
-			this.op = tk.v;
 			switch (this.op)
 			{
 			case "==": break;
@@ -678,6 +790,7 @@ namespace LLParserGenTest
 			{
 			case "==":
 			case "!=":
+				if (a.ExprType(ctx).IsVoid || b.ExprType(ctx).IsVoid) Error("wrong type");
 				if (a.ExprType(ctx) != b.ExprType(ctx)) Error("wrong type");
 				break;
 			case ">":
@@ -685,7 +798,7 @@ namespace LLParserGenTest
 			case "<":
 			case "<=":
 				if (a.ExprType(ctx) != b.ExprType(ctx)) Error("wrong type");
-				if (a.ExprType(ctx).IsInt == false) Error("wrong type");
+				if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("wrong type");
 				break;
 			default:
 				Debug.Assert(false);
@@ -696,6 +809,7 @@ namespace LLParserGenTest
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
+			ExprType(ctx);
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
@@ -704,15 +818,15 @@ namespace LLParserGenTest
 				ExprValue rr;
 				switch (this.op)
 				{
-				case "==": rr = new ExprValue(aa.c == bb.c ? 1 : 0); break;
-				case "!=": rr = new ExprValue(aa.c != bb.c ? 1 : 0); break;
-				case ">": rr = new ExprValue(aa.c > bb.c ? 1 : 0); break;
-				case ">=": rr = new ExprValue(aa.c >= bb.c ? 1 : 0); break;
-				case "<": rr = new ExprValue(aa.c < bb.c ? 1 : 0); break;
-				case "<=": rr = new ExprValue(aa.c <= bb.c ? 1 : 0); break;
+				case "==": rr = new ExprValue(aa == bb ? true : false); break;
+				case "!=": rr = new ExprValue(aa != bb ? true : false); break;
+				case ">": rr = new ExprValue(aa > bb ? true : false); break;
+				case ">=": rr = new ExprValue(aa >= bb ? true : false); break;
+				case "<": rr = new ExprValue(aa < bb ? true : false); break;
+				case "<=": rr = new ExprValue(aa <= bb ? true : false); break;
 				default: Debug.Assert(false); return null;
 				}
-				if (rdest != null) ctx.Context.ld(rdest, rr.c);
+				if (rdest != null) ctx.Context.ld(rdest, rr.Int);
 				return rr;
 			}
 			else
@@ -740,6 +854,8 @@ namespace LLParserGenTest
 
 		public override void EvalBool(FunctionContex ctx, string lbl_true, string lbl_false)
 		{
+			ExprType(ctx);
+
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
 				var aa = a.EvalRight(ctx, null);
@@ -749,24 +865,24 @@ namespace LLParserGenTest
 				{
 					switch (this.op)
 					{
-					case "==": if (aa.c == bb.c) ctx.Context.jmp(lbl_true); break;
-					case "!=": if (aa.c != bb.c) ctx.Context.jmp(lbl_true); break;
-					case ">": if (aa.c > bb.c) ctx.Context.jmp(lbl_true); break;
-					case ">=": if (aa.c >= bb.c) ctx.Context.jmp(lbl_true); break;
-					case "<": if (aa.c < bb.c) ctx.Context.jmp(lbl_true); break;
-					case "<=": if (aa.c <= bb.c) ctx.Context.jmp(lbl_true); break;
+					case "==": if (aa == bb) ctx.Context.jmp(lbl_true); break;
+					case "!=": if (aa != bb) ctx.Context.jmp(lbl_true); break;
+					case ">": if (aa > bb) ctx.Context.jmp(lbl_true); break;
+					case ">=": if (aa >= bb) ctx.Context.jmp(lbl_true); break;
+					case "<": if (aa < bb) ctx.Context.jmp(lbl_true); break;
+					case "<=": if (aa <= bb) ctx.Context.jmp(lbl_true); break;
 					}
 				}
 				else
 				{
 					switch (this.op)
 					{
-					case "==": if (aa.c != bb.c) ctx.Context.jmp(lbl_false); break;
-					case "!=": if (aa.c == bb.c) ctx.Context.jmp(lbl_false); break;
-					case ">": if (aa.c <= bb.c) ctx.Context.jmp(lbl_false); break;
-					case ">=": if (aa.c < bb.c) ctx.Context.jmp(lbl_false); break;
-					case "<": if (aa.c >= bb.c) ctx.Context.jmp(lbl_false); break;
-					case "<=": if (aa.c > bb.c) ctx.Context.jmp(lbl_false); break;
+					case "==": if (aa != bb) ctx.Context.jmp(lbl_false); break;
+					case "!=": if (aa == bb) ctx.Context.jmp(lbl_false); break;
+					case ">": if (aa <= bb) ctx.Context.jmp(lbl_false); break;
+					case ">=": if (aa < bb) ctx.Context.jmp(lbl_false); break;
+					case "<": if (aa >= bb) ctx.Context.jmp(lbl_false); break;
+					case "<=": if (aa > bb) ctx.Context.jmp(lbl_false); break;
 					}
 				}
 			}
@@ -803,110 +919,69 @@ namespace LLParserGenTest
 		}
 	}
 
-
-	public interface IBinOp
-	{
-		int c_op(int a, int b);
-		void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb);
-	}
-
-	public class BinAdd : IBinOp
-	{
-		public int c_op(int a, int b) { return a + b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.add(dd, aa, bb); }
-	}
-	public class BinSub : IBinOp
-	{
-		public int c_op(int a, int b) { return a - b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.sub(dd, aa, bb); }
-	}
-	public class BinMul : IBinOp
-	{
-		public int c_op(int a, int b) { return a * b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.mul(dd, aa, bb); }
-	}
-	public class BinDiv : IBinOp
-	{
-		public int c_op(int a, int b) { return a / b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.div(dd, aa, bb); }
-	}
-	public class BinRem : IBinOp
-	{
-		public int c_op(int a, int b) { return a % b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.rem(dd, aa, bb); }
-	}
-	public class BinOr_ : IBinOp
-	{
-		public int c_op(int a, int b) { return a | b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.or_(dd, aa, bb); }
-	}
-	public class BinXor : IBinOp
-	{
-		public int c_op(int a, int b) { return a ^ b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.xor(dd, aa, bb); }
-	}
-	public class BinAnd : IBinOp
-	{
-		public int c_op(int a, int b) { return a & b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.and(dd, aa, bb); }
-	}
-	public class BinShL : IBinOp
-	{
-		public int c_op(int a, int b) { return a << b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.shl(dd, aa, bb); }
-	}
-	public class BinShR : IBinOp
-	{
-		public int c_op(int a, int b) { return a >> b; }
-		public void a_op(Context ctx, string dd, ExprValue aa, ExprValue bb) { ctx.shr(dd, aa, bb); }
-	}
-
 	public class ExprBinGen : ExprBin
 	{
-		readonly IBinOp sop;
 
 		public ExprBinGen(ExprRoot a, TokenAST tk, ExprRoot b)
 			: base(a, tk, b)
 		{
-			switch (tk.v)
-			{
-			case "+": sop = new BinAdd(); break;
-			case "-": sop = new BinSub(); break;
-			case "*": sop = new BinMul(); break;
-			case "/": sop = new BinDiv(); break;
-			case "%": sop = new BinRem(); break;
-			case "|": sop = new BinOr_(); break;
-			case "&": sop = new BinAnd(); break;
-			case "^": sop = new BinXor(); break;
-			case "<<": sop = new BinShL(); break;
-			case ">>": sop = new BinShR(); break;
-			default: Debug.Assert(false); break;
-			}
 		}
 
 		public override ExprType ExprType(FunctionContex ctx)
 		{
-			if (a.ExprType(ctx).IsInt == false) Error("{0} requires int type", tk.v);
-			if (b.ExprType(ctx).IsInt == false) Error("{0} requires int type", tk.v);
+			if (a.ExprType(ctx) != b.ExprType(ctx)) Error("operatore {0} requires same types", tk.v);
+			if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("{0} requires int/double type", tk.v);
+			if (!(b.ExprType(ctx).IsInt || b.ExprType(ctx).IsDbl)) Error("{0} requires int/double type", tk.v);
 			return a.ExprType(ctx);
 		}
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
+			this.ExprType(ctx);
+
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
-				var rr = sop.c_op(aa.c, bb.c);
+				ExprValue rr;
+				switch (tk.v)
+				{
+				case "+": rr = aa + bb; break;
+				case "-": rr = aa - bb; break;
+				case "*": rr = aa * bb; break;
+				case "/": rr = aa / bb; break;
+				case "%": rr = aa % bb; break;
+				case "|": rr = aa | bb; break;
+				case "&": rr = aa & bb; break;
+				case "^": rr = aa ^ bb; break;
+				case "<<": rr = ExprValue.lsh(aa, bb); break;
+				case ">>": rr = ExprValue.rsh(aa, bb); break;
+				default: Debug.Assert(false); rr = null;  break;
+				}
 				if (rdest != null) ctx.Context.ld(rdest, rr);
-				return new ExprValue(rr);
+				return rr;
 			}
 			else
 			{
 				var aa = a.EvalRight(ctx, null);
 				var bb = b.EvalRight(ctx, null);
 				if (rdest == null) rdest = ctx.Context.NewTmp();
-				sop.a_op(ctx.Context, rdest, aa, bb);
+
+				switch (tk.v)
+				{
+				case "+": ctx.Context.add(rdest, aa, bb); break;
+				case "-": ctx.Context.sub(rdest, aa, bb); break;
+				case "*": ctx.Context.mul(rdest, aa, bb); break;
+				case "/": ctx.Context.div(rdest, aa, bb); break;
+				case "%": ctx.Context.rem(rdest, aa, bb); break;
+				case "|": ctx.Context.or(rdest, aa, bb); break;
+				case "&": ctx.Context.and(rdest, aa, bb); break;
+				case "^": ctx.Context.xor(rdest, aa, bb); break;
+				case "<<": ctx.Context.shl(rdest, aa, bb); break;
+				case ">>": ctx.Context.shr(rdest, aa, bb); break;
+				default: Debug.Assert(false); break;
+				}
+
 				return new ExprValue(rdest, aa.type);
 			}
 		}
@@ -919,10 +994,42 @@ namespace LLParserGenTest
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest) { return a.EvalRight(ctx, rdest); }
 		public override ExprType ExprType(FunctionContex ctx)
 		{
-			if (a.ExprType(ctx).IsInt == false) Error("{0} requires int type", tk.v);
+			if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("{0} requires int type", tk.v);
 			return a.ExprType(ctx);
 		}
 	}
+
+	public class ExprCast : ExprRoot
+	{
+		public ExprCast(TokenAST tk, ExprType rtype, ExprRoot e) : base(tk) { this.rtype = rtype; this.e = e;  }
+		readonly ExprType rtype;
+		readonly ExprRoot e;
+
+		public override ExprType ExprType(FunctionContex ctx) 
+		{
+			return rtype;
+		}
+
+		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		{
+			var etype = e.ExprType(ctx);
+			if (etype.IsBool && rtype.IsInt)
+			{
+				// nessuna conversione
+				var r = e.EvalRight(ctx, rdest);
+				return r;
+			}
+			else if (etype.IsArray && rtype.IsObject)
+			{
+
+			}
+			else
+				Error("cannot convert from '{0}' to '{1}' type", etype, rtype);
+			return null;
+		}
+		public override bool IsConstExpr() { return false; }
+	}
+
 
 	public class ExprNeg : ExprUni
 	{
@@ -930,7 +1037,7 @@ namespace LLParserGenTest
 
 		public override ExprType ExprType(FunctionContex ctx)
 		{
-			if (a.ExprType(ctx).IsInt == false) Error("{0} requires int type", tk.v);
+			if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("'{0}' requires numeric type", tk.v);
 			return a.ExprType(ctx);
 		}
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
@@ -938,14 +1045,22 @@ namespace LLParserGenTest
 			if (a.IsConstExpr())
 			{
 				var n = a.EvalRight(ctx, null);
-				if (rdest != null) ctx.Context.ld(rdest, -n.c);
+
+				if (rdest != null)
+				{
+					if (n.type.IsInt) ctx.Context.ld(rdest, new ExprValue(0) - n);
+					else if (n.type.IsDbl) ctx.Context.ld(rdest, new ExprValue(0.0) - n);
+					else Error("operator '-' called with non numeric data");
+				}
 				return n;
 			}
 			else
 			{
 				var ra = a.EvalRight(ctx, null);
 				if (rdest == null) rdest = ctx.Context.NewTmp();
-				ctx.Context.sub(rdest, new ExprValue(0), ra);
+				if (ra.type.IsInt) ctx.Context.sub(rdest, new ExprValue(0), ra);
+				else if (ra.type.IsDbl) ctx.Context.sub(rdest, new ExprValue(0.0), ra);
+				else Error("operator '-' called with non numeric data");
 				return new ExprValue(rdest, a.ExprType(ctx));
 			}
 		}
@@ -964,7 +1079,7 @@ namespace LLParserGenTest
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
 			var n = new ExprValue(int.Parse(a.v));
-			if (rdest != null) ctx.Context.ld(rdest, n.c);
+			if (rdest != null) ctx.Context.ld(rdest, n.Int);
 			return n;
 		}
 		public override bool IsConstExpr() { return true; }
@@ -979,7 +1094,7 @@ namespace LLParserGenTest
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
 			var n = new ExprValue(v);
-			if (rdest != null) ctx.Context.ld(rdest, n.c);
+			if (rdest != null) ctx.Context.ld(rdest, n.Bool ? 1 : 0);
 			return n;
 		}
 		public override bool IsConstExpr() { return true; }
@@ -992,18 +1107,18 @@ namespace LLParserGenTest
 
 		public override ExprType ExprType(FunctionContex ctx)
 		{
-			var v = ctx.GetVar(tk.v);
+			var v = ctx.GetVar(tk);
 			return v.Type;
 		}
 
 		public override string EvalLeft(FunctionContex ctx)
 		{
-			return ctx.GetVar(a.v).Reg;
+			return ctx.GetVar(a).Reg;
 		}
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
-			var rvar = ctx.GetVar(a.v).Reg;
+			var rvar = ctx.GetVar(a).Reg;
 			if (rdest == null) rdest = rvar;
 			if (rdest != rvar) ctx.Context.add(rdest, new ExprValue(rvar, this.ExprType(ctx)), new ExprValue(0));
 			return new ExprValue(rvar, this.ExprType(ctx));
@@ -1019,21 +1134,20 @@ namespace LLParserGenTest
 
 		public override ExprType ExprType(FunctionContex ctx)
 		{
-			var fn = ctx.GetFun(f.v);
-			return fn.ret;
+			var fun = ctx.GetFun(f);
+			return fun.ret;
 		}
 
 		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
 		{
-			var fun = ctx.GetFun(this.f.v);
-
+			var fun = ctx.GetFun(this.f);
 			if (fun.args.Count != this.a.Count)
 				Error("wrong number of args calling function '{0}'", fun.name);
 
 			for (int i = 0; i < this.a.Count; ++i)
 			{
 				if (this.a[i].ExprType(ctx) != fun.args[i].ArgType)
-					Error("type sismatch while calling function '{0}' param {1}", fun.name, i);
+					Error("type mismatch while calling function '{0}' param {1}", fun.name, i);
 				this.a[i].EvalRight(ctx, "rp");
 			}
 			if (rdest == null) rdest = ctx.Context.NewTmp();

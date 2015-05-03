@@ -31,6 +31,7 @@ namespace LLParserGenTest
 		public const int NUM = -21;
 		public const int FALSE = -22;
 		public const int TRUE = -23;
+		public const int CAST = -24;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -63,6 +64,7 @@ namespace LLParserGenTest
 					_token.Add(-21, "NUM");
 					_token.Add(-22, "FALSE");
 					_token.Add(-23, "TRUE");
+					_token.Add(-24, "CAST");
 				}
 				return _token;
 			}
@@ -244,7 +246,7 @@ namespace LLParserGenTest
 					TokenAST nt8_s = Match('{', nt8_i);
 					var nt9_s = stmtlist(nt9_i);
 					TokenAST nt10_s = Match('}', nt10_i);
-					fun_s = new Fun(nt2_s, nt4_s, nt7_s, nt9_s);
+					fun_s = new Fun(nt2_s, nt4_s, nt7_s, nt9_s, nt10_s);
 				}
 				break;
 			}
@@ -423,6 +425,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 1;
 				break;
 			case VAR:
@@ -462,7 +465,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(IF, nt1_i);
 					TokenAST nt2_s = Match('(', nt2_i);
-					var nt3_s = e_ass(nt3_i);
+					var nt3_s = expr(nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					var nt5_s = stmt(nt5_i);
 					var nt6_s = tmp_17(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
@@ -474,7 +477,7 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
 					
-					var nt1_s = e_ass(nt1_i);
+					var nt1_s = expr(nt1_i);
 					TokenAST nt2_s = Match(';', nt2_i);
 					stmt_s = new StmtExpr(nt2_s, nt1_s);
 				}
@@ -517,7 +520,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match(WHILE, nt1_i);
 					TokenAST nt2_s = Match('(', nt2_i);
-					var nt3_s = e_ass(nt3_i);
+					var nt3_s = expr(nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					var nt5_s = stmt(nt5_i);
 					stmt_s = new StmtBlock(new StmtWhile(nt1_s, nt3_s, new StmtBlock(nt5_s)));
@@ -572,6 +575,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 			case '}':
 				break;
 			default:
@@ -600,6 +604,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 			case '}':
 				alt = 0;
 				break;
@@ -650,6 +655,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 			case '}':
 				break;
 			default:
@@ -674,6 +680,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 1;
 				break;
 			default:
@@ -697,7 +704,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					var nt3_i = default(IAST);
 					
-					var nt2_s = e_ass(nt2_i);
+					var nt2_s = expr(nt2_i);
 					TokenAST nt3_s = Match(';', nt3_i);
 					tmp_18_s = new StmtReturn(((TokenAST)nt1_s), nt2_s);;
 				}
@@ -721,6 +728,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 			case '}':
 				break;
 			default:
@@ -749,6 +757,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			case '}':
@@ -809,6 +818,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -865,6 +875,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 1;
 				break;
 			default:
@@ -906,6 +917,51 @@ namespace LLParserGenTest
 			return tmp_4_s;
 		}
 		
+		ExprRoot expr(IAST expr_i)
+		{
+			int alt = 0;
+			switch (Next.ch)
+			{
+			case '-':
+			case '+':
+			case NUM:
+			case ID:
+			case FALSE:
+			case TRUE:
+			case '(':
+			case CAST:
+				alt = 0;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			ExprRoot expr_s = default(ExprRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					var nt1_s = e_ass(nt1_i);
+					expr_s = nt1_s;
+				}
+				break;
+			}
+			
+			switch (Next.ch)
+			{
+			case ')':
+			case ';':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return expr_s;
+		}
+		
 		ExprRoot e_ass(IAST e_ass_i)
 		{
 			int alt = 0;
@@ -918,6 +974,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -942,9 +999,9 @@ namespace LLParserGenTest
 			
 			switch (Next.ch)
 			{
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -961,9 +1018,9 @@ namespace LLParserGenTest
 			case '=':
 				alt = 0;
 				break;
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 1;
 				break;
 			default:
@@ -995,9 +1052,9 @@ namespace LLParserGenTest
 			
 			switch (Next.ch)
 			{
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1018,6 +1075,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1044,9 +1102,9 @@ namespace LLParserGenTest
 			switch (Next.ch)
 			{
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1061,9 +1119,9 @@ namespace LLParserGenTest
 			switch (Next.ch)
 			{
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case OROR:
@@ -1102,9 +1160,9 @@ namespace LLParserGenTest
 			switch (Next.ch)
 			{
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1125,6 +1183,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1152,9 +1211,9 @@ namespace LLParserGenTest
 			{
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1170,9 +1229,9 @@ namespace LLParserGenTest
 			{
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case ANDAND:
@@ -1212,9 +1271,9 @@ namespace LLParserGenTest
 			{
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1235,6 +1294,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1263,9 +1323,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1282,9 +1342,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case '|':
@@ -1325,9 +1385,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1348,6 +1408,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1377,9 +1438,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1397,9 +1458,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case '^':
@@ -1441,9 +1502,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1464,6 +1525,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1494,9 +1556,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1515,9 +1577,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case '&':
@@ -1560,9 +1622,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1583,6 +1645,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1614,9 +1677,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1636,9 +1699,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case EQ:
@@ -1698,9 +1761,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1721,6 +1784,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1754,9 +1818,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1778,9 +1842,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case LT:
@@ -1874,9 +1938,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1897,6 +1961,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -1934,9 +1999,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -1962,9 +2027,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				alt = 0;
 				break;
 			case SHL:
@@ -2030,9 +2095,9 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
+			case ',':
 			case ')':
 			case ';':
-			case ',':
 				break;
 			default:
 				Error();
@@ -2053,6 +2118,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -2093,8 +2159,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2123,8 +2189,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				alt = 0;
 				break;
 			case '+':
@@ -2193,8 +2259,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2215,6 +2281,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -2257,8 +2324,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2289,8 +2356,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				alt = 0;
 				break;
 			case '*':
@@ -2377,8 +2444,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2397,6 +2464,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			case '-':
@@ -2465,8 +2533,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2494,6 +2562,9 @@ namespace LLParserGenTest
 				break;
 			case '(':
 				alt = 4;
+				break;
+			case CAST:
+				alt = 5;
 				break;
 			default:
 				Error();
@@ -2549,6 +2620,24 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s;
 				}
 				break;
+			case 5:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					var nt5_i = default(IAST);
+					var nt6_i = default(IAST);
+					
+					TokenAST nt1_s = Match(CAST, nt1_i);
+					TokenAST nt2_s = Match('(', nt2_i);
+					var nt3_s = type(nt3_i);
+					TokenAST nt4_s = Match(',', nt4_i);
+					var nt5_s = expr(nt5_i);
+					TokenAST nt6_s = Match(')', nt6_i);
+					e_prim_s = new ExprCast(nt1_s, nt3_s, nt5_s);
+				}
+				break;
 			}
 			
 			switch (Next.ch)
@@ -2573,8 +2662,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2608,8 +2697,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				alt = 0;
 				break;
 			case '(':
@@ -2666,8 +2755,8 @@ namespace LLParserGenTest
 			case ANDAND:
 			case OROR:
 			case '=':
-			case ';':
 			case ',':
+			case ';':
 				break;
 			default:
 				Error();
@@ -2691,6 +2780,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 1;
 				break;
 			default:
@@ -2741,6 +2831,7 @@ namespace LLParserGenTest
 			case FALSE:
 			case TRUE:
 			case '(':
+			case CAST:
 				alt = 0;
 				break;
 			default:
@@ -2938,6 +3029,7 @@ namespace LLParserGenTest
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('w'), new RegToken('h')), new RegToken('i')), new RegToken('l')), new RegToken('e')), WHILE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('b'), new RegToken('r')), new RegToken('e')), new RegToken('a')), new RegToken('k')), BREAK);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('c'), new RegToken('o')), new RegToken('n')), new RegToken('t')), new RegToken('i')), new RegToken('n')), new RegToken('u')), new RegToken('e')), CONTINUE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('c'), new RegToken('a')), new RegToken('s')), new RegToken('t')), CAST);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('e')), new RegToken('t')), new RegToken('u')), new RegToken('r')), new RegToken('n')), RETURN);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('t'), new RegToken('r')), new RegToken('u')), new RegToken('e')), TRUE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('f'), new RegToken('a')), new RegToken('l')), new RegToken('s')), new RegToken('e')), FALSE);

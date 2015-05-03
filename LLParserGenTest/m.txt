@@ -41,8 +41,17 @@ fun gcd(a : int, b : int) : int
 
 }
 
-fun ff(a : int, b : int) : int {
-	if (a > 0) return a;
-	a =ff(1,2);
-	return a + b;
+fun ff(a : double, b : double) : int {
+	var c : double;
+
+	c = a + b;
+
+	if (c > b)
+		return 1;
+	a = a + b;
+	if (a >b)
+		return 2;
+
+	return 0;
+
 }

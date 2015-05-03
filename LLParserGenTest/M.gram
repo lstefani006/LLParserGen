@@ -8,6 +8,7 @@ else                                  ^ELSE
 while                                 ^WHILE
 break                                 ^BREAK
 continue                              ^CONTINUE
+cast                                  ^CAST
 return                                ^RETURN
 
 true                                  ^TRUE
@@ -60,7 +61,7 @@ start<FunList>
 	;
 
 fun<Fun>
-	: FUN ID '(' funargse ')' ':' type '{' stmtlist '}'   ^new Fun($2, $4, $7, $9)
+	: FUN ID '(' funargse ')' ':' type '{' stmtlist '}'   ^new Fun($2, $4, $7, $9, $10)
 	;
 
 funargse<FunArgList>
@@ -74,16 +75,16 @@ funargs<FunArgList>
 	;
 
 stmt<StmtRoot>
-	: IF '(' e_ass ')' stmt             ^new StmtBlock(new StmtIf($1, $3, new StmtBlock($5)))
-	| IF '(' e_ass ')' stmt *ELSE stmt  ^new StmtBlock(new StmtIf($1, $3, new StmtBlock($5), new StmtBlock($7)))
-	| e_ass ';'                         ^new StmtExpr($2, $1)
-	| VAR ID ':' type ';'               ^new StmtVar($1, $2, $4)
-	| '{' stmtliste '}'                 ^new StmtBlock($1, $2)
-	| WHILE '(' e_ass ')' stmt          ^new StmtBlock(new StmtWhile($1, $3, new StmtBlock($5)))
-	| BREAK ';'                         ^new StmtBreak($1);
-	| CONTINUE ';'                      ^new StmtContinue($1);
-	| RETURN ';'                        ^new StmtReturn($1);
-	| RETURN e_ass ';'                  ^new StmtReturn($1, $2);
+	: IF '(' expr ')' stmt             ^new StmtBlock(new StmtIf($1, $3, new StmtBlock($5)))
+	| IF '(' expr ')' stmt *ELSE stmt  ^new StmtBlock(new StmtIf($1, $3, new StmtBlock($5), new StmtBlock($7)))
+	| expr ';'                         ^new StmtExpr($2, $1)
+	| VAR ID ':' type ';'              ^new StmtVar($1, $2, $4)
+	| '{' stmtliste '}'                ^new StmtBlock($1, $2)
+	| WHILE '(' expr ')' stmt          ^new StmtBlock(new StmtWhile($1, $3, new StmtBlock($5)))
+	| BREAK ';'                        ^new StmtBreak($1);
+	| CONTINUE ';'                     ^new StmtContinue($1);
+	| RETURN ';'                       ^new StmtReturn($1);
+	| RETURN expr ';'                  ^new StmtReturn($1, $2);
 	;
 
 
@@ -95,6 +96,10 @@ stmtliste<StmtList>
 stmtlist<StmtList>
 	: stmtlist stmt          ^$1.Add($2)
 	| stmt                   ^new StmtList($1)
+	;
+
+expr<ExprRoot> :
+	e_ass                ^$1
 	;
 
 e_ass<ExprRoot>
@@ -168,12 +173,13 @@ e_una<ExprRoot>
 	;
 
 e_prim<ExprRoot>
-	: NUM              ^new ExprNum($1)
-	| ID               ^new ExprId($1)
-	| FALSE            ^new ExprBool($1, false)
-	| TRUE             ^new ExprBool($1, true)
-	| '(' e_add ')'    ^$2
-	| ID '(' e_list_opz ')'   ^new ExprFun($1, $3)
+	: NUM                         ^new ExprNum($1)
+	| ID                          ^new ExprId($1)
+	| FALSE                       ^new ExprBool($1, false)
+	| TRUE                        ^new ExprBool($1, true)
+	| '(' e_add ')'               ^$2
+	| ID '(' e_list_opz ')'       ^new ExprFun($1, $3)
+	| CAST '(' type ',' expr ')'  ^new ExprCast($1, $3, $5)
 	;
 
 e_list_opz<ExprList>
