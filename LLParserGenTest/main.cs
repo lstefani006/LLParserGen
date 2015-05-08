@@ -397,7 +397,7 @@ namespace LLParserGenTest
 
 				if (sb == null)
 				{
-					if (e.EvalRight(ctx, null).Bool)
+					if (e.EvalRight(ctx).Bool)
 					{
 						nua = this.sa.GenCode(ctx);
 						nub = true;
@@ -405,7 +405,7 @@ namespace LLParserGenTest
 				}
 				else
 				{
-					if (e.EvalRight(ctx, null).Bool)
+					if (e.EvalRight(ctx).Bool)
 					{
 						nua = this.sa.GenCode(ctx);
 						nub = true;
@@ -465,7 +465,7 @@ namespace LLParserGenTest
 			{
 				this.Warning("Const expression");
 
-				if (this.e.EvalRight(ctx, null).Bool)
+				if (this.e.EvalRight(ctx).Bool)
 				{
 					var lbl_true = ctx.Context.NewLbl();
 					ctx.emit(lbl_continue);
@@ -534,7 +534,7 @@ namespace LLParserGenTest
 
 			if (e != null)
 			{
-				var r = e.EvalRight(ctx, null);
+				var r = e.EvalRight(ctx);
 				ctx.Return(r);
 				ctx.Context.ret(r);
 			}
@@ -551,7 +551,7 @@ namespace LLParserGenTest
 	{
 		readonly ExprRoot e;
 		public StmtExpr(TokenAST tk, ExprRoot e) : base(tk) { this.e = e; }
-		public override bool GenCode(FunctionContex ctx) { e.EvalRight(ctx, null); return false; }
+		public override bool GenCode(FunctionContex ctx) { e.EvalRight(ctx); return false; }
 	}
 
 	///////////////////////////////////////////////////////////
@@ -560,7 +560,7 @@ namespace LLParserGenTest
 	{
 		protected ExprRoot(TokenAST tk) : base(tk) { }
 
-		public abstract ExprValue EvalRight(FunctionContex ctx, string rdest);
+		public abstract ExprValue EvalRight(FunctionContex ctx);
 		public abstract bool IsConstExpr();
 		public abstract ExprType ExprType(FunctionContex ctx);
 
@@ -568,7 +568,7 @@ namespace LLParserGenTest
 		{
 			if (this.IsConstExpr())
 			{
-				var s = EvalRight(ctx, null);
+				var s = EvalRight(ctx);
 				if (lbl_true != null)
 				{
 					if (s.Bool) ctx.Context.jmp(lbl_true);
@@ -580,7 +580,7 @@ namespace LLParserGenTest
 			}
 			else
 			{
-				var s = EvalRight(ctx, null);
+				var s = EvalRight(ctx);
 				if (lbl_true != null)
 					ctx.Context.bne(s, new ExprValue(0), lbl_true);
 				else
@@ -614,11 +614,13 @@ namespace LLParserGenTest
 			return null;
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			// ignoro volutamente il const.
 			var ra = a.EvalLeft(ctx);
-			var rb = b.EvalRight(ctx, ra); // rdest DEVE essere risolto.
+			var rb = b.EvalRight(ctx); // rdest DEVE essere risolto.
+
+			ctx.Context.ld(ra, rb);
 			return rb;  // qui posso ritornare la costante (se è const oppure la var...)
 		}
 	}
@@ -660,29 +662,27 @@ namespace LLParserGenTest
 			return a.ExprType(ctx);
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			ExprType(ctx);
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 				ExprValue rr;
 				switch (this.op)
 				{
 				case "&&": rr = new ExprValue(aa.Bool && bb.Bool); break;
 				case "||": rr = new ExprValue(aa.Bool || bb.Bool); break;
 				default: Debug.Assert(false); return null;
-				}
-				if (rdest != null) ctx.Context.ld(rdest, rr);
-				return rr;
+				}				return rr;
 			}
 			else
 			{
 				if (op == "||")
 				{
-					if (rdest == null) rdest = ctx.Context.NewTmp();
+					string rdest = ctx.Context.NewTmp();
 					string lbl_false = ctx.NewLbl();
 					string lbl_true = ctx.NewLbl();
 					ctx.Context.ld(rdest, 0);
@@ -695,7 +695,7 @@ namespace LLParserGenTest
 				}
 				else if (op == "&&")
 				{
-					if (rdest == null) rdest = ctx.Context.NewTmp();
+					var rdest = ctx.Context.NewTmp();
 					string lbl_false = ctx.NewLbl();
 					string lbl_true = ctx.NewLbl();
 					ctx.Context.ld(rdest, 1);
@@ -720,8 +720,8 @@ namespace LLParserGenTest
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 
 				if (lbl_true != null)
 				{
@@ -823,14 +823,14 @@ namespace LLParserGenTest
 			return new SimpleExprType("bool");
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			ExprType(ctx);
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 				ExprValue rr;
 				switch (this.op)
 				{
@@ -842,14 +842,13 @@ namespace LLParserGenTest
 				case "<=": rr = new ExprValue(aa <= bb ? true : false); break;
 				default: Debug.Assert(false); return null;
 				}
-				if (rdest != null) ctx.Context.ld(rdest, rr.Int);
 				return rr;
 			}
 			else
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.Context.NewTmp();
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
+				var rdest = ctx.Context.NewTmp();
 				string lbl_false = ctx.NewLbl();
 				ctx.Context.ld(rdest, 0);
 				switch (this.op)
@@ -874,8 +873,8 @@ namespace LLParserGenTest
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 
 				if (lbl_true != null)
 				{
@@ -904,8 +903,8 @@ namespace LLParserGenTest
 			}
 			else
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 
 				if (lbl_true != null)
 				{
@@ -951,14 +950,14 @@ namespace LLParserGenTest
 			return a.ExprType(ctx);
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			this.ExprType(ctx);
 
 			if (a.IsConstExpr() && b.IsConstExpr())
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
 				ExprValue rr;
 				switch (tk.v)
 				{
@@ -974,14 +973,13 @@ namespace LLParserGenTest
 				case ">>": rr = ExprValue.rsh(aa, bb); break;
 				default: Debug.Assert(false); rr = null;  break;
 				}
-				if (rdest != null) ctx.Context.ld(rdest, rr);
 				return rr;
 			}
 			else
 			{
-				var aa = a.EvalRight(ctx, null);
-				var bb = b.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.Context.NewTmp();
+				var aa = a.EvalRight(ctx);
+				var bb = b.EvalRight(ctx);
+				var rdest = ctx.Context.NewTmp();
 
 				switch (tk.v)
 				{
@@ -990,7 +988,7 @@ namespace LLParserGenTest
 				case "*": ctx.Context.mul(rdest, aa, bb); break;
 				case "/": ctx.Context.div(rdest, aa, bb); break;
 				case "%": ctx.Context.rem(rdest, aa, bb); break;
-				case "|": ctx.Context.or(rdest, aa, bb); break;
+				case "|": ctx.Context.or_(rdest, aa, bb); break;
 				case "&": ctx.Context.and(rdest, aa, bb); break;
 				case "^": ctx.Context.xor(rdest, aa, bb); break;
 				case "<<": ctx.Context.shl(rdest, aa, bb); break;
@@ -1007,7 +1005,7 @@ namespace LLParserGenTest
 	public class ExprPlus : ExprUni
 	{
 		public ExprPlus(TokenAST tk, ExprRoot a) : base(tk, a) { }
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest) { return a.EvalRight(ctx, rdest); }
+		public override ExprValue EvalRight(FunctionContex ctx) { return a.EvalRight(ctx); }
 		public override ExprType ExprType(FunctionContex ctx)
 		{
 			if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("{0} requires int type", tk.v);
@@ -1026,13 +1024,13 @@ namespace LLParserGenTest
 			return rtype;
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			var etype = e.ExprType(ctx);
 			if (etype.IsBool && rtype.IsInt)
 			{
 				// nessuna conversione
-				var r = e.EvalRight(ctx, rdest);
+				var r = e.EvalRight(ctx);
 				return r;
 			}
 			else if (etype.IsArray && rtype.IsObject)
@@ -1056,24 +1054,17 @@ namespace LLParserGenTest
 			if (!(a.ExprType(ctx).IsInt || a.ExprType(ctx).IsDbl)) Error("'{0}' requires numeric type", tk.v);
 			return a.ExprType(ctx);
 		}
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			if (a.IsConstExpr())
 			{
-				var n = a.EvalRight(ctx, null);
-
-				if (rdest != null)
-				{
-					if (n.type.IsInt) ctx.Context.ld(rdest, new ExprValue(0) - n);
-					else if (n.type.IsDbl) ctx.Context.ld(rdest, new ExprValue(0.0) - n);
-					else Error("operator '-' called with non numeric data");
-				}
+				var n = a.EvalRight(ctx);
 				return n;
 			}
 			else
 			{
-				var ra = a.EvalRight(ctx, null);
-				if (rdest == null) rdest = ctx.Context.NewTmp();
+				var ra = a.EvalRight(ctx);
+				var rdest = ctx.Context.NewTmp();
 				if (ra.type.IsInt) ctx.Context.sub(rdest, new ExprValue(0), ra);
 				else if (ra.type.IsDbl) ctx.Context.sub(rdest, new ExprValue(0.0), ra);
 				else Error("operator '-' called with non numeric data");
@@ -1092,10 +1083,9 @@ namespace LLParserGenTest
 			return new SimpleExprType("int");
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			var n = new ExprValue(int.Parse(a.v));
-			if (rdest != null) ctx.Context.ld(rdest, n.Int);
 			return n;
 		}
 		public override bool IsConstExpr() { return true; }
@@ -1107,10 +1097,9 @@ namespace LLParserGenTest
 
 		public override ExprType ExprType(FunctionContex ctx) { return new SimpleExprType("bool"); }
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			var n = new ExprValue(v);
-			if (rdest != null) ctx.Context.ld(rdest, n.Bool ? 1 : 0);
 			return n;
 		}
 		public override bool IsConstExpr() { return true; }
@@ -1132,10 +1121,10 @@ namespace LLParserGenTest
 			return ctx.GetVar(a).Reg;
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			var rvar = ctx.GetVar(a).Reg;
-			if (rdest == null) rdest = rvar;
+			var rdest = rvar;
 			if (rdest != rvar) ctx.Context.add(rdest, new ExprValue(rvar, this.ExprType(ctx)), new ExprValue(0));
 			return new ExprValue(rvar, this.ExprType(ctx));
 		}
@@ -1154,7 +1143,7 @@ namespace LLParserGenTest
 			return fun.ret;
 		}
 
-		public override ExprValue EvalRight(FunctionContex ctx, string rdest)
+		public override ExprValue EvalRight(FunctionContex ctx)
 		{
 			var fun = ctx.GetFun(this.f);
 			if (fun.args.Count != this.a.Count)
@@ -1164,9 +1153,10 @@ namespace LLParserGenTest
 			{
 				if (this.a[i].ExprType(ctx) != fun.args[i].ArgType)
 					Error("type mismatch while calling function '{0}' param {1}", fun.name, i);
-				this.a[i].EvalRight(ctx, "rp");
+				var ra = this.a[i].EvalRight(ctx);
+				ctx.Context.ld("rp", ra);
 			}
-			if (rdest == null) rdest = ctx.Context.NewTmp();
+			var rdest = ctx.Context.NewTmp();
 			ctx.Context.js(rdest, this.f.v);
 			return new ExprValue(rdest, this.ExprType(ctx));
 		}

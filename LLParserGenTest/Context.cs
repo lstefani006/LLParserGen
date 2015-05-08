@@ -79,7 +79,7 @@ namespace LLParserGenTest
 			emitNextLbl = null;
 		}
 
-		public void or(string rd, ExprValue rs, ExprValue rt)
+		public void or_(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.type == rt.type);
 			e();

@@ -403,6 +403,8 @@ namespace LLParserGenTest
 			if (true) {
 				// rd is written  ==> is not live before this instruction
 				rin.Remove(rd);
+				if (this.c.IsReg)
+					rin.Add(this.c.reg);
 			}
 
 			bool changed = (rin != _in);
@@ -428,5 +430,3 @@ namespace LLParserGenTest
 		}
 	}
 }
-
-
