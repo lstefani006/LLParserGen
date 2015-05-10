@@ -7,6 +7,10 @@ namespace LLParserLexerLib
 
 	public class SyntaxError : Exception
 	{
+		public SyntaxError(string msg)
+			: base(msg)
+		{
+		}
 		public SyntaxError(string fn, int line, string fmt, params object[] args)
 			: base(U.F("{0}({1}): {2}", fn, line, U.F(fmt, args)))
 		{

@@ -218,7 +218,7 @@ e_list<ExprList>
 	;
 
 
-type<ExprType>
-	: ID                  ^new SimpleExprType($1)
-	| type '[' ']'        ^new ArrayExprType($1)
+type<TypeRoot>
+	: ID                  ^new TypeSimple($1)
+	| type '[' ']'        ^new TypeArray($1)
 	;

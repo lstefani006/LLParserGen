@@ -33,10 +33,10 @@ fun Fibonacci(n : int) : int
 fun gcd(a : int, b : int) : int
 {
 	while (a != b) 
-		if (a > b)
-			a = a - b;
-		else
+		if (a <= b)
 			b = b - a;
+		else
+			a = a - b;
 	return a;
 
 }
@@ -60,6 +60,5 @@ class String {
 
 	fun String() : int {
 		return 3;
-
 	}
 }

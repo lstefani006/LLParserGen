@@ -3235,7 +3235,7 @@ namespace LLParserGenTest
 			return tmp_16_s;
 		}
 		
-		ExprType type(IAST type_i)
+		TypeRoot type(IAST type_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -3248,7 +3248,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			ExprType type_s = default(ExprType);
+			TypeRoot type_s = default(TypeRoot);
 			switch (alt)
 			{
 			case 0:
@@ -3257,7 +3257,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(ID, nt1_i);
-					nt2_i = new SimpleExprType(nt1_s); 
+					nt2_i = new TypeSimple(nt1_s); 
 					var nt2_s = tmp_17(nt2_i);
 					type_s = nt2_s; 
 				}
@@ -3278,7 +3278,7 @@ namespace LLParserGenTest
 			return type_s;
 		}
 		
-		ExprType tmp_17(IAST tmp_17_i)
+		TypeRoot tmp_17(IAST tmp_17_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -3297,14 +3297,14 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			ExprType tmp_17_s = default(ExprType);
+			TypeRoot tmp_17_s = default(TypeRoot);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_17_s = (ExprType)tmp_17_i; 
+					tmp_17_s = (TypeRoot)tmp_17_i; 
 				}
 				break;
 			case 1:
@@ -3315,7 +3315,7 @@ namespace LLParserGenTest
 					
 					TokenAST nt1_s = Match('[', nt1_i);
 					TokenAST nt2_s = Match(']', nt2_i);
-					nt3_i = new ArrayExprType(((ExprType)tmp_17_i)); 
+					nt3_i = new TypeArray(((TypeRoot)tmp_17_i)); 
 					var nt3_s = tmp_17(nt3_i);
 					tmp_17_s = nt3_s; 
 				}
