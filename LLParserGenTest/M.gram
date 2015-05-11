@@ -3,6 +3,7 @@
 fun                                   ^FUN
 var                                   ^VAR
 class                                 ^CLASS
+new                                   ^NEW
 
 if                                    ^IF
 else                                  ^ELSE
@@ -63,7 +64,7 @@ start<DeclList>
 	;
 
 decl_cls<DeclClass>
-	: CLASS ID '{' cls_members_e '}'
+	: CLASS ID '{' cls_members_e '}' ^new DeclClass($2, $4)
 	;
 
 cls_members_e<DeclList>
@@ -205,6 +206,8 @@ e_prim<ExprRoot>
 	| '(' e_add ')'               ^$2
 	| ID '(' e_list_opz ')'       ^new ExprFun($1, $3)
 	| CAST '(' type ',' expr ')'  ^new ExprCast($1, $3, $5)
+	| NEW ID '(' e_list_opz ')' ^new ExprNewObj($1, $2, $4)
+	//| NEW ID '[' e_list ']'     ^new ExprNewClass($1, $2, $4)
 	;
 
 e_list_opz<ExprList>

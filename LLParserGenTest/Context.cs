@@ -485,6 +485,18 @@ namespace LLParserGenTest
 				}
 			return null;
 		}
+
+		public DeclClass GetClass(TokenAST name)
+		{
+			foreach (var f in _fl)
+				if (f.name.v == name.v)
+				{
+					var c = f as DeclClass;
+					if (c != null)
+						return c;
+				}
+			return null;
+		}
 	}
 
 	public class FunctionContex

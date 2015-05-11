@@ -1099,7 +1099,7 @@ namespace LLParserGenTest
 				}
 
 				return new ExprValue(rdest, t.Type);
-			}
+			}	
 		}
 	}
 
@@ -1237,6 +1237,77 @@ namespace LLParserGenTest
 				Debug.Assert(false);
 				return null;
 			}
+		}
+	}
+
+	public class ExprNewObj : ExprRoot
+	{
+		public ExprNewObj(TokenAST tk, TokenAST id, ExprList el) : base(tk) { this.id = id; this.el = el; }
+		readonly TokenAST id;
+		readonly ExprList el;
+		DeclFun fun;
+
+		public override ExprType CheckType(FunctionContex ctx)
+		{
+
+			var decl = ctx.Context.GetClass(this.id);
+			if (decl == null)
+				Error("cannot find class '{0}'", this.id.v);
+
+			var et = new List<ExprType>();
+			foreach (var e in el)
+			{
+				var t = e.CheckType(ctx);
+				et.Add(t);
+			}
+
+			bool ok = true;
+			foreach (var m in decl.members)
+			{
+				var f = m as DeclFun;
+				if (f == null)
+					continue;
+
+				if (f.args.Count != et.Count)
+					continue;
+
+				ok = true;
+				for (var t = 0; t < f.args.args.Count; ++t)
+				{
+					if (f.args.args[t].ArgType != et[t].Type)
+					{
+						ok = false;
+						break;
+					}
+				}
+				if (ok)
+				{
+					fun = f;
+					break;
+				}
+			}
+			if (ok == false)
+				Error("cannot find constructor with {0} arguments of class '{1}'", et.Count, this.id);
+
+			return new ExprType(new TypeSimple(this.id));
+		}
+
+		public override ExprValue GenRight(FunctionContex ctx, string rdest)
+		{
+			var t = CheckType(ctx);
+			Debug.Assert(t.IsConst == false);
+
+			ctx.Context.ld("rp", 0);
+			for (int i = 0; i < this.el.Count; ++i)
+			{
+				var ra = this.el[i].GenRight(ctx, null);
+				ctx.Context.ld("rp", ra);
+			}
+			if (rdest == null) rdest = ctx.NewTmp();
+			ctx.Context.js(rdest, this.fun.name.v);
+			return new ExprValue(rdest, this.CheckType(ctx).Type);
+
+
 		}
 	}
 
