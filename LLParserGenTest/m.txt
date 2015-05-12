@@ -1,5 +1,5 @@
 
-fun ww(a : int,b : int) : void {
+fun ww(a : int,b : int) : int {
 	var d : int;
 	a = ww(a, b+1);
 	ww(a, b+1);
@@ -13,6 +13,7 @@ fun ww(a : int,b : int) : void {
 		a = a-1;
 		if (a > b) break;
 	}
+	return a;
 }
 
 fun fact(n : int) : int {

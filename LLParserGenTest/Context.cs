@@ -413,8 +413,8 @@ namespace LLParserGenTest
 
 			var fctx = new FunctionContex(this, f);
 
-			int regAllocati = f.args.args.Count;
-			foreach (var a in f.args.args)
+			int regAllocati = f.args.Count;
+			foreach (var a in f.args)
 				fctx.AddArgVar(a.ArgName, a.ArgType);
 
 			int istart = _ass.Count;
@@ -434,7 +434,7 @@ namespace LLParserGenTest
 			// le var in ingresso anche se non servono più non vengono sovrascritte
 			// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
 			var live = new List<string>();
-			if (optimize == false) f.args.args.ForEach(v => live.Add(fctx.GetVar(v.ArgName).Reg));
+			if (optimize == false) f.args.ForEach(v => live.Add(fctx.GetVar(v.ArgName).Reg));
 			this.ComputeLive(istart, iend, live);
 			if (debug)
 			{
@@ -475,14 +475,21 @@ namespace LLParserGenTest
 			return ok;
 		}
 
-		public DeclFun GetFun(TokenAST name)
+		public DeclFun GetFun(TokenAST name, List<TypeRoot> args)
 		{
 			foreach (var f in _fl)
-				if (f.name.v == name.v)
+			{
+				if (f.name.v != name.v) continue;
+				var fun = f as DeclFun;
+				if (fun == null) continue;
+				if (fun.args.Count != args.Count) continue;
+				bool ok = true;
+				for (int i = 0; i < args.Count; ++i)
 				{
-					if (f is DeclFun)
-						return (DeclFun)f;
+					if (args[i] != fun.args[i].ArgType) { ok = false; break; }
 				}
+				if (ok) return fun;
+			}
 			return null;
 		}
 
@@ -560,11 +567,9 @@ namespace LLParserGenTest
 		}
 
 
-		public DeclFun GetFun(TokenAST name)
+		public DeclFun GetFun(TokenAST name, List<TypeRoot> args)
 		{
-			var f = this.Context.GetFun(name);
-			if (f == null) throw new SyntaxError(name, "unknown function called '{0}'", name.v);
-			return f;
+			return this.Context.GetFun(name, args);
 		}
 
 		public enum StmtTk

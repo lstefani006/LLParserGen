@@ -16,6 +16,8 @@ namespace LLParserGenTest
 					var p = new MParser();
 					var s = p.Start(rd);
 
+					s.SetFather(null);
+
 					using (Context ctx = new Context())
 					{
 						ctx.GenerateCode(s);
@@ -308,16 +310,6 @@ namespace LLParserGenTest
 	{
 	}
 
-	public class DeclList : IAST, IEnumerable<DeclRoot>
-	{
-		public IEnumerator<DeclRoot> GetEnumerator() { return _lst.GetEnumerator(); }
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _lst.GetEnumerator(); }
-
-		public DeclList() { _lst = new List<DeclRoot>(); }
-		public DeclList Add(DeclRoot a) { _lst.Add(a); return this; }
-		readonly List<DeclRoot> _lst;
-	}
-
 	public class NodeRoot : IAST
 	{
 		public readonly TokenAST tk;
@@ -338,12 +330,42 @@ namespace LLParserGenTest
 	{
 		public readonly TokenAST name;
 		public DeclRoot(TokenAST name) : base(name) { this.name = name; }
+
+
+		private DeclRoot _father;
+		public DeclRoot Father { get { return _father; } }
+		public virtual void SetFather(DeclRoot p)
+		{
+			Debug.Assert(_father == null);
+			_father = p;
+		}
+	}
+
+	public class DeclList : IAST, IEnumerable<DeclRoot>
+	{
+		public IEnumerator<DeclRoot> GetEnumerator() { return _lst.GetEnumerator(); }
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return _lst.GetEnumerator(); }
+
+		public DeclList() { _lst = new List<DeclRoot>(); }
+		public DeclList Add(DeclRoot a) { _lst.Add(a); return this; }
+		public void SetFather(DeclRoot a)
+		{
+			foreach (var e in this)
+				e.SetFather(a);
+		}
+		readonly List<DeclRoot> _lst;
 	}
 
 	public class DeclClass : DeclRoot
 	{
 		public readonly DeclList members;
 		public DeclClass(TokenAST name, DeclList members) : base(name) { this.members = members; }
+
+		public override void SetFather(DeclRoot p)
+		{
+			base.SetFather(p);
+			members.SetFather(this);
+		}
 	}
 
 	public class DeclVar : DeclRoot
@@ -379,9 +401,9 @@ namespace LLParserGenTest
 		public readonly TypeRoot ArgType;
 	}
 
-	public class FunArgList : IAST
+	public class FunArgList : IAST, IEnumerable<FunArg>
 	{
-		public readonly List<FunArg> args = new List<FunArg>();
+		readonly List<FunArg> args = new List<FunArg>();
 
 		public FunArgList() { }
 		public FunArgList(TokenAST a, TypeRoot ty) { this.Add(a, ty); }
@@ -389,6 +411,16 @@ namespace LLParserGenTest
 
 		public int Count { get { return args.Count; } }
 		public FunArg this[int i] { get { return args[i]; } }
+
+		public IEnumerator<FunArg> GetEnumerator()
+		{
+			return this.args.GetEnumerator();
+		}
+
+		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		{
+			return this.args.GetEnumerator();
+		}
 	}
 
 	public abstract class StmtRoot : NodeRoot
@@ -1249,7 +1281,6 @@ namespace LLParserGenTest
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-
 			var decl = ctx.Context.GetClass(this.id);
 			if (decl == null)
 				Error("cannot find class '{0}'", this.id.v);
@@ -1272,9 +1303,9 @@ namespace LLParserGenTest
 					continue;
 
 				ok = true;
-				for (var t = 0; t < f.args.args.Count; ++t)
+				for (var t = 0; t < f.args.Count; ++t)
 				{
-					if (f.args.args[t].ArgType != et[t].Type)
+					if (f.args[t].ArgType != et[t].Type)
 					{
 						ok = false;
 						break;
@@ -1300,8 +1331,8 @@ namespace LLParserGenTest
 			ctx.Context.ld("rp", 0);
 			for (int i = 0; i < this.el.Count; ++i)
 			{
-				var ra = this.el[i].GenRight(ctx, null);
-				ctx.Context.ld("rp", ra);
+				var ra = this.el[i].GenRight(ctx, "rp");
+				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
 			}
 			if (rdest == null) rdest = ctx.NewTmp();
 			ctx.Context.js(rdest, this.fun.name.v);
@@ -1366,7 +1397,7 @@ namespace LLParserGenTest
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
 			var rvar = ctx.GetVar(a);
-			if (rdest != null) ctx.Context.ld(rdest, rvar);
+			if (rdest != null) { ctx.Context.ld(rdest, rvar); return new ExprValue(rdest, rvar.Type); }
 			return rvar;
 		}
 	}
@@ -1376,25 +1407,29 @@ namespace LLParserGenTest
 		public ExprFun(TokenAST f, ExprList a) : base(f) { this.f = f; this.a = a; }
 		readonly TokenAST f;
 		readonly ExprList a;
+		DeclFun fun;
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-			var fun = ctx.GetFun(f);
+			var te = new List<TypeRoot>();
+			foreach (var e in this.a)
+				te.Add(e.CheckType(ctx).Type);
+			this.fun = ctx.GetFun(f,te);
+			if (this.fun == null)
+				Error("function '{0}' not found", f.v);
 			return new ExprType(fun.ret);
 		}
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
-			var fun = ctx.GetFun(this.f);
-			if (fun.args.Count != this.a.Count)
-				Error("wrong number of args calling function '{0}'", fun.name);
+			var te = new List<ExprType>();
+			foreach (var e in this.a)
+				te.Add(e.CheckType(ctx));
 
 			for (int i = 0; i < this.a.Count; ++i)
 			{
-				if (this.a[i].CheckType(ctx).Type != fun.args[i].ArgType)
-					Error("type mismatch while calling function '{0}' param {1}", fun.name, i);
-				var ra = this.a[i].GenRight(ctx, null);
-				ctx.Context.ld("rp", ra);
+				var ra = this.a[i].GenRight(ctx, "rp");
+				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
 			}
 			if (rdest == null) rdest = ctx.NewTmp();
 			ctx.Context.js(rdest, this.f.v);
