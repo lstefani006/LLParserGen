@@ -507,27 +507,19 @@ namespace LLParserGenTest
 
 	public class FunctionContex
 	{
-		readonly Context ctx;
+		readonly Context _ctx;
 		public readonly DeclFun fun;
 
-		public Context Context { get { return ctx; } }
+		public Context Context { get { return _ctx; } }
 
-		public string NewLbl()
-		{
-			return ctx.NewLbl();
-		}
-		public string NewTmp()
-		{
-			return ctx.NewTmp();
-		}
-		public void emit(string lbl)
-		{
-			ctx.emit(lbl);
-		}
+		public string NewLbl() { return _ctx.NewLbl(); }
+		public string NewTmp() { return _ctx.NewTmp(); }
+
+		public void emit(string lbl) { _ctx.emit(lbl); }
 
 		public FunctionContex(Context ctx, DeclFun fun)
 		{
-			this.ctx = ctx;
+			this._ctx = ctx;
 			this.fun = fun;
 		}
 
@@ -546,7 +538,7 @@ namespace LLParserGenTest
 		{
 			if (_localVars.ContainsKey(name.v) == true)
 				throw new SyntaxError(name, "duplicated variable '{0}'", name.v);
-			_localVars[name.v] = new ExprValue(ctx.NewTmp(), ty);
+			_localVars[name.v] = new ExprValue(_ctx.NewTmp(), ty);
 		}
 
 		public void UnDefVar(TokenAST name)
