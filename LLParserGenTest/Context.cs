@@ -510,6 +510,12 @@ namespace LLParserGenTest
 		readonly Context _ctx;
 		public readonly DeclFun fun;
 
+		public FunctionContex(Context ctx, DeclFun fun)
+		{
+			this._ctx = ctx;
+			this.fun = fun;
+		}
+
 		public Context Context { get { return _ctx; } }
 
 		public string NewLbl() { return _ctx.NewLbl(); }
@@ -517,14 +523,8 @@ namespace LLParserGenTest
 
 		public void emit(string lbl) { _ctx.emit(lbl); }
 
-		public FunctionContex(Context ctx, DeclFun fun)
-		{
-			this._ctx = ctx;
-			this.fun = fun;
-		}
 
-		private Dictionary<string, ExprValue> _localVars = new Dictionary<string, ExprValue>();
-
+		Dictionary<string, ExprValue> _localVars = new Dictionary<string, ExprValue>();
 		int _nvar = 0;
 
 		public void AddArgVar(TokenAST name, TypeRoot type)
