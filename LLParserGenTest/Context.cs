@@ -9,7 +9,8 @@ namespace LLParserGenTest
 	{
 		private int _cnt_tmp;
 		private int _cnt_lbl;
-		private readonly List<AssRoot> _ass = new List<AssRoot>();
+		private readonly List<AssRoot> _ass;
+		private readonly DeclGlobal _dg;
 
 		public string NewTmp()
 		{
@@ -21,8 +22,10 @@ namespace LLParserGenTest
 			return U.F("${0}", ++_cnt_lbl);
 		}
 
-		public Context()
+		public Context(DeclGlobal dg)
 		{
+			_dg = dg;
+			_ass = new List<AssRoot>();
 		}
 
 		public void Dispose()
@@ -388,13 +391,9 @@ namespace LLParserGenTest
 		}
 
 
-		DeclList _fl;
-
-		public bool GenerateCode(DeclList fl)
+		public bool GenerateCode()
 		{
-			_fl = fl;
-
-			foreach (var f in fl)
+			foreach (var f in _dg.members)
 			{
 				var fn = f as DeclFun;
 				if (fn != null)
@@ -475,11 +474,11 @@ namespace LLParserGenTest
 			return ok;
 		}
 
-		public DeclFun GetFun(TokenAST name, List<TypeRoot> args)
+		public DeclFun GetFun(string name, List<TypeRoot> args)
 		{
-			foreach (var f in _fl)
+			foreach (var f in _dg.members)
 			{
-				if (f.name.v != name.v) continue;
+				if (f.name.v != name) continue;
 				var fun = f as DeclFun;
 				if (fun == null) continue;
 				if (fun.args.Count != args.Count) continue;
@@ -495,7 +494,7 @@ namespace LLParserGenTest
 
 		public DeclClass GetClass(TokenAST name)
 		{
-			foreach (var f in _fl)
+			foreach (var f in _dg.members)
 				if (f.name.v == name.v)
 				{
 					var c = f as DeclClass;
@@ -508,12 +507,10 @@ namespace LLParserGenTest
 
 	public class FunctionContex
 	{
-
 		readonly Context ctx;
 		public readonly DeclFun fun;
 
 		public Context Context { get { return ctx; } }
-
 
 		public string NewLbl()
 		{
@@ -534,40 +531,52 @@ namespace LLParserGenTest
 			this.fun = fun;
 		}
 
-		private Dictionary<string, ExprValue> _vars = new Dictionary<string, ExprValue>();
-
-		public void AddDefVar(TokenAST name, TypeRoot ty)
-		{
-			if (_vars.ContainsKey(name.v) == true)
-				throw new SyntaxError(name, "duplicated variable '{0}'", name.v);
-			_vars[name.v] = new ExprValue(ctx.NewTmp(), ty);
-		}
-
-		public void UnDefVar(TokenAST name)
-		{
-			Debug.Assert(_vars.ContainsKey(name.v));
-			_vars.Remove(name.v);
-		}
-
+		private Dictionary<string, ExprValue> _localVars = new Dictionary<string, ExprValue>();
 
 		int _nvar = 0;
 
 		public void AddArgVar(TokenAST name, TypeRoot type)
 		{
-			if (_vars.ContainsKey(name.v) == true)
+			if (_localVars.ContainsKey(name.v) == true)
 				throw new SyntaxError(name, "duplicated param '{0}'", name.v);
-			_vars[name.v] = new ExprValue(U.F("r{0}", _nvar++), type);
+			_localVars[name.v] = new ExprValue(U.F("r{0}", _nvar++), type);
 		}
 
+		public void AddDefVar(TokenAST name, TypeRoot ty)
+		{
+			if (_localVars.ContainsKey(name.v) == true)
+				throw new SyntaxError(name, "duplicated variable '{0}'", name.v);
+			_localVars[name.v] = new ExprValue(ctx.NewTmp(), ty);
+		}
+
+		public void UnDefVar(TokenAST name)
+		{
+			Debug.Assert(_localVars.ContainsKey(name.v));
+			_localVars.Remove(name.v);
+		}
+
+		// bisogna confondere var con fun.
+		// .... 
 		public ExprValue GetVar(TokenAST name)
 		{
-			if (_vars.ContainsKey(name.v) == false)
+			if (_localVars.ContainsKey(name.v) == false)
 				throw new SyntaxError(name, "variable '{0}' not found", name.v);
-			return _vars[name.v];
+
+			return _localVars[name.v];
 		}
 
+		public ExprValue GetId(TokenAST name)
+		{
+			if (_localVars.ContainsKey(name.v))
+				return _localVars[name.v];
 
-		public DeclFun GetFun(TokenAST name, List<TypeRoot> args)
+				//throw new SyntaxError(name, "variable '{0}' not found", name.v);
+
+
+			return _localVars[name.v];
+		}
+
+		public DeclFun GetFun(string name, List<TypeRoot> args)
 		{
 			return this.Context.GetFun(name, args);
 		}
@@ -579,7 +588,6 @@ namespace LLParserGenTest
 			For,
 			Var
 		}
-
 
 		List<StackData> _tk = new List<StackData>();
 
