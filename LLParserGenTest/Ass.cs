@@ -47,7 +47,10 @@ namespace LLParserGenTest
 		ldf,
 
 		f2i,
-		i2f
+		i2f,
+
+		ldm,  // load member    ldm r4, r6, 3
+		stm   // store member
 	}
 
 	public abstract class AssRoot : IEquatable<AssRoot>
@@ -97,13 +100,13 @@ namespace LLParserGenTest
 		public U.Set<string> Lbl { get { return this._lbl; } }
 	}
 
-	class Op2 : AssRoot
+	class OpDS : AssRoot
 	{
 		readonly OpCode op;
 		string rd;
 		ExprValue rs;
 
-		public Op2(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rs)
+		public OpDS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rs)
 			: base(ctx, lbl)
 		{
 			this.op = op;
@@ -169,14 +172,14 @@ namespace LLParserGenTest
 		}
 	}
 
-	class Op3 : AssRoot
+	class OpDSS : AssRoot
 	{
 		readonly OpCode op;
 		string rd;
 		readonly ExprValue rt;
 		readonly ExprValue rs;
 
-		public Op3(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
+		public OpDSS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(rd != null);
@@ -249,6 +252,83 @@ namespace LLParserGenTest
 		}
 	}
 
+	class OpSSS : AssRoot
+	{
+		readonly OpCode op;
+		string rd;
+		readonly ExprValue rt;
+		readonly ExprValue rs;
+
+		public OpSSS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
+			: base(ctx, lbl)
+		{
+			Debug.Assert(rd != null);
+			Debug.Assert(rs != null);
+			Debug.Assert(rt != null);
+
+			this.op = op;
+
+			this.rd = rd;
+			this.rt = rt;
+			this.rs = rs;
+		}
+
+		public override bool ComputeLive(U.Set<string> force)
+		{
+			//
+			// in(s) = gen(s)  U (out(s) - kill(s))
+			// in(s) = used(s) U (out(s) - def(s))
+			// used = variabili usate
+			// def  = variabili scritte.
+			// 
+			// out(s) = U in(s1)     con s1 appartente a succ(s)
+			//
+			// in = (out - def) u use
+			//
+			// out variabili vive dopo l'istruzione
+			// def variabili definite (scritte) nell'istruzione
+			// use variabili argomenti (lette) nell'instruzione
+			//
+			var rin = new U.Set<string>();
+			if (force != null) rin.Add(force);
+			foreach (var b in this.Succ)
+				rin.Add(b.In);
+
+			if (true)
+			{
+				rin.Add(rd);
+				if (rs.IsReg) rin.Add(rs.Reg);
+				if (rt.IsReg) rin.Add(rt.Reg);
+			}
+
+			bool changed = (rin != _in);
+			_in = rin;
+
+			return changed;
+		}
+
+		public override void ComputeSucc(Context ctx)
+		{
+			_succ = new U.Set<AssRoot>();
+			var succ = ctx.GetSuccOp(this);
+			if (succ != null) _succ.Add(succ);
+		}
+
+
+		public override string ToString()
+		{
+			string f = Enum.GetName(typeof(OpCode), op);
+			string r = U.F("{0,-6} {1}, {2}, {3}", f, rd, rt, rs);
+			return U.F("{0} {1}", InToString(), r);
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
+			if (rd == temp) rd = reg;
+			if (rs.IsReg && rs.Reg == temp) rs.SetReg(reg);
+			if (rt.IsReg && rt.Reg == temp) rt.SetReg(reg);
+		}
+	}
 	class J : AssRoot
 	{
 		OpCode op;

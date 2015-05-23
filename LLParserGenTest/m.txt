@@ -1,9 +1,8 @@
-
-fun ww(a : int,b : int) : int {
+fun ww(a : int, b : int) : int {
 	var d : int;
-	a = ww(a, b+1);
-	ww(a, b+1);
-	fact(3);
+	//a = ww(a, b+1);
+//ww(a, b+1);
+//	fact(3);
 	d = 3;
 	if (d > 0)
 		a = 3;
@@ -52,6 +51,9 @@ fun ff(a : double, b : double) : int {
 	a = a + b;
 	if (a >b)
 		return 2;
+
+	var d : String;
+	return d.a;
 
 	return 0;
 }

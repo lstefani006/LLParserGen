@@ -58,11 +58,17 @@ false                                 ^FALSE
 %parser.using System
 %parser.namespace LLParserGenTest
 
-start<DeclGlobal>
-	:                    ^new DeclGlobal()
-	| start decl_fun     ^$1.members.Add($2)
-	| start decl_cls     ^$1.members.Add($2)
+start<DeclList>
+	: decl          ^new DeclList().Add($1)
+	| start decl    ^$1.Add($2)
 	;
+
+decl<DeclRoot>
+	: decl_cls      ^$1
+	| decl_fun      ^$1
+	| decl_var      ^$1
+	;
+			
 
 decl_cls<DeclClass>
 	: CLASS ID '{' cls_members_e '}' ^new DeclClass($2, $4)
@@ -224,6 +230,11 @@ e_list<ExprList>
 
 
 type<TypeRoot>
-	: ID                  ^new TypeSimple($1)
+	: type_dot            ^$1
 	| type '[' ']'        ^new TypeArray($1)
+	;
+
+type_dot<TypeSimple>
+	: ID                  ^new TypeSimple($1)
+	| type_dot '.' ID     ^$1.Add($3)
 	;

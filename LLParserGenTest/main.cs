@@ -39,10 +39,10 @@ namespace LLParserGenTest
 		public virtual bool IsVoid { get { return false; } }
 		public virtual bool IsArray { get { return false; } }
 		public virtual bool IsObject { get { return false; } }
-		public virtual bool IsMember { get { return false; } }
+		public virtual bool IsFun { get { return false; } }
 
-		public virtual DeclClass Class { get { Debug.Assert(false); return null; } }
 		public virtual string Member { get { Debug.Assert(false); return null; } }
+		public virtual string TypeName { get { Debug.Assert(false); return null; } }
 
 		protected abstract bool TypeEqual(TypeRoot t);
 		public static bool operator ==(TypeRoot a, TypeRoot b) { return a.TypeEqual(b) == true; }
@@ -67,8 +67,16 @@ namespace LLParserGenTest
 		public override bool IsInt { get { return this.id == "int"; } }
 		public override bool IsDbl { get { return this.id == "double"; } }
 		public override bool IsVoid { get { return this.id == "void"; } }
+		public override bool IsObject { get { return !(this.IsBool || this.IsInt || this.IsDbl || this.IsVoid); } }
 
-		readonly string id;
+		public override string TypeName { get { Debug.Assert(IsObject); return id; } }
+		string id;
+
+		public TypeSimple Add(TokenAST id)
+		{
+			this.id += "." + id.v;
+			return this;
+		}
 
 		protected override bool TypeEqual(TypeRoot t)
 		{
@@ -98,35 +106,35 @@ namespace LLParserGenTest
 		public override string ToString() { return t.ToString() + "[]"; }
 	}
 
-	public class TypeObject : TypeRoot
+	//public class TypeDot : TypeRoot
+	//{
+	//	public TypeDot(TypeSimple ts, TokenAST id) { this.ts = ts; this.id = id; }
+	//	public readonly TypeSimple ts;
+	//	public readonly TokenAST id;
+
+	//	public override bool IsObject { get { return true; } }
+	//	protected override bool TypeEqual(TypeRoot t)
+	//	{
+	//		var at = t as TypeDot;
+	//		if ((object)at != null)
+	//			return this.id.v == at.id.v && this.ts == at.ts;
+	//		return false;
+	//	}
+	//	public override string ToString() { return this.ts.ToString() + "." + this.id.v; }
+	//}
+
+
+	public class TypeFun : TypeRoot
 	{
-		public TypeObject(DeclClass cls) { this._class = cls; }
-		public DeclClass _class;
-
-		public override bool IsObject { get { return true; } }
-		protected override bool TypeEqual(TypeRoot t)
-		{
-			var at = t as TypeObject;
-			if ((object)at != null)
-				return this._class == at._class;
-			return false;
-		}
-		public override string ToString() { return this._class.name.v; }
-
-		public override DeclClass Class { get { Debug.Assert(false); return _class; } }
-	}
-
-	public class TypeMember : TypeRoot
-	{
-		public TypeMember(TypeRoot t, string member) { this.t = t; this.member = member; }
+		public TypeFun(TypeRoot t, string member) { this.t = t; this.member = member; }
 		public readonly TypeRoot t;
 		public readonly string member;
-		public override bool IsMember { get { return true; } }
+		public override bool IsFun { get { return true; } }
 
 		public override string Member { get { return member; } }
 		protected override bool TypeEqual(TypeRoot t)
 		{
-			var at = t as TypeMember;
+			var at = t as TypeFun;
 			if ((object)at != null)
 				return this.t == at.t && this.member != at.member;
 			return false;
@@ -134,7 +142,7 @@ namespace LLParserGenTest
 
 		public override string ToString() { return t.ToString() + "." + member; }
 	}
-	
+
 
 	/// <summary>
 	/// Descrive un tipo e il valore costante eventualmente associato.
@@ -145,7 +153,7 @@ namespace LLParserGenTest
 		public ExprType(int c) { this._const = c; this._type = TypeSimple.Int; }
 		public ExprType(bool c) { this._const = c; this._type = TypeSimple.Bool; }
 		public ExprType(double d) { this._const = d; this._type = TypeSimple.Dbl; }
-	
+
 		readonly object _const;
 		readonly TypeRoot _type;
 
@@ -386,7 +394,7 @@ namespace LLParserGenTest
 	public class DeclGlobal : DeclRoot
 	{
 		public readonly DeclList members;
-		public DeclGlobal() : base(null) { members = new DeclList(); }
+		public DeclGlobal(DeclList members) : base(null) { this.members = members; }
 
 		public override void SetFather(DeclRoot p)
 		{
@@ -429,8 +437,8 @@ namespace LLParserGenTest
 
 	public class DeclVar : DeclRoot
 	{
-		public readonly TypeRoot type;
-		public DeclVar(TokenAST name, TypeRoot type) : base(name) { this.type = type; }
+		public readonly TypeRoot Type;
+		public DeclVar(TokenAST name, TypeRoot type) : base(name) { this.Type = type; }
 		public override List<DeclRoot> GetId(string id)
 		{
 			var r = new List<DeclRoot>();
@@ -447,7 +455,8 @@ namespace LLParserGenTest
 		public readonly StmtRoot body;
 		public readonly TokenAST lastCurly;
 
-		public DeclFun(TokenAST name, FunArgList args, TypeRoot ret, StmtRoot body, TokenAST lastCurly) : base(name)
+		public DeclFun(TokenAST name, FunArgList args, TypeRoot ret, StmtRoot body, TokenAST lastCurly)
+			: base(name)
 		{
 			this.args = args;
 			this.ret = ret;
@@ -785,7 +794,12 @@ namespace LLParserGenTest
 			}
 		}
 
-		public virtual string GenLeft(FunctionContex ctx)
+		public virtual string GenLeftPre(FunctionContex ctx)
+		{
+			Error("cannot evaluate expression to assign");
+			return null;
+		}
+		public virtual ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
 		{
 			Error("cannot evaluate expression to assign");
 			return null;
@@ -799,7 +813,7 @@ namespace LLParserGenTest
 
 		public ExprAss(ExprRoot dst, TokenAST tk, ExprRoot src) : base(tk) { this.dst = dst; this.src = src; }
 
-		public override string GenLeft(FunctionContex ctx) { return dst.GenLeft(ctx); }
+		public override string GenLeftPre(FunctionContex ctx) { return dst.GenLeftPre(ctx); }
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
@@ -813,11 +827,19 @@ namespace LLParserGenTest
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
 			CheckType(ctx);
-			var ra = dst.GenLeft(ctx);
-			var rb = src.GenRight(ctx, ra);
-			if (rb.IsReg == false || (rb.IsReg == true && rb.Reg != ra)) ctx.Context.ld(ra, rb);
-			if (rdest != null) ctx.Context.ld(rdest, rb);
-			return rb;  // qui posso ritornare la costante (se è const oppure la var...)
+			var ra = dst.GenLeftPre(ctx);
+			if (ra != null)
+			{
+				var rb = src.GenRight(ctx, ra);
+				if (rb.IsReg == false || (rb.IsReg == true && rb.Reg != ra)) ctx.Context.ld(ra, rb);
+				if (rdest != null) ctx.Context.ld(rdest, rb);
+				return rb;  // qui posso ritornare la costante (se è const oppure la var...)
+			}
+			else
+			{
+				var rb = src.GenRight(ctx, null);
+				return dst.GenLeftPost(ctx, rb);
+			}
 		}
 	}
 
@@ -1207,7 +1229,7 @@ namespace LLParserGenTest
 				}
 
 				return new ExprValue(rdest, t.Type);
-			}	
+			}
 		}
 	}
 
@@ -1298,12 +1320,14 @@ namespace LLParserGenTest
 			{
 				if (ctype.IsInt)
 				{
-					/***/if (ta.IsInt) return new ExprType((double)ta.Int);
+					/***/
+					if (ta.IsInt) return new ExprType((double)ta.Int);
 					else if (ta.IsDbl) return new ExprType((int)ta.Dbl);
 				}
 				else if (ctype.IsDbl)
 				{
-					/***/if (ta.IsInt) return new ExprType((double)ta.Int);
+					/***/
+					if (ta.IsInt) return new ExprType((double)ta.Int);
 					else if (ta.IsDbl) return new ExprType((double)ta.Dbl);
 				}
 			}
@@ -1326,7 +1350,8 @@ namespace LLParserGenTest
 			{
 				var aa = e.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				/***/if (te.IsInt) Debug.Assert(false);
+				/***/
+				if (te.IsInt) Debug.Assert(false);
 				else if (te.IsDbl) ctx.Context.d2i(rdest, aa.Reg);
 				else Debug.Assert(false);
 				return new ExprValue(rdest, ctype);
@@ -1335,7 +1360,8 @@ namespace LLParserGenTest
 			{
 				var aa = e.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				/***/if (te.IsInt) ctx.Context.i2d(rdest, aa.Reg);
+				/***/
+				if (te.IsInt) ctx.Context.i2d(rdest, aa.Reg);
 				else if (te.IsDbl) Debug.Assert(false);
 				else Debug.Assert(false);
 				return new ExprValue(rdest, ctype);
@@ -1357,7 +1383,7 @@ namespace LLParserGenTest
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-			var decl = ctx.Context.GetClass(this.id);
+			var decl = ctx.Context.GetClass(this.id.v);
 			if (decl == null)
 				Error("cannot find class '{0}'", this.id.v);
 
@@ -1465,7 +1491,7 @@ namespace LLParserGenTest
 			return new ExprType(v.Type);
 		}
 
-		public override string GenLeft(FunctionContex ctx)
+		public override string GenLeftPre(FunctionContex ctx)
 		{
 			return ctx.GetVar(a).Reg;
 		}
@@ -1489,26 +1515,112 @@ namespace LLParserGenTest
 		{
 			var te = e.CheckType(ctx);
 			if (te.IsObject == false) Error("'.' operators require an object on left side");
-		
-			var cls = te.Type.Class;
-			foreach (var m in cls.members) {
-					if (m.name.v == a.v) 
-						return new ExprType(new TypeMember(te.Type, m.name.v));
+
+			var cls = ctx.Context.GetClass(te.Type.TypeName);
+			if (cls == null)
+				Error("class '{0}' not found", te.Type.Member);
+
+			foreach (var m in cls.members)
+			{
+				if (m.name.v == a.v)
+				{
+					if (m is DeclFun)
+						return new ExprType(new TypeFun(te.Type, m.name.v));
+					else if (m is DeclVar)
+					{
+						var mv = (DeclVar)m;
+						return new ExprType(mv.Type);
+					}
+					else
+					{
+						Debug.Assert(false, "che manca ??");
+					}
+				}
 			}
 			Error(U.F("'{0}' member not found", a.v));
 			return null;
 		}
 
-		public override string GenLeft(FunctionContex ctx)
+		public override string GenLeftPre(FunctionContex ctx)
 		{
-			return ctx.GetVar(a).Reg;
+			/* bel casino
+			   ExprAss vuole con GenLeft una stringa ... il registro su cui mettere il risultato.
+			 * ma qui non abbiamo una stringa.
+			 */
+			var te = CheckType(ctx);
+			if (te.Type.IsFun)
+			{
+			}
+			else
+			{
+			}
+			return null;
+		}
+
+		public override ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
+		{
+			var tem = e.CheckType(ctx);
+			if (tem.IsObject == false) Error("'.' operators require an object on left side");
+
+			var cls = ctx.Context.GetClass(tem.Type.TypeName);
+			if (cls == null)
+				Error("class '{0}' not found", tem.Type.Member);
+
+			int off = 0;
+			TypeRoot t = null;
+			foreach (var m in cls.members)
+			{
+				if (m is DeclVar)
+				{
+					if (m.name.v == a.v)
+					{
+						t = ((DeclVar)m).Type;
+						break;
+					}
+					off += 1;
+				}
+			}
+			var ea = e.GenRight(ctx, null);
+			ctx.Context.stm(ea.Reg, off, v);
+			return v;
 		}
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
-			var rvar = ctx.GetVar(a);
-			if (rdest != null) { ctx.Context.ld(rdest, rvar); return new ExprValue(rdest, rvar.Type); }
-			return rvar;
+			var te = CheckType(ctx);
+			if (te.Type.IsFun)
+			{
+				var ev = e.GenRight(ctx, null);
+				return new ExprValue(ev.Reg, te.Type);
+			}
+			else
+			{
+				var tem = e.CheckType(ctx);
+				if (tem.IsObject == false) Error("'.' operators require an object on left side");
+
+				var cls = ctx.Context.GetClass(tem.Type.TypeName);
+				if (cls == null)
+					Error("class '{0}' not found", tem.Type.Member);
+
+				int off = 0;
+				TypeRoot t = null;
+				foreach (var m in cls.members)
+				{
+					if (m is DeclVar)
+					{
+						if (m.name.v == a.v)
+						{
+							t = ((DeclVar)m).Type;
+							break;
+						}
+						off += 1;
+					}
+				}
+				var ea = e.GenRight(ctx, null);
+				if (rdest == null) rdest = ctx.NewTmp();
+				ctx.Context.ldm(rdest, ea, off);
+				return new ExprValue(rdest, t);
+			}
 		}
 	}
 
@@ -1522,7 +1634,7 @@ namespace LLParserGenTest
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var te = e.CheckType(ctx);
-			if (te.Type.IsMember == false) 
+			if (te.Type.IsFun == false)
 				Error("function required for call operator");
 
 			var targs = new List<TypeRoot>();
@@ -1581,7 +1693,8 @@ namespace LLParserGenTest
 		public DeclGlobal Start(LexReader rd)
 		{
 			this.init(rd);
-			return this.start(null);
+			var v = this.start(null);
+			return new DeclGlobal(v);
 		}
 	}
 }
