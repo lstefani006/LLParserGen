@@ -8,7 +8,8 @@ else
 endif
 
 Test.exe : Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
-	$(CSC) -debug+ -out:$(call FixPath,./Test.exe) $(call FixPath,$(wildcard ../LLParserGenLib/*.cs)) Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
+	$(CSC) -debug+ -out:$(call FixPath,./Test.exe) $(call FixPath,$(wildcard ../LLParserGenLib/*.cs)) \
+		Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
 
 M.cs : M.gram
 	../LLParserGen/LLParserGen.exe M.gram
