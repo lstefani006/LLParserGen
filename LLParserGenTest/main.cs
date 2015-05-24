@@ -170,7 +170,7 @@ namespace LLParserGenTest
 		public bool IsInt { get { return _type.IsInt; } }
 		public bool IsDbl { get { return _type.IsDbl; } }
 		public bool IsVoid { get { return _type.IsVoid; } }
-		public bool IsObject { get { return _type.IsObject; } }
+		public bool IsObj { get { return _type.IsObject; } }
 		public bool IsArray { get { return _type.IsArray; } }
 
 
@@ -322,7 +322,7 @@ namespace LLParserGenTest
 		public bool IsInt { get { return _type.IsInt; } }
 		public bool IsDbl { get { return _type.IsDbl; } }
 		public bool IsVoid { get { return _type.IsVoid; } }
-		public bool IsObject { get { return _type.IsObject; } }
+		public bool IsObj { get { return _type.IsObject; } }
 		public bool IsArray { get { return _type.IsArray; } }
 
 		public TypeRoot Type { get { return _type; } }
@@ -331,6 +331,7 @@ namespace LLParserGenTest
 		public double Dbl { get { Debug.Assert(_type.IsDbl); return (double)_const; } }
 		public bool Bool { get { Debug.Assert(_type.IsBool); return (bool)_const; } }
 		public string Reg { get { Debug.Assert(string.IsNullOrEmpty(_reg) == false); return _reg; } }
+
 		public void SetReg(string r) { Debug.Assert(_reg != null); _reg = r; }
 	}
 
@@ -1524,14 +1525,14 @@ namespace LLParserGenTest
 		readonly ExprRoot e;
 		readonly TokenAST a;
 
-		int _off;
+		int _off_var;
 		DeclVar _var;
 		DeclFun _fun;
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var te = e.CheckType(ctx);
-			if (te.IsObject == false) 
+			if (te.IsObj == false) 
 				Error("'.' operators require an object on left side");
 
 			var cls = ctx.Context.GetClass(te.Type.TypeName);
@@ -1539,7 +1540,6 @@ namespace LLParserGenTest
 				Error("class '{0}' not found", te.Type.Member);
 
 			int off_var = 0;
-			int off_fun = 0;
 			foreach (var m in cls.members)
 			{
 				if (m is DeclFun)
@@ -1547,17 +1547,15 @@ namespace LLParserGenTest
 					if (m.name.v == a.v)
 					{
 						_fun = (DeclFun)m;
-						_off = off_fun;
 						return new ExprType(new TypeFun(te.Type, m.name.v));
 					}
-					off_fun += 1;
 				}
 				else if (m is DeclVar) 
 				{
 					if (m.name.v == a.v)
 					{
 						_var = (DeclVar)m;
-						_off = off_var;
+						_off_var = off_var;
 						return new ExprType(((DeclVar)m).Type);
 					}
 					off_var += 1;
@@ -1580,7 +1578,7 @@ namespace LLParserGenTest
 		public override ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
 		{
 			var ea = e.GenRight(ctx, null);
-			ctx.Context.stm(ea.Reg, _off, v);
+			ctx.Context.stm(ea.Reg, _off_var, v);
 			return v;
 		}
 
@@ -1596,7 +1594,7 @@ namespace LLParserGenTest
 			{
 				var ea = e.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				ctx.Context.ldm(rdest, ea, _off);
+				ctx.Context.ldm(rdest, ea, _off_var, te);
 				return new ExprValue(rdest, _var.Type);
 			}
 			else
@@ -1604,43 +1602,6 @@ namespace LLParserGenTest
 				Debug.Assert(false);
 				return null;
 			}
-			/*
-			 * 
-			var te = CheckType(ctx);
-			if (te.Type.IsFun)
-			{
-				var ev = e.GenRight(ctx, null);
-				return new ExprValue(ev.Reg, te.Type);
-			}
-			else
-			{
-				var tem = e.CheckType(ctx);
-				if (tem.IsObject == false) Error("'.' operators require an object on left side");
-
-				var cls = ctx.Context.GetClass(tem.Type.TypeName);
-				if (cls == null)
-					Error("class '{0}' not found", tem.Type.Member);
-
-				int off = 0;
-				TypeRoot t = null;
-				foreach (var m in cls.members)
-				{
-					if (m is DeclVar)
-					{
-						if (m.name.v == a.v)
-						{
-							t = ((DeclVar)m).Type;
-							break;
-						}
-						off += 1;
-					}
-				}
-				var ea = e.GenRight(ctx, null);
-				if (rdest == null) rdest = ctx.NewTmp();
-				ctx.Context.ldm(rdest, ea, off);
-				return new ExprValue(rdest, t);
-			}
-			*/
 		}
 	}
 
@@ -1670,11 +1631,11 @@ namespace LLParserGenTest
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
-			CheckType(ctx);
+			var te = this.CheckType(ctx);
 
-			var te = new List<ExprType>();
+			var targs = new List<ExprType>();
 			foreach (var e in this.a)
-				te.Add(e.CheckType(ctx));
+				targs.Add(e.CheckType(ctx));
 
 			for (int i = 0; i < this.a.Count; ++i)
 			{
@@ -1683,7 +1644,7 @@ namespace LLParserGenTest
 			}
 			if (rdest == null) rdest = ctx.NewTmp();
 			ctx.Context.js(rdest, this.fun.name.v);
-			return new ExprValue(rdest, this.CheckType(ctx).Type);
+			return new ExprValue(rdest, te.Type);
 		}
 	}
 

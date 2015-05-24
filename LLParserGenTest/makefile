@@ -1,8 +1,17 @@
+ifdef SYSTEMROOT
+	CSC=csc.exe
+	FixPath = $(subst /,\,$1)
+else
+	CSC=mcs
+	rm -f
+	FixPath = $1
+endif
+
 Test.exe : Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
-	mcs -debug -out:./Test.exe ../LLParserGenLib/*.cs Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
+	$(CSC) -debug+ -out:$(call FixPath,./Test.exe) $(call FixPath,$(wildcard ../LLParserGenLib/*.cs)) Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
 
 M.cs : M.gram
 	../LLParserGen/LLParserGen.exe M.gram
 
 clean:
-	-rm -f Test.exe M.cs
+	$(RM) Test.exe M.cs

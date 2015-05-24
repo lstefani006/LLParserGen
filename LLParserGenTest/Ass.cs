@@ -44,7 +44,11 @@ namespace LLParserGenTest
 
 		jmp,
 		js,
-		ret,
+
+		iret,
+		fret,
+		oret,
+		vret,
 
 		ild,
 		fld,
@@ -121,7 +125,7 @@ namespace LLParserGenTest
 			this.rd = rd;
 			this.rs = rs;
 
-			Debug.Assert(op == OpCode.f2i || op == OpCode.i2f || op == OpCode.ild || op == OpCode.fld);
+			Debug.Assert(op == OpCode.f2i || op == OpCode.i2f || op == OpCode.ild || op == OpCode.fld || op == OpCode.old);
 		}
 
 		public override bool ComputeLive(U.Set<string> force)
@@ -436,10 +440,11 @@ namespace LLParserGenTest
 		readonly ExprValue rt;
 		readonly OpCode op;
 
-		public Ret(Context ctx, U.Set<string> lbl, ExprValue rt)
+		public Ret(Context ctx, U.Set<string> lbl, OpCode op, ExprValue rt)
 			: base(ctx, lbl)
 		{
-			this.op = OpCode.ret;
+			Debug.Assert(op == OpCode.iret || op == OpCode.fret || op == OpCode.vret || op == OpCode.oret);
+			this.op = op;
 			this.rt = rt;
 		}
 
@@ -468,7 +473,7 @@ namespace LLParserGenTest
 			{
 				// rd is written  ==> is not live before this instruction
 				// rs/rt are read ==> they must be live for this instruction
-				if (rt.IsReg) rin.Add(rt.Reg);
+				if (rt != null && rt.IsReg) rin.Add(rt.Reg);
 			}
 
 			bool changed = rin != _in;
