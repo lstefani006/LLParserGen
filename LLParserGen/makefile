@@ -4,4 +4,4 @@ LLParserGen.exe : FirstFollow.cs LexParserHelper.cs Main.cs regexp.cs
 	cp LLParserGen.exe ~/bin/.
 
 clean :
-	-rm -f LLParserGen.exe
+	-rm -f LLParserGen.exe M.cs

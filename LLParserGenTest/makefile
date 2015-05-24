@@ -3,7 +3,7 @@ ifdef SYSTEMROOT
 	FixPath = $(subst /,\,$1)
 else
 	CSC=mcs
-	rm -f
+	RM=rm -f
 	FixPath = $1
 endif
 
