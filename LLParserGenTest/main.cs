@@ -794,11 +794,24 @@ namespace LLParserGenTest
 			}
 		}
 
+		/// <summary>
+		/// Ritorna il registro da assegnare come risultato dell'espressione.
+		/// Null se invece l'expressione non è riconducibile solo ad una var locale.
+		/// </summary>
+		/// <returns>The left pre.</returns>
+		/// <param name="ctx">Context.</param>
 		public virtual string GenLeftPre(FunctionContex ctx)
 		{
 			Error("cannot evaluate expression to assign");
 			return null;
 		}
+
+		/// <summary>
+		/// Data una espressione già valutata in v la assegna alla parte sinistra dell'assegnamento
+		/// </summary>
+		/// <returns>The left post.</returns>
+		/// <param name="ctx">Context.</param>
+		/// <param name="v">V.</param>
 		public virtual ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
 		{
 			Error("cannot evaluate expression to assign");
@@ -813,7 +826,7 @@ namespace LLParserGenTest
 
 		public ExprAss(ExprRoot dst, TokenAST tk, ExprRoot src) : base(tk) { this.dst = dst; this.src = src; }
 
-		public override string GenLeftPre(FunctionContex ctx) { return dst.GenLeftPre(ctx); }
+//		public override string GenLeftPre(FunctionContex ctx) { return dst.GenLeftPre(ctx); }
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
@@ -1511,31 +1524,46 @@ namespace LLParserGenTest
 		readonly ExprRoot e;
 		readonly TokenAST a;
 
+		int _off;
+		DeclVar _var;
+		DeclFun _fun;
+
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var te = e.CheckType(ctx);
-			if (te.IsObject == false) Error("'.' operators require an object on left side");
+			if (te.IsObject == false) 
+				Error("'.' operators require an object on left side");
 
 			var cls = ctx.Context.GetClass(te.Type.TypeName);
 			if (cls == null)
 				Error("class '{0}' not found", te.Type.Member);
 
+			int off_var = 0;
+			int off_fun = 0;
 			foreach (var m in cls.members)
 			{
-				if (m.name.v == a.v)
+				if (m is DeclFun)
 				{
-					if (m is DeclFun)
+					if (m.name.v == a.v)
+					{
+						_fun = (DeclFun)m;
+						_off = off_fun;
 						return new ExprType(new TypeFun(te.Type, m.name.v));
-					else if (m is DeclVar)
-					{
-						var mv = (DeclVar)m;
-						return new ExprType(mv.Type);
 					}
-					else
-					{
-						Debug.Assert(false, "che manca ??");
-					}
+					off_fun += 1;
 				}
+				else if (m is DeclVar) 
+				{
+					if (m.name.v == a.v)
+					{
+						_var = (DeclVar)m;
+						_off = off_var;
+						return new ExprType(((DeclVar)m).Type);
+					}
+					off_var += 1;
+				}
+				else 
+					Debug.Assert(false);
 			}
 			Error(U.F("'{0}' member not found", a.v));
 			return null;
@@ -1543,50 +1571,41 @@ namespace LLParserGenTest
 
 		public override string GenLeftPre(FunctionContex ctx)
 		{
-			/* bel casino
-			   ExprAss vuole con GenLeft una stringa ... il registro su cui mettere il risultato.
-			 * ma qui non abbiamo una stringa.
-			 */
-			var te = CheckType(ctx);
-			if (te.Type.IsFun)
-			{
-			}
-			else
-			{
-			}
+			// una espressione a.b non può essere valuta con un solo registro
+			// per cui si può assgnare solo con GenLeftPost
+			CheckType(ctx);
 			return null;
 		}
 
 		public override ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
 		{
-			var tem = e.CheckType(ctx);
-			if (tem.IsObject == false) Error("'.' operators require an object on left side");
-
-			var cls = ctx.Context.GetClass(tem.Type.TypeName);
-			if (cls == null)
-				Error("class '{0}' not found", tem.Type.Member);
-
-			int off = 0;
-			TypeRoot t = null;
-			foreach (var m in cls.members)
-			{
-				if (m is DeclVar)
-				{
-					if (m.name.v == a.v)
-					{
-						t = ((DeclVar)m).Type;
-						break;
-					}
-					off += 1;
-				}
-			}
 			var ea = e.GenRight(ctx, null);
-			ctx.Context.stm(ea.Reg, off, v);
+			ctx.Context.stm(ea.Reg, _off, v);
 			return v;
 		}
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
+			var te = CheckType(ctx);
+			if (_fun != null)
+			{
+				var ev = e.GenRight(ctx, null);
+				return new ExprValue(ev.Reg, te.Type);
+			}
+			else if (_var != null)
+			{
+				var ea = e.GenRight(ctx, null);
+				if (rdest == null) rdest = ctx.NewTmp();
+				ctx.Context.ldm(rdest, ea, _off);
+				return new ExprValue(rdest, _var.Type);
+			}
+			else
+			{
+				Debug.Assert(false);
+				return null;
+			}
+			/*
+			 * 
 			var te = CheckType(ctx);
 			if (te.Type.IsFun)
 			{
@@ -1621,6 +1640,7 @@ namespace LLParserGenTest
 				ctx.Context.ldm(rdest, ea, off);
 				return new ExprValue(rdest, t);
 			}
+			*/
 		}
 	}
 

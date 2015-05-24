@@ -154,7 +154,7 @@ namespace LLParserGenTest
 			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibeq, rs, rt, addr));
 			else if (rs.IsBool) _ass.Add(new Br(this, emitNextLbl, OpCode.ibeq, rs, rt, addr));
 			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbeq, rs, rt, addr));
-			else if (rs.IsObject) _ass.Add(new Br(this, emitNextLbl, OpCode.ibeq, rs, rt, addr));
+			else if (rs.IsObject) _ass.Add(new Br(this, emitNextLbl, OpCode.obeq, rs, rt, addr));
 			else Debug.Assert(false);
 			emitNextLbl = null;
 		}
@@ -165,7 +165,7 @@ namespace LLParserGenTest
 			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibne, rs, rt, addr));
 			else if (rs.IsBool) _ass.Add(new Br(this, emitNextLbl, OpCode.ibne, rs, rt, addr));
 			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbne, rs, rt, addr));
-			else if (rs.IsObject) _ass.Add(new Br(this, emitNextLbl, OpCode.ibne, rs, rt, addr));
+			else if (rs.IsObject) _ass.Add(new Br(this, emitNextLbl, OpCode.obne, rs, rt, addr));
 			else Debug.Assert(false);
 			emitNextLbl = null;
 		}
@@ -215,10 +215,11 @@ namespace LLParserGenTest
 			//Debug.Assert(c.IsConst);
 
 			e();
-			/***/if (c.IsInt) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ldi, rs, c));
-			else if (c.IsBool) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ldi, rs, c));
-			else if (c.IsDbl) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ldf, rs, c));
-			else if (c.IsObject) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ldi, rs, c));
+			/***/if (c.IsInt) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
+			else if (c.IsBool) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
+			else if (c.IsDbl) _ass.Add(new OpDS(this, emitNextLbl, OpCode.fld, rs, c));
+			else if (c.IsObject) _ass.Add(new OpDS(this, emitNextLbl, OpCode.old, rs, c));
+			else Debug.Assert(false);
 			emitNextLbl = null;
 		}
 		public void i2d(string rd, string rs)
@@ -237,13 +238,16 @@ namespace LLParserGenTest
 		public void ldm(string rd, ExprValue rs, int offset)
 		{
 			e();
-			_ass.Add(new OpDSS(this, emitNextLbl, OpCode.ldm, rd, rs, new ExprValue(offset)));
 			emitNextLbl = null;
 		}
 		public void stm(string rd, int offset, ExprValue rs)
 		{
 			e();
-			_ass.Add(new OpSSS(this, emitNextLbl, OpCode.stm, rd, new ExprValue(offset), rs));
+			/***/if (rs.IsInt) _ass.Add(new OpSSS(this, emitNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.IsBool)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.IsDbl)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
+			else if (rs.IsObject)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
+			else Debug.Assert(false);
 			emitNextLbl = null;
 		}
 

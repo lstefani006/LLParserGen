@@ -1,4 +1,3 @@
-
 Test.exe : Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
 	mcs -debug -out:./Test.exe ../LLParserGenLib/*.cs Ass.cs Context.cs Graph.cs main.cs M.cs U.cs
 

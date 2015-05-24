@@ -39,18 +39,26 @@ namespace LLParserGenTest
 		fblt,
 		fble,
 
+		obeq,
+		obne,
+
 		jmp,
 		js,
 		ret,
 
-		ldi,
-		ldf,
+		ild,
+		fld,
+		old,
 
 		f2i,
 		i2f,
 
-		ldm,  // load member    ldm r4, r6, 3
-		stm   // store member
+		ildm,  // load member    ldm r4, r6, 3
+		fldm,
+		oldm,
+		istm,  // store member
+		fstm,
+		ostm,
 	}
 
 	public abstract class AssRoot : IEquatable<AssRoot>
@@ -113,7 +121,7 @@ namespace LLParserGenTest
 			this.rd = rd;
 			this.rs = rs;
 
-			Debug.Assert(op == OpCode.f2i || op == OpCode.i2f || op == OpCode.ldi || op == OpCode.ldf);
+			Debug.Assert(op == OpCode.f2i || op == OpCode.i2f || op == OpCode.ild || op == OpCode.fld);
 		}
 
 		public override bool ComputeLive(U.Set<string> force)
