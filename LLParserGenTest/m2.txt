@@ -34,5 +34,7 @@ fun leo(luca : String, b : String) : int
 
 fun aa(): String
 {
-	return new String(333);
+	var r : String;
+	r = new String(333);
+	return r.b.b.b.b.b.b.b.b;
 }
