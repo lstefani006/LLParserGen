@@ -54,14 +54,12 @@ fun ff(a : double, b : double) : int {
 
 	var d : String;
 	return d.a;
-
-	return 0;
 }
 
 class String {
 	var a: int;
 
-	fun String() : int {
-		return 3;
+	fun String() : String {
+		return this;
 	}
 }

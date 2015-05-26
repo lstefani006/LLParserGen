@@ -15,6 +15,7 @@ return                                ^RETURN
 
 true                                  ^TRUE
 false                                 ^FALSE
+this                                  ^THIS
 
 "."									  ^(.)
 ","									  ^(,)
@@ -208,6 +209,7 @@ e_una<ExprRoot>
 e_prim<ExprRoot>
 	: NUM                         ^new ExprNum($1)
 	| ID                          ^new ExprId($1)
+	| THIS                        ^new ExprThis($1)
 	| FALSE                       ^new ExprBool($1, false)
 	| TRUE                        ^new ExprBool($1, true)
 	| '(' e_add ')'               ^$2
@@ -215,7 +217,7 @@ e_prim<ExprRoot>
 	| e_prim '(' e_list_opz ')'   ^new ExprFun($1, $2, $3)
 	| CAST '(' type ',' expr ')'  ^new ExprCast($1, $3, $5)
 	| NEW ID '(' e_list_opz ')'   ^new ExprNewObj($1, $2, $4)
-	//| NEW ID '[' e_list ']'     ^new ExprNewClass($1, $2, $4)
+	//| NEW ID '[' e_list ']'     ^new ExprNewArray($1, $2, $4)
 	;
 
 e_list_opz<ExprList>

@@ -134,10 +134,16 @@ namespace LLParserGenTest
 			emitNextLbl = null;
 		}
 
-		public void js(string rd, string addr)
+		public void js(string rd, string addr, ExprType et)
 		{
 			e();
-			_ass.Add(new J(this, emitNextLbl, OpCode.js, rd, addr));
+			/***/if (et == null) _ass.Add(new J(this, emitNextLbl, OpCode.vjs, rd, addr));
+			else if (et.IsVoid) _ass.Add(new J(this, emitNextLbl, OpCode.vjs, rd, addr));
+			else if (et.IsInt) _ass.Add(new J(this, emitNextLbl, OpCode.ijs, rd, addr));
+			else if (et.IsBool) _ass.Add(new J(this, emitNextLbl, OpCode.ijs, rd, addr));
+			else if (et.IsDbl) _ass.Add(new J(this, emitNextLbl, OpCode.fjs, rd, addr));
+			else if (et.IsObj) _ass.Add(new J(this, emitNextLbl, OpCode.ojs, rd, addr));
+			else Debug.Assert(false);
 			emitNextLbl = null;
 		}
 
@@ -218,8 +224,6 @@ namespace LLParserGenTest
 
 		public void ld(string rs, ExprValue c)
 		{
-			//Debug.Assert(c.IsConst);
-
 			e();
 			/***/if (c.IsInt) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
 			else if (c.IsBool) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
@@ -262,6 +266,15 @@ namespace LLParserGenTest
 			emitNextLbl = null;
 		}
 
+		public void newobj(string rd, int size, int vt)
+		{
+			e();
+			_ass.Add(new OpNew(this, emitNextLbl, OpCode.onew, rd, size, vt));
+			emitNextLbl = null;
+		}
+
+	
+		
 		U.Set<string> emitNextLbl;
 
 		public void emit(string lbl)
@@ -417,18 +430,30 @@ namespace LLParserGenTest
 		}
 
 
-		public bool GenerateCode()
+		private bool GenerateCode(DeclList member)
 		{
-			foreach (var f in _dg.members)
+			foreach (var f in member)
 			{
-				var fn = f as DeclFun;
-				if (fn != null)
+				var df = f as DeclFun;
+				var dc = f as DeclClass;
+				
+				if (df != null)
 				{
-					if (GenerateCode(fn) == false)
+					if (GenerateCode(df) == false)
+						return false;
+				}
+				else if (dc != null)
+				{
+					if (GenerateCode(dc.members) == false)
 						return false;
 				}
 			}
 			return true;
+		}
+
+		public bool GenerateCode()
+		{
+			return GenerateCode(_dg.members);
 		}
 
 		public bool GenerateCode(DeclFun f)
@@ -436,68 +461,80 @@ namespace LLParserGenTest
 			bool debug = false;
 			bool optimize = true;
 
-			var fctx = new FunctionContex(this, f);
-
-			int regAllocati = f.args.Count;
-			foreach (var a in f.args)
-				fctx.AddArgVar(a.ArgName, a.ArgType);
-
-			int istart = _ass.Count;
-			this.emit(f.name.v);
-			bool unreachable = f.body.GenCode(fctx);
-			if (unreachable == false)
+			using (var fctx = new FunctionContex(this, f))
 			{
-				if (f.ret.IsVoid == false) 
-					throw new SyntaxError(f.lastCurly, "missing return stmt");
-				fctx.Context.ret(null);
-			}
-			int iend = _ass.Count;
-
-			// if (debug) Console.WriteLine("{0}", this.ToString(istart, iend));
-
-
-			// le var in ingresso anche se non servono più non vengono sovrascritte
-			// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
-			var live = new List<string>();
-			if (optimize == false) f.args.ForEach(v => live.Add(fctx.GetVar(v.ArgName).Reg));
-			this.ComputeLive(istart, iend, live);
-			if (debug)
-			{
-				Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
-				Console.WriteLine("Live variables");
-				Console.WriteLine(this.ToString(istart, iend));
-			}
-
-			var gr = this.CreateGraph(istart, iend);
-			if (debug)
-			{
-				Console.WriteLine("Grafo");
-				Console.WriteLine(gr);
-			}
-
-			bool ok = false;
-			for (int k = regAllocati; k < 32; ++k)
-			{
-				var col = gr.Color(k);
-				if (col != null)
+				if (f.Father is DeclClass)
 				{
-					Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per push/js r{0}", k, k - 1);
-					var regs = col.GetRegs();
-					this.SetTemps(istart, iend, regs);
-					ok = true;
-					break;
+					fctx.AddArgVar(new TokenAST(f.name.fileName, f.name.lineNu, MParser.THIS, "this", "this"), new TypeSimple(f.Father.name.v));
+
+					if (((DeclClass)f.Father).name.v == f.name.v)
+					{
+						if (f.ret != new TypeSimple(f.name.v))
+							throw new SyntaxError(f.lastCurly, "constructor must return object of the enclosed class");
+					}
 				}
-			}
 
-			if (ok == false)
-			{
-				Console.WriteLine("Cannot allocate registers");
-				return false;
-			}
+				int regAllocati = f.args.Count;
+				foreach (var a in f.args)
+					fctx.AddArgVar(a.ArgName, a.ArgType);
 
-			Console.WriteLine(this.ToString(istart, iend));
-			Console.WriteLine("#####################");
-			return ok;
+				int istart = _ass.Count;
+				this.emit(f.AssName);
+				bool unreachable = f.body.GenCode(fctx);
+				if (unreachable == false)
+				{
+					if (f.ret.IsVoid == false)
+						throw new SyntaxError(f.lastCurly, "missing return stmt");
+					fctx.Context.ret(null);
+				}
+				int iend = _ass.Count;
+
+				// if (debug) Console.WriteLine("{0}", this.ToString(istart, iend));
+
+
+				// le var in ingresso anche se non servono più non vengono sovrascritte
+				// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
+				var live = new List<string>();
+				if (optimize == false) f.args.ForEach(v => live.Add(fctx.GetVar(v.ArgName).Reg));
+				this.ComputeLive(istart, iend, live);
+				if (debug)
+				{
+					Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
+					Console.WriteLine("Live variables");
+					Console.WriteLine(this.ToString(istart, iend));
+				}
+
+				var gr = this.CreateGraph(istart, iend);
+				if (debug)
+				{
+					Console.WriteLine("Grafo");
+					Console.WriteLine(gr);
+				}
+
+				bool ok = false;
+				for (int k = regAllocati; k < 32; ++k)
+				{
+					var col = gr.Color(k);
+					if (col != null)
+					{
+						Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per push/js r{0}", k, k - 1);
+						var regs = col.GetRegs();
+						this.SetTemps(istart, iend, regs);
+						ok = true;
+						break;
+					}
+				}
+
+				if (ok == false)
+				{
+					Console.WriteLine("Cannot allocate registers");
+					return false;
+				}
+
+				Console.WriteLine(this.ToString(istart, iend));
+				Console.WriteLine("#####################");
+				return ok;
+			}
 		}
 
 		public DeclFun GetFun(string name, List<TypeRoot> args)
@@ -529,9 +566,31 @@ namespace LLParserGenTest
 				}
 			return null;
 		}
+		public DeclFun GetFun(string className, string fun, List<TypeRoot> args)
+		{
+			var dc = this.GetClass(className);
+			if (dc == null)
+				return null;
+
+			foreach (var m in dc.members)
+			{
+				if (m is DeclFun == false) continue;
+				var df = (DeclFun)m;
+				if (df.name.v != fun) continue;
+				if (df.args.Count != args.Count) continue;
+				bool ok = true;
+				for (int i = 0; i < args.Count; ++i)
+				{
+					if (args[i] != df.args[i].ArgType) { ok = false; break; }
+				}
+				if (ok)
+					return df;
+			}
+			return null;
+		}
 	}
 
-	public class FunctionContex
+	public class FunctionContex : IDisposable
 	{
 		readonly Context _ctx;
 		public readonly DeclFun fun;
@@ -540,6 +599,10 @@ namespace LLParserGenTest
 		{
 			this._ctx = ctx;
 			this.fun = fun;
+		}
+
+		public void Dispose()
+		{
 		}
 
 		public Context Context { get { return _ctx; } }
@@ -559,6 +622,7 @@ namespace LLParserGenTest
 				throw new SyntaxError(name, "duplicated param '{0}'", name.v);
 			_localVars[name.v] = new ExprValue(U.F("r{0}", _nvar++), type);
 		}
+
 
 		public void AddDefVar(TokenAST name, TypeRoot ty)
 		{
@@ -582,12 +646,13 @@ namespace LLParserGenTest
 
 			if (fun.Father is DeclGlobal)
 			{
-				foreach (var m in ((DeclGlobal)fun.Father).members)
+				DeclGlobal dg = (DeclGlobal)fun.Father;
+				foreach (var m in dg.members)
 				{
 					DeclFun f = m as DeclFun;
 					if (f == null) continue;
 					if (f.name.v == name.v)
-						return new ExprValue(new ExprType(new TypeFun(null, f.name.v)));
+						return new ExprValue(new ExprType(new TypeFun(dg, f.name.v)));
 				}
 			}
 

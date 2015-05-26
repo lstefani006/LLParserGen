@@ -30,10 +30,11 @@ namespace LLParserGenTest
 		public const int SHL = -20;
 		public const int SHR = -21;
 		public const int NUM = -22;
-		public const int FALSE = -23;
-		public const int TRUE = -24;
-		public const int CAST = -25;
-		public const int NEW = -26;
+		public const int THIS = -23;
+		public const int FALSE = -24;
+		public const int TRUE = -25;
+		public const int CAST = -26;
+		public const int NEW = -27;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -65,10 +66,11 @@ namespace LLParserGenTest
 					_token.Add(-20, "SHL");
 					_token.Add(-21, "SHR");
 					_token.Add(-22, "NUM");
-					_token.Add(-23, "FALSE");
-					_token.Add(-24, "TRUE");
-					_token.Add(-25, "CAST");
-					_token.Add(-26, "NEW");
+					_token.Add(-23, "THIS");
+					_token.Add(-24, "FALSE");
+					_token.Add(-25, "TRUE");
+					_token.Add(-26, "CAST");
+					_token.Add(-27, "NEW");
 				}
 				return _token;
 			}
@@ -735,6 +737,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -886,6 +889,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -916,6 +920,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -968,6 +973,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -994,6 +1000,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1043,6 +1050,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1073,6 +1081,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1135,6 +1144,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1193,6 +1203,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1248,6 +1259,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1294,6 +1306,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1396,6 +1409,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1505,6 +1519,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1617,6 +1632,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1732,6 +1748,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1850,6 +1867,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -1971,6 +1989,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2111,6 +2130,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2289,6 +2309,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2447,6 +2468,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2611,6 +2633,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2795,6 +2818,7 @@ namespace LLParserGenTest
 			{
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -2889,20 +2913,23 @@ namespace LLParserGenTest
 			case ID:
 				alt = 1;
 				break;
-			case FALSE:
+			case THIS:
 				alt = 2;
 				break;
-			case TRUE:
+			case FALSE:
 				alt = 3;
 				break;
-			case '(':
+			case TRUE:
 				alt = 4;
 				break;
-			case CAST:
+			case '(':
 				alt = 5;
 				break;
-			case NEW:
+			case CAST:
 				alt = 6;
+				break;
+			case NEW:
+				alt = 7;
 				break;
 			default:
 				Error();
@@ -2939,13 +2966,24 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
 					
+					TokenAST nt1_s = Match(THIS, nt1_i);
+					nt2_i = new ExprThis(nt1_s); 
+					var nt2_s = tmp_15(nt2_i);
+					e_prim_s = nt2_s; 
+				}
+				break;
+			case 3:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
 					TokenAST nt1_s = Match(FALSE, nt1_i);
 					nt2_i = new ExprBool(nt1_s, false); 
 					var nt2_s = tmp_15(nt2_i);
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 3:
+			case 4:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -2956,7 +2994,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 4:
+			case 5:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -2971,7 +3009,7 @@ namespace LLParserGenTest
 					e_prim_s = nt4_s; 
 				}
 				break;
-			case 5:
+			case 6:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -2992,7 +3030,7 @@ namespace LLParserGenTest
 					e_prim_s = nt7_s; 
 				}
 				break;
-			case 6:
+			case 7:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3169,6 +3207,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -3221,6 +3260,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case ID:
+			case THIS:
 			case FALSE:
 			case TRUE:
 			case '(':
@@ -3533,6 +3573,7 @@ namespace LLParserGenTest
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('e')), new RegToken('t')), new RegToken('u')), new RegToken('r')), new RegToken('n')), RETURN);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('t'), new RegToken('r')), new RegToken('u')), new RegToken('e')), TRUE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('f'), new RegToken('a')), new RegToken('l')), new RegToken('s')), new RegToken('e')), FALSE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('t'), new RegToken('h')), new RegToken('i')), new RegToken('s')), THIS);
 			acts.Add(new RegToken('.'), '.');
 			acts.Add(new RegToken(','), ',');
 			acts.Add(new RegToken(';'), ';');
