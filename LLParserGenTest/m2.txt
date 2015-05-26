@@ -1,0 +1,36 @@
+class String {
+	var a: int;
+	var b: String;
+	var c: int;
+
+	fun String() : String {
+		this.a = 3;
+		this.b = this;
+		this.c = 4;
+		this.Len();
+		return this;
+	}
+	fun String(a : int) : String {
+		this.a = a;
+		return this;
+	}
+
+	fun Len() : int { return 33; }
+}
+
+fun leo(luca : String, b : String) : int
+{
+	var d : int;
+	d=3;
+
+	luca.a = 33 + luca.c;
+	d = d + 33 + luca.c;
+
+	d = luca.Len();
+	return leo(luca.b, b);
+}
+
+fun aa(): String
+{
+	return new String(333);
+}
