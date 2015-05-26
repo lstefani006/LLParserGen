@@ -1,3 +1,4 @@
+
 class String {
 	var a: int;
 	var b: String;
