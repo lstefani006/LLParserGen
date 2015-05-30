@@ -480,6 +480,14 @@ namespace LLParserGenTest
 
 				int istart = _ass.Count;
 				this.emit(f.AssName);
+				if (f.Father is DeclClass)
+				{
+					// la cosa è complicata... devo cercare il : base(....) se c'è altrimenti si suppone che ci sia il costruttore base()
+					var c = f.Father as DeclClass;
+					if (c.baseList.Count > 0)
+					{
+					}
+				}
 				bool unreachable = f.body.GenCode(fctx);
 				if (unreachable == false)
 				{

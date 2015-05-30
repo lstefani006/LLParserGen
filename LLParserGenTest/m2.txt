@@ -1,18 +1,23 @@
+class Object
+{
+	fun Object() {}
+	fun ToString(r : String) : String { return r; }
+	var a: int;
+}
 
-
-class String {
+class String : Object, IDisposable {
 	var a: int;
 	var b: String;
 	var c: int;
 
-	fun String() : String {
+	fun String() : base() {
 		this.a = 3;
 		this.b = this;
 		this.c = 4;
 		this.Len();
 		return this;
 	}
-	fun String(a : int) : String {
+	fun String(a : int) : base() {
 		this.a = a;
 		return this;
 	}
@@ -36,5 +41,5 @@ fun aa(): String
 {
 	var r : String;
 	r = new String(333);
-	return r.b.b.b.b.b.b.b.b;
+	return r;
 }

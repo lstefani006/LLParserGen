@@ -4,6 +4,7 @@ fun                                   ^FUN
 var                                   ^VAR
 class                                 ^CLASS
 new                                   ^NEW
+namespace                             ^NAMESPACE
 
 if                                    ^IF
 else                                  ^ELSE
@@ -15,7 +16,9 @@ return                                ^RETURN
 
 true                                  ^TRUE
 false                                 ^FALSE
+null                                  ^NULL
 this                                  ^THIS
+base                                  ^BASE
 
 "."									  ^(.)
 ","									  ^(,)
@@ -60,19 +63,43 @@ this                                  ^THIS
 %parser.namespace LLParserGenTest
 
 start<DeclList>
+	: decl_list_e   ^$1
+	;
+
+decl_list_e<DeclList>
+	:              ^new DeclList()
+	| decl_list    ^$1
+	;
+
+decl_list<DeclList>
 	: decl          ^new DeclList().Add($1)
-	| start decl    ^$1.Add($2)
+	| decl_list decl    ^$1.Add($2)
 	;
 
 decl<DeclRoot>
 	: decl_cls      ^$1
 	| decl_fun      ^$1
 	| decl_var      ^$1
+	| decl_namespace ^$1
+	;
+
+decl_namespace<DeclNamespace>
+	: NAMESPACE ID '{' decl_list_e '}'   ^new DeclNamespace($2, $4)
 	;
 			
 
 decl_cls<DeclClass>
-	: CLASS ID '{' cls_members_e '}' ^new DeclClass($2, $4)
+	: CLASS ID base_opz '{' cls_members_e '}' ^new DeclClass($2, $3, $5)
+	;
+
+base_opz<TypeRootList>
+	: ':' baselist           ^$2
+	|                        ^new TypeRootList();
+	;
+
+baselist<TypeRootList>
+	: type_dot                ^new TypeRootList().Add($1)
+	| baselist ',' type_dot   ^$1.Add($3)
 	;
 
 cls_members_e<DeclList>
@@ -88,6 +115,7 @@ cls_members<DeclList>
 cls_member<DeclRoot>
 	: decl_fun               ^$1
 	| decl_var               ^$1
+	| decl_cls               ^$1
 	;
 
 decl_var<DeclVar>
@@ -95,8 +123,16 @@ decl_var<DeclVar>
 	;
 
 decl_fun<DeclFun>
-	: FUN ID '(' funargse ')' ':' type '{' stmtliste '}'   ^new DeclFun($2, $4, $7, $9, $10)
+	: FUN ID '(' funargse ')' ret_or_base '{' stmtliste '}'   ^new DeclFun($2, $4, $6, $8, $9)
 	;
+
+ret_or_base<TypeRoot>
+	: ':' BASE '(' e_list_opz ')'       ^null
+	| ':' THIS '(' e_list_opz ')'       ^null
+	| ':' type                          ^$2
+	|                                   ^null
+	;
+
 
 funargse<FunArgList>
 	:                      ^new FunArgList()
@@ -210,11 +246,14 @@ e_prim<ExprRoot>
 	: NUM                         ^new ExprNum($1)
 	| ID                          ^new ExprId($1)
 	| THIS                        ^new ExprThis($1)
+	| BASE                        ^new ExprThis($1)
 	| FALSE                       ^new ExprBool($1, false)
 	| TRUE                        ^new ExprBool($1, true)
+	| NULL                        ^new ExprNull($1)
 	| '(' e_add ')'               ^$2
 	| e_prim '.' ID               ^new ExprDot($1, $3)
 	| e_prim '(' e_list_opz ')'   ^new ExprFun($1, $2, $3)
+	| e_prim '[' e_list ']'       ^new ExprArray($1, $2, $3)
 	| CAST '(' type ',' expr ')'  ^new ExprCast($1, $3, $5)
 	| NEW ID '(' e_list_opz ')'   ^new ExprNewObj($1, $2, $4)
 	//| NEW ID '[' e_list ']'     ^new ExprNewArray($1, $2, $4)

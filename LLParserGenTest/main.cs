@@ -152,6 +152,11 @@ namespace LLParserGenTest
 		}
 	}
 
+	public class TypeRootList : List<TypeRoot>, IAST
+	{
+		public new TypeRootList Add(TypeRoot a) { base.Add(a); return this; }
+	}
+
 
 	/// <summary>
 	/// Descrive un tipo e il valore costante eventualmente associato.
@@ -162,6 +167,7 @@ namespace LLParserGenTest
 		public ExprType(int c) { this._const = c; this._type = TypeSimple.Int; }
 		public ExprType(bool c) { this._const = c; this._type = TypeSimple.Bool; }
 		public ExprType(double d) { this._const = d; this._type = TypeSimple.Dbl; }
+		public ExprType(object obj, TypeRoot r) { this._const = obj; this._type = r; }
 
 		readonly object _const;
 		readonly TypeRoot _type;
@@ -309,6 +315,7 @@ namespace LLParserGenTest
 				if (t.IsBool) _const = t.Bool;
 				else if (t.IsDbl) _const = t.Dbl;
 				else if (t.IsInt) _const = t.Int;
+				else if (t.IsObj) _const = new Null();
 				else Debug.Assert(false);
 			}
 		}
@@ -383,8 +390,6 @@ namespace LLParserGenTest
 			_father = p;
 		}
 
-		public abstract List<DeclRoot> GetId(string id);
-
 		public abstract string AssName { get; }
 	}
 
@@ -413,55 +418,45 @@ namespace LLParserGenTest
 			base.SetFather(p);
 			members.SetFather(this);
 		}
-		public override List<DeclRoot> GetId(string id)
-		{
-			return new List<DeclRoot>();
-		}
 
 		public override string AssName { get { return ""; } }
 
 	}
-
-	public class DeclClass : DeclRoot
+	public class DeclNamespace : DeclRoot
 	{
 		public readonly DeclList members;
-		public DeclClass(TokenAST name, DeclList members) : base(name) { this.members = members; }
+		public readonly TokenAST id;
+		public DeclNamespace(TokenAST id, DeclList members) : base(id) { this.id = id;  this.members = members; }
 
 		public override void SetFather(DeclRoot p)
 		{
 			base.SetFather(p);
 			members.SetFather(this);
 		}
-		public override List<DeclRoot> GetId(string id)
-		{
-			var r = new List<DeclRoot>();
 
-			if (this.name.v == id)
-				r.Add(this);
-			else
-			{
-				foreach (var m in members)
-				{
-					var v = m.GetId(id);
-					r.AddRange(v);
-				}
-			}
-			return r;
+		public override string AssName { get { return "$n" + id.v; } }
+
+	}
+
+	public class DeclClass : DeclRoot
+	{
+		public readonly DeclList members;
+		public readonly TypeRootList baseList;
+		public DeclClass(TokenAST name, TypeRootList baseList, DeclList members) : base(name) { this.members = members; this.baseList = baseList; }
+
+		public override void SetFather(DeclRoot p)
+		{
+			base.SetFather(p);
+			members.SetFather(this);
 		}
 		public override string AssName { get { return this.Father.AssName + "$c" + this.name.v; } }
+
 	}
 
 	public class DeclVar : DeclRoot
 	{
 		public readonly TypeRoot Type;
 		public DeclVar(TokenAST name, TypeRoot type) : base(name) { this.Type = type; }
-		public override List<DeclRoot> GetId(string id)
-		{
-			var r = new List<DeclRoot>();
-			if (this.name.v == id)
-				r.Add(this);
-			return r;
-		}
 		public override string AssName { get { return this.name.v; } }
 	}
 
@@ -479,13 +474,6 @@ namespace LLParserGenTest
 			this.ret = ret;
 			this.body = body;
 			this.lastCurly = lastCurly;
-		}
-		public override List<DeclRoot> GetId(string id)
-		{
-			var r = new List<DeclRoot>();
-			if (this.name.v == id)
-				r.Add(this);
-			return r;
 		}
 
 		public override string AssName
@@ -1453,7 +1441,17 @@ namespace LLParserGenTest
 
 			int size = 0;
 			int vt = 0;
-			foreach (var m in cls.members) if (m is DeclVar) size += 1;
+
+			var c = cls;
+			while (c != null)
+			{
+				foreach (var m in c.members) if (m is DeclVar) size += 1;
+				if (c.baseList.Count == 0) break;
+				var tb = c.baseList[0].TypeName;
+				c = ctx.Context.GetClass(tb);
+				if (c == null)
+					Error("cannot find class '{0}'", tb);
+			}
 
 			ctx.Context.newobj("rp", size, vt);
 
@@ -1504,6 +1502,27 @@ namespace LLParserGenTest
 		}
 	}
 
+	public class Null {
+		public override string ToString() { return "0"; }
+	}
+
+	public class ExprNull : ExprRoot
+	{
+		public ExprNull(TokenAST a) : base(a) { this.a = a; }
+		public readonly TokenAST a;
+
+		public override ExprType CheckType(FunctionContex ctx)
+		{
+			return new ExprType(new Null(), new TypeSimple("Object"));
+		}
+		public override ExprValue GenRight(FunctionContex ctx, string rdest)
+		{
+			var t = CheckType(ctx);
+			return new ExprValue(t);
+		}
+	}
+
+
 	public class ExprId : ExprRoot
 	{
 		public ExprId(TokenAST a) : base(a) { this.a = a; }
@@ -1551,6 +1570,7 @@ namespace LLParserGenTest
 		}
 	}
 
+	
 
 	public class ExprDot : ExprRoot
 	{
@@ -1604,7 +1624,7 @@ namespace LLParserGenTest
 		public override string GenLeftPre(FunctionContex ctx)
 		{
 			// una espressione a.b non può essere valuta con un solo registro
-			// per cui si può assgnare solo con GenLeftPost
+			// per cui si può assegnare solo con GenLeftPost
 			CheckType(ctx);
 			return null;
 		}
@@ -1716,6 +1736,74 @@ namespace LLParserGenTest
 			}
 			if (rdest == null) rdest = ctx.NewTmp();
 			ctx.Context.js(rdest, this._df.AssName, te);
+			return new ExprValue(rdest, te.Type);
+		}
+	}
+	public class ExprArray : ExprRoot
+	{
+		readonly ExprRoot e;
+		readonly ExprList a;
+
+		public ExprArray(ExprRoot e, TokenAST tk, ExprList a)
+			: base(tk)
+		{
+			this.e = e;
+			this.a = a;
+		}
+
+		public override ExprType CheckType(FunctionContex ctx)
+		{
+			var te = e.CheckType(ctx);
+			if (te.Type.IsObject == false)
+				Error("array required");
+
+			var ta = te.Type as TypeArray;
+			if (ta == null)
+				Error("array required");
+
+			// TODO controllare il rank
+
+			var targs = new List<TypeRoot>();
+			foreach (var ai in this.a)
+				targs.Add(ai.CheckType(ctx).Type);
+
+			return new ExprType(ta.t);
+		}
+		public override string GenLeftPre(FunctionContex ctx)
+		{
+			// una espressione a[x,yz] non può essere valuta con un solo registro
+			// per cui si può assegnare solo con GenLeftPost
+			CheckType(ctx);
+			return null;
+		}
+
+		public override ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
+		{
+			var ea = e.GenRight(ctx, null);
+			//TODO ctx.Context.stm(ea.Reg, _off_var, v);
+			return v;
+		}
+
+		public override ExprValue GenRight(FunctionContex ctx, string rdest)
+		{
+			var te = this.CheckType(ctx);
+
+			var targs = new List<ExprType>();
+			foreach (var e in this.a)
+				targs.Add(e.CheckType(ctx));
+
+			var ra = this.e.GenRight(ctx, "rp");
+			if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
+
+			ctx.Context.ld("rp", this.a.Count);
+
+			for (int i = 0; i < this.a.Count; ++i)
+			{
+				ra = this.a[i].GenRight(ctx, "rp");
+				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
+			}
+			if (rdest == null) rdest = ctx.NewTmp();
+			//ctx.Context.js(rdest, this._df.AssName, te);
 			return new ExprValue(rdest, te.Type);
 		}
 	}
