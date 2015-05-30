@@ -157,6 +157,19 @@ namespace LLParserGenTest
 		public new TypeRootList Add(TypeRoot a) { base.Add(a); return this; }
 	}
 
+	public class TypeRoot_or_Base : IAST
+	{
+		public readonly TypeRoot t;
+		public readonly BaseInit b;
+		public TypeRoot_or_Base(TypeRoot t) { this.t = t; }
+		public TypeRoot_or_Base(BaseInit b) { this.b = b; }
+	}
+	public class BaseInit {
+		public readonly TokenAST t;
+		public readonly ExprList e;
+		public BaseInit(TokenAST t, ExprList e) { this.t = t; this.e = e; }
+	}
+
 
 	/// <summary>
 	/// Descrive un tipo e il valore costante eventualmente associato.
@@ -463,15 +476,19 @@ namespace LLParserGenTest
 	public class DeclFun : DeclRoot
 	{
 		public readonly FunArgList args;
+		public readonly BaseInit b;
 		public readonly TypeRoot ret;
 		public readonly StmtRoot body;
 		public readonly TokenAST lastCurly;
 
-		public DeclFun(TokenAST name, FunArgList args, TypeRoot ret, StmtRoot body, TokenAST lastCurly)
+		public DeclFun(TokenAST name, FunArgList args, TypeRoot_or_Base tb, StmtRoot body, TokenAST lastCurly)
 			: base(name)
 		{
 			this.args = args;
-			this.ret = ret;
+			if (tb.t != null)
+				this.ret = tb.t;
+			else
+				this.b = tb.b;
 			this.body = body;
 			this.lastCurly = lastCurly;
 		}

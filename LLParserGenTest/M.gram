@@ -126,10 +126,10 @@ decl_fun<DeclFun>
 	: FUN ID '(' funargse ')' ret_or_base '{' stmtliste '}'   ^new DeclFun($2, $4, $6, $8, $9)
 	;
 
-ret_or_base<TypeRoot>
-	: ':' BASE '(' e_list_opz ')'       ^null
-	| ':' THIS '(' e_list_opz ')'       ^null
-	| ':' type                          ^$2
+ret_or_base<TypeRoot_or_Base>
+	: ':' BASE '(' e_list_opz ')'       ^new TypeRoot_or_Base(new BaseInit($2, $4))
+	| ':' THIS '(' e_list_opz ')'       ^new TypeRoot_or_Base(new BaseInit($2, $4))
+	| ':' type                          ^new TypeRoot_or_Base($2)
 	|                                   ^null
 	;
 

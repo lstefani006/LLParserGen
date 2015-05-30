@@ -904,7 +904,7 @@ namespace LLParserGenTest
 			return decl_fun_s;
 		}
 		
-		TypeRoot ret_or_base(IAST ret_or_base_i)
+		TypeRoot_or_Base ret_or_base(IAST ret_or_base_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -920,7 +920,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			TypeRoot ret_or_base_s = default(TypeRoot);
+			TypeRoot_or_Base ret_or_base_s = default(TypeRoot_or_Base);
 			switch (alt)
 			{
 			case 0:
@@ -953,7 +953,7 @@ namespace LLParserGenTest
 			return ret_or_base_s;
 		}
 		
-		TypeRoot tmp_20(IAST nt1_s, IAST tmp_20_i)
+		TypeRoot_or_Base tmp_20(IAST nt1_s, IAST tmp_20_i)
 		{
 			int alt = 0;
 			switch (Next.ch)
@@ -972,7 +972,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			TypeRoot tmp_20_s = default(TypeRoot);
+			TypeRoot_or_Base tmp_20_s = default(TypeRoot_or_Base);
 			switch (alt)
 			{
 			case 0:
@@ -986,7 +986,7 @@ namespace LLParserGenTest
 					TokenAST nt3_s = Match('(', nt3_i);
 					var nt4_s = e_list_opz(nt4_i);
 					TokenAST nt5_s = Match(')', nt5_i);
-					tmp_20_s = null;
+					tmp_20_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
 				}
 				break;
 			case 1:
@@ -1000,7 +1000,7 @@ namespace LLParserGenTest
 					TokenAST nt3_s = Match('(', nt3_i);
 					var nt4_s = e_list_opz(nt4_i);
 					TokenAST nt5_s = Match(')', nt5_i);
-					tmp_20_s = null;
+					tmp_20_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
 				}
 				break;
 			case 2:
@@ -1008,7 +1008,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					var nt2_s = type(nt2_i);
-					tmp_20_s = nt2_s;
+					tmp_20_s = new TypeRoot_or_Base(nt2_s);
 				}
 				break;
 			}
@@ -1184,6 +1184,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1337,6 +1338,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1369,6 +1371,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1423,6 +1426,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1451,6 +1455,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1502,6 +1507,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1534,6 +1540,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1598,6 +1605,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1658,6 +1666,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1715,6 +1724,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1763,6 +1773,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1870,6 +1881,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -1984,6 +1996,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2101,6 +2114,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2221,6 +2235,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2344,6 +2359,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2470,6 +2486,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2615,6 +2632,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2798,6 +2816,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -2961,6 +2980,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -3130,6 +3150,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -3319,6 +3340,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -3418,23 +3440,26 @@ namespace LLParserGenTest
 			case THIS:
 				alt = 2;
 				break;
-			case FALSE:
+			case BASE:
 				alt = 3;
 				break;
-			case TRUE:
+			case FALSE:
 				alt = 4;
 				break;
-			case NULL:
+			case TRUE:
 				alt = 5;
 				break;
-			case '(':
+			case NULL:
 				alt = 6;
 				break;
-			case CAST:
+			case '(':
 				alt = 7;
 				break;
-			case NEW:
+			case CAST:
 				alt = 8;
+				break;
+			case NEW:
+				alt = 9;
 				break;
 			default:
 				Error();
@@ -3482,13 +3507,24 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
 					
+					TokenAST nt1_s = Match(BASE, nt1_i);
+					nt2_i = new ExprThis(nt1_s); 
+					var nt2_s = tmp_16(nt2_i);
+					e_prim_s = nt2_s; 
+				}
+				break;
+			case 4:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
 					TokenAST nt1_s = Match(FALSE, nt1_i);
 					nt2_i = new ExprBool(nt1_s, false); 
 					var nt2_s = tmp_16(nt2_i);
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 4:
+			case 5:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3499,7 +3535,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 5:
+			case 6:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3510,7 +3546,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 6:
+			case 7:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3525,7 +3561,7 @@ namespace LLParserGenTest
 					e_prim_s = nt4_s; 
 				}
 				break;
-			case 7:
+			case 8:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3546,7 +3582,7 @@ namespace LLParserGenTest
 					e_prim_s = nt7_s; 
 				}
 				break;
-			case 8:
+			case 9:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3745,6 +3781,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
@@ -3799,6 +3836,7 @@ namespace LLParserGenTest
 			case NUM:
 			case ID:
 			case THIS:
+			case BASE:
 			case FALSE:
 			case TRUE:
 			case NULL:
