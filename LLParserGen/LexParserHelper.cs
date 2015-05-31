@@ -24,7 +24,7 @@ partial class RegexprParser : ParserBase
 	}
 	private RegRoot CreateString(TokenAST ast)
 	{
-		string v = ast.v.Substring(1);
+		string v = ast.strRead.Substring(1);
 		v = v.Remove(v.Length - 1);
 		return RegRoot.R(v);
 	}
@@ -33,18 +33,18 @@ partial class RegexprParser : ParserBase
 		int pa = -1;
 		int pb = -1;
 
-		if (a.v.Length == 1) pa = (char)a.v[0];
-		if (b.v.Length == 1) pb = (char)b.v[0];
+		if (a.strRead.Length == 1) pa = (char)a.strRead[0];
+		if (b.strRead.Length == 1) pb = (char)b.strRead[0];
 
 		return new RegTokenRange(pa, pb);
 	}
 	private RegToken CreateToken(TokenAST ast)
 	{
-		if (ast.v.Length == 1)
-			return new RegToken(ast.v[0]);
+		if (ast.strRead.Length == 1)
+			return new RegToken(ast.strRead[0]);
 		else
 		{
-			string r = ast.v;
+			string r = ast.strRead;
 			switch (r)
 			{
 			case @"\n": return new RegToken('\n');

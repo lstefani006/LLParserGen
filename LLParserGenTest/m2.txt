@@ -7,13 +7,13 @@ class object
 class string : Object, IDisposable {
 
 	fun string() {}
-	fun string(r : string) { this.str = r.str; this.sz = r.sz; }
+	fun string(r : string) { this.str = r.str; }
 
 	fun ToString() : string { return this; }
-	fun native Len() : int { return this.sz; }
+	fun native Len() : int { return 2; }
+	fun get(v : int) : char { return 'a'; }
 
-	var str : Object;
-	var sz : int;
+	var str : handle;
 }
 
 fun leo(luca : string, b : string) : int
@@ -22,9 +22,11 @@ fun leo(luca : string, b : string) : int
 
 }
 
-fun aa(): string
+fun aa(v : char, a : char): string
 {
 	var r : string;
 	r = "leo";
+	if (v != 'a')
+		return r;
 	return r;
 }

@@ -93,8 +93,19 @@ virtual                               ^VIRTUAL
 
 	rd.SetMatch();
 	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
-	tk.value = sb.ToString();
+	tk.strRead = sb.ToString();
 	tk.token = STR;
+	return true;
+}
+"'"{
+	int ch = rd.Read().ch;
+	if (ch == -1) throw new Exception("EOF in char");
+	if (rd.Read().ch != '\'') throw new Exception("unterminated char");
+
+	rd.SetMatch();
+	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+	tk.strRead = ((char)ch).ToString();
+	tk.token = CHR;
 	return true;
 }
 
@@ -293,6 +304,7 @@ e_una<ExprRoot>
 e_prim<ExprRoot>
 	: NUM                         ^new ExprNum($1)
 	| STR                         ^new ExprStr($1)
+	| CHR                         ^new ExprChr($1)
 	| ID                          ^new ExprId($1)
 	| THIS                        ^new ExprThis($1)
 	| BASE                        ^new ExprThis($1)

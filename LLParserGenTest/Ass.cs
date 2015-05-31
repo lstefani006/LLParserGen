@@ -8,6 +8,8 @@ namespace LLParserGenTest
 {
 	public enum OpCode
 	{
+		nop,
+
 		iadd,
 		isub,
 		imul,

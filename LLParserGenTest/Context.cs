@@ -36,21 +36,35 @@ namespace LLParserGenTest
 
 		public void add(string rd, ExprValue rs, ExprValue rt)
 		{
-			Debug.Assert(rs.Type == rt.Type);
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Dbl_: op = OpCode.fadd; break;
+			case TypeBase.Int_: op = OpCode.iadd; break;
+			case TypeBase.Bool:
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.iadd, rd, rs, rt));
-			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fadd, rd, rs, rt));
-			else Debug.Assert(false);
+			_code.Add(new OpDSS(this, codeNextLbl, op, rd, rs, rt));
 			codeNextLbl = null;
 		}
 
 		public void sub(string rd, ExprValue rs, ExprValue rt)
 		{
-			Debug.Assert(rs.Type == rt.Type);
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Dbl_: op = OpCode.fsub; break;
+			case TypeBase.Int_: op = OpCode.isub; break;
+			case TypeBase.Bool:
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.isub, rd, rs, rt));
-			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fsub, rd, rs, rt));
-			else Debug.Assert(false);
+			_code.Add(new OpDSS(this, codeNextLbl, op, rd, rs, rt));
 			codeNextLbl = null;
 		}
 
@@ -58,8 +72,8 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.imul, rd, rs, rt));
-			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fmul, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.imul, rd, rs, rt));
+			else if (rs.TypeBase == TypeBase.Dbl_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fmul, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -68,8 +82,8 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.irem, rd, rs, rt));
-			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.frem, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.irem, rd, rs, rt));
+			else if (rs.TypeBase == TypeBase.Dbl_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.frem, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -78,8 +92,8 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.idiv, rd, rs, rt));
-			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fdiv, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.idiv, rd, rs, rt));
+			else if (rs.TypeBase == TypeBase.Dbl_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fdiv, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -88,7 +102,7 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ior, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ior, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -97,7 +111,7 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ixor, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ixor, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -106,7 +120,7 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.iand, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.iand, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -115,7 +129,7 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishl, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishl, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -124,7 +138,7 @@ namespace LLParserGenTest
 		{
 			Debug.Assert(rs.Type == rt.Type);
 			startCode();
-			/***/if (rs.Type.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishr, rd, rs, rt));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishr, rd, rs, rt));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -139,84 +153,151 @@ namespace LLParserGenTest
 		public void js(string rd, Label addr, ExprType et)
 		{
 			startCode();
-			/***/if (et == null) _code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr));
-			else if (et.IsVoid) _code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr));
-			else if (et.IsInt) _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr));
-			else if (et.IsBool) _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr));
-			else if (et.IsDbl) _code.Add(new J(this, codeNextLbl, OpCode.fjs, rd, addr));
-			else if (et.IsObj) _code.Add(new J(this, codeNextLbl, OpCode.ojs, rd, addr));
-			else Debug.Assert(false);
+			if (et == null)
+				_code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr));
+			else
+			{
+				switch (et.TypeBase)
+				{
+				case TypeBase.Bool: _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr)); break;
+				case TypeBase.Int_: _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr)); break;
+				case TypeBase.Char: _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr)); break;
+				case TypeBase.Dbl_: _code.Add(new J(this, codeNextLbl, OpCode.fjs, rd, addr)); break;
+				case TypeBase.Obj_: _code.Add(new J(this, codeNextLbl, OpCode.ojs, rd, addr)); break;
+				case TypeBase.Void: _code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr)); break;
+				default: Debug.Assert(false); break;
+				}
+			}
 			codeNextLbl = null;
 		}
 
 		public void ret(ExprValue rt)
 		{
+			OpCode op = OpCode.vret;
+			if (rt != null)
+			{
+				switch (rt.TypeBase)
+				{
+				case TypeBase.Bool: op = OpCode.iret; break;
+				case TypeBase.Int_: op = OpCode.iret; break;
+				case TypeBase.Char: op = OpCode.iret; break;
+				case TypeBase.Dbl_: op = OpCode.fret; break;
+				case TypeBase.Obj_: op = OpCode.oret; break;
+				case TypeBase.Void: op = OpCode.vret; break;
+				default: op = OpCode.nop; Debug.Assert(false); break;
+				}
+			}
+
 			startCode();
-			/***/if (rt == null) _code.Add(new Ret(this, codeNextLbl, OpCode.vret, rt));
-			else if (rt.IsVoid) _code.Add(new Ret(this, codeNextLbl, OpCode.vret, rt));
-			else if (rt.IsInt) _code.Add(new Ret(this, codeNextLbl, OpCode.iret, rt));
-			else if (rt.IsBool) _code.Add(new Ret(this, codeNextLbl, OpCode.iret, rt));
-			else if (rt.IsDbl) _code.Add(new Ret(this, codeNextLbl, OpCode.fret, rt));
-			else if (rt.IsObj) _code.Add(new Ret(this, codeNextLbl, OpCode.oret, rt));
-			else Debug.Assert(false);
+			_code.Add(new Ret(this, codeNextLbl, op, rt));
 			codeNextLbl = null;
 		}
 
 		public void beq(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ibeq; break;
+			case TypeBase.Char: op = OpCode.ibeq; break;
+			case TypeBase.Int_: op = OpCode.ibeq; break;
+			case TypeBase.Dbl_: op = OpCode.fbeq; break;
+			case TypeBase.Obj_: 
+			case TypeBase.Void: 
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibeq, rs, rt, addr));
-			else if (rs.IsBool) _code.Add(new Br(this, codeNextLbl, OpCode.ibeq, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbeq, rs, rt, addr));
-			else if (rs.IsObj) _code.Add(new Br(this, codeNextLbl, OpCode.obeq, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 
 		public void bne(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ibne; break;
+			case TypeBase.Int_: op = OpCode.ibne; break;
+			case TypeBase.Char: op = OpCode.ibne; break;
+			case TypeBase.Dbl_: op = OpCode.fbne; break;
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibne, rs, rt, addr));
-			else if (rs.IsBool) _code.Add(new Br(this, codeNextLbl, OpCode.ibne, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbne, rs, rt, addr));
-			else if (rs.IsObj) _code.Add(new Br(this, codeNextLbl, OpCode.obne, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 
 		public void blt(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.iblt; break;
+			case TypeBase.Int_: op = OpCode.iblt; break;
+			case TypeBase.Char: op = OpCode.iblt; break;
+			case TypeBase.Dbl_: op = OpCode.fblt; break;
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.iblt, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fblt, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 
 		public void ble(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ible; break;
+			case TypeBase.Int_: op = OpCode.ible; break;
+			case TypeBase.Char: op = OpCode.ible; break;
+			case TypeBase.Dbl_: op = OpCode.fble; break;
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ible, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fble, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 
 		public void bgt(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ibgt; break;
+			case TypeBase.Int_: op = OpCode.ibgt; break;
+			case TypeBase.Char: op = OpCode.ibgt; break;
+			case TypeBase.Dbl_: op = OpCode.fbgt; break;
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibgt, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbgt, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 
 		public void bge(ExprValue rs, ExprValue rt, Label addr)
 		{
+			OpCode op = OpCode.nop;
+			switch (rt.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ibge; break;
+			case TypeBase.Int_: op = OpCode.ibge; break;
+			case TypeBase.Char: op = OpCode.ibge; break;
+			case TypeBase.Dbl_: op = OpCode.fbge; break;
+			case TypeBase.Obj_:
+			case TypeBase.Void:
+			default: op = OpCode.nop; Debug.Assert(false); break;
+			}
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibge, rs, rt, addr));
-			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbge, rs, rt, addr));
-			else Debug.Assert(false);
+			_code.Add(new Br(this, codeNextLbl, op, rs, rt, addr));
 			codeNextLbl = null;
 		}
 		public void ld(string rs, int n)
@@ -226,12 +307,19 @@ namespace LLParserGenTest
 
 		public void ld(string rs, ExprValue c)
 		{
+			OpCode op;
+			switch (c.TypeBase)
+			{
+			case TypeBase.Bool: op = OpCode.ild; break;
+			case TypeBase.Int_: op = OpCode.ild; break;
+			case TypeBase.Char: op = OpCode.ild; break;
+			case TypeBase.Dbl_: op = OpCode.fld; break;
+			case TypeBase.Obj_: op = OpCode.old; break;
+			default: op = OpCode.nop;  Debug.Assert(false); break;
+			}
+
 			startCode();
-			/***/if (c.IsInt) _code.Add(new OpDS(this, codeNextLbl, OpCode.ild, rs, c));
-			else if (c.IsBool) _code.Add(new OpDS(this, codeNextLbl, OpCode.ild, rs, c));
-			else if (c.IsDbl) _code.Add(new OpDS(this, codeNextLbl, OpCode.fld, rs, c));
-			else if (c.IsObj) _code.Add(new OpDS(this, codeNextLbl, OpCode.old, rs, c));
-			else Debug.Assert(false);
+			_code.Add(new OpDS(this, codeNextLbl, op, rs, c));
 			codeNextLbl = null;
 		}
 		public void i2d(string rd, string rs)
@@ -250,20 +338,25 @@ namespace LLParserGenTest
 		public void ldm(string rd, ExprValue rs, int offset, ExprType et)
 		{
 			startCode();
-			/***/if (et.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
-			else if (et.IsBool) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
-			else if (et.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fldm, rd, rs, new ExprValue(offset)));
-			else if (et.IsObj) _code.Add(new OpDSS(this, codeNextLbl, OpCode.oldm, rd, rs, new ExprValue(offset)));
-			else Debug.Assert(false);
+			switch (et.TypeBase)
+			{
+			case TypeBase.Int_: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Bool: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Char: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Dbl_: _code.Add(new OpDSS(this, codeNextLbl, OpCode.fldm, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Obj_: _code.Add(new OpDSS(this, codeNextLbl, OpCode.oldm, rd, rs, new ExprValue(offset))); break;
+			default: Debug.Assert(false); break;
+			}
 			codeNextLbl = null;
 		}
 		public void stm(string rd, int offset, ExprValue rs)
 		{
 			startCode();
-			/***/if (rs.IsInt) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.IsBool)_code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.IsDbl)_code.Add(new OpSSS(this, codeNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
-			else if (rs.IsObj)_code.Add(new OpSSS(this, codeNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
+			/***/if (rs.TypeBase == TypeBase.Int_) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Bool) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Char) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Dbl_) _code.Add(new OpSSS(this, codeNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Obj_) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -612,7 +705,8 @@ namespace LLParserGenTest
 					DeclFun f = m as DeclFun;
 					if (f == null) continue;
 					if (f.name.strRead == name.strRead)
-						return new ExprValue(new ExprType(new TypeFun(dg, f.name.strRead)));
+						//return new ExprValue(new ExprType(new TypeFun(dg, f.name.strRead)));
+						Debug.Assert(false);
 				}
 			}
 

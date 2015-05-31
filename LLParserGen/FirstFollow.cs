@@ -1379,6 +1379,9 @@ class Grammar
 					string code = v.Item2.Substring(1);
 					code = code.Remove(code.Length - 1);
 
+					if (v.Item1.ToString() == "'''")
+					tw.WriteLine("acts.Add('\'', (ref NFA.Token tk, LexReader rd, NFA nfa) => {1}", v.Item1.ToString(), "{");
+					else
 					tw.WriteLine("acts.Add({0}, (ref NFA.Token tk, LexReader rd, NFA nfa) => {1}", v.Item1.ToString(), "{");
 
 					var cc = new List<string>(code.Split('\n'));

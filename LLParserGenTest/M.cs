@@ -37,11 +37,12 @@ namespace LLParserGenTest
 		public const int SHR = -26;
 		public const int NUM = -27;
 		public const int STR = -28;
-		public const int FALSE = -29;
-		public const int TRUE = -30;
-		public const int NULL = -31;
-		public const int CAST = -32;
-		public const int NEW = -33;
+		public const int CHR = -29;
+		public const int FALSE = -30;
+		public const int TRUE = -31;
+		public const int NULL = -32;
+		public const int CAST = -33;
+		public const int NEW = -34;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -79,11 +80,12 @@ namespace LLParserGenTest
 					_token.Add(-26, "SHR");
 					_token.Add(-27, "NUM");
 					_token.Add(-28, "STR");
-					_token.Add(-29, "FALSE");
-					_token.Add(-30, "TRUE");
-					_token.Add(-31, "NULL");
-					_token.Add(-32, "CAST");
-					_token.Add(-33, "NEW");
+					_token.Add(-29, "CHR");
+					_token.Add(-30, "FALSE");
+					_token.Add(-31, "TRUE");
+					_token.Add(-32, "NULL");
+					_token.Add(-33, "CAST");
+					_token.Add(-34, "NEW");
 				}
 				return _token;
 			}
@@ -1306,6 +1308,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1461,6 +1464,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1495,6 +1499,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1551,6 +1556,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1581,6 +1587,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1634,6 +1641,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1668,6 +1676,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1734,6 +1743,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1796,6 +1806,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1855,6 +1866,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1905,6 +1917,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2014,6 +2027,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2130,6 +2144,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2249,6 +2264,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2371,6 +2387,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2496,6 +2513,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2624,6 +2642,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2771,6 +2790,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2956,6 +2976,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3121,6 +3142,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3292,6 +3314,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3483,6 +3506,7 @@ namespace LLParserGenTest
 			{
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3582,32 +3606,35 @@ namespace LLParserGenTest
 			case STR:
 				alt = 1;
 				break;
-			case ID:
+			case CHR:
 				alt = 2;
 				break;
-			case THIS:
+			case ID:
 				alt = 3;
 				break;
-			case BASE:
+			case THIS:
 				alt = 4;
 				break;
-			case FALSE:
+			case BASE:
 				alt = 5;
 				break;
-			case TRUE:
+			case FALSE:
 				alt = 6;
 				break;
-			case NULL:
+			case TRUE:
 				alt = 7;
 				break;
-			case '(':
+			case NULL:
 				alt = 8;
 				break;
-			case CAST:
+			case '(':
 				alt = 9;
 				break;
-			case NEW:
+			case CAST:
 				alt = 10;
+				break;
+			case NEW:
+				alt = 11;
 				break;
 			default:
 				Error();
@@ -3644,13 +3671,24 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
 					
+					TokenAST nt1_s = Match(CHR, nt1_i);
+					nt2_i = new ExprChr(nt1_s); 
+					var nt2_s = tmp_16(nt2_i);
+					e_prim_s = nt2_s; 
+				}
+				break;
+			case 3:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
 					TokenAST nt1_s = Match(ID, nt1_i);
 					nt2_i = new ExprId(nt1_s); 
 					var nt2_s = tmp_16(nt2_i);
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 3:
+			case 4:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3661,7 +3699,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 4:
+			case 5:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3672,7 +3710,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 5:
+			case 6:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3683,7 +3721,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 6:
+			case 7:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3694,7 +3732,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 7:
+			case 8:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3705,7 +3743,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 8:
+			case 9:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3720,7 +3758,7 @@ namespace LLParserGenTest
 					e_prim_s = nt4_s; 
 				}
 				break;
-			case 9:
+			case 10:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3741,7 +3779,7 @@ namespace LLParserGenTest
 					e_prim_s = nt7_s; 
 				}
 				break;
-			case 10:
+			case 11:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3939,6 +3977,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3995,6 +4034,7 @@ namespace LLParserGenTest
 			case '+':
 			case NUM:
 			case STR:
+			case CHR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -4386,8 +4426,19 @@ namespace LLParserGenTest
 				
 				rd.SetMatch();
 				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
-				//tk.value = sb.ToString();
+				tk.strRead = sb.ToString();
 				tk.token = STR;
+				return true;
+			});
+			acts.Add(new RegToken('\''), (ref NFA.Token tk, LexReader rd, NFA nfa) => {
+				int ch = rd.Read().ch;
+				if (ch == -1) throw new Exception("EOF in char");
+				if (rd.Read().ch != '\'') throw new Exception("unterminated char");
+				
+				rd.SetMatch();
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+				tk.strRead = ((char)ch).ToString();
+				tk.token = CHR;
 				return true;
 			});
 			return acts;

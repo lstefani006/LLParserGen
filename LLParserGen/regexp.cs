@@ -49,7 +49,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST LexParser_s = default(IAST);
@@ -69,7 +69,7 @@ public partial class RegexprParser : ParserBase
 		case -1:
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return LexParser_s;
 	}
@@ -89,7 +89,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST r_s = default(IAST);
@@ -111,7 +111,7 @@ public partial class RegexprParser : ParserBase
 		case -1:
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return r_s;
 	}
@@ -134,7 +134,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_1_s = default(IAST);
@@ -163,7 +163,7 @@ public partial class RegexprParser : ParserBase
 		case -1:
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_1_s;
 	}
@@ -183,7 +183,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST e_s = default(IAST);
@@ -213,7 +213,7 @@ public partial class RegexprParser : ParserBase
 		case -1:
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return e_s;
 	}
@@ -230,7 +230,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_5_s = default(IAST);
@@ -241,7 +241,7 @@ public partial class RegexprParser : ParserBase
 				var nt2_i = default(IAST);
 				
 				TokenAST nt2_s = Match(ID, nt2_i);
-				AddRole((RegRoot)nt1_s, nt2_s.v); 
+				AddRole((RegRoot)nt1_s, nt2_s.strRead); 
 			}
 			break;
 		case 1:
@@ -249,7 +249,7 @@ public partial class RegexprParser : ParserBase
 				var nt2_i = default(IAST);
 				
 				TokenAST nt2_s = Match(CODE, nt2_i);
-				AddRole((RegRoot)nt1_s, nt2_s.v); 
+				AddRole((RegRoot)nt1_s, nt2_s.strRead); 
 			}
 			break;
 		}
@@ -266,7 +266,7 @@ public partial class RegexprParser : ParserBase
 		case -1:
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_5_s;
 	}
@@ -288,7 +288,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST c_s = default(IAST);
@@ -325,7 +325,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return c_s;
 	}
@@ -344,7 +344,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_6_s = default(IAST);
@@ -374,7 +374,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_6_s;
 	}
@@ -393,7 +393,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_7_s = default(IAST);
@@ -423,7 +423,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_7_s;
 	}
@@ -442,7 +442,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST c1_s = default(IAST);
@@ -469,7 +469,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return c1_s;
 	}
@@ -489,7 +489,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_2_s = default(IAST);
@@ -525,7 +525,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_2_s;
 	}
@@ -544,7 +544,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST t_s = default(IAST);
@@ -572,7 +572,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return t_s;
 	}
@@ -598,7 +598,7 @@ public partial class RegexprParser : ParserBase
 			alt = 1;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_3_s = default(IAST);
@@ -633,7 +633,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_3_s;
 	}
@@ -662,7 +662,7 @@ public partial class RegexprParser : ParserBase
 			alt = 5;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST se_s = default(IAST);
@@ -759,7 +759,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return se_s;
 	}
@@ -789,7 +789,7 @@ public partial class RegexprParser : ParserBase
 			alt = 2;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST tmp_4_s = default(IAST);
@@ -841,7 +841,7 @@ public partial class RegexprParser : ParserBase
 		case ')':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return tmp_4_s;
 	}
@@ -855,7 +855,7 @@ public partial class RegexprParser : ParserBase
 			alt = 0;
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		
 		IAST rg_s = default(IAST);
@@ -880,7 +880,7 @@ public partial class RegexprParser : ParserBase
 		case ']':
 			break;
 		default:
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}'", Next.strRead);
 		}
 		return rg_s;
 	}
