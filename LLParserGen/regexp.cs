@@ -37,7 +37,7 @@ public partial class RegexprParser : ParserBase
 	IAST LexParser(IAST LexParser_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '^':
 		case '(':
@@ -64,7 +64,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case -1:
 			break;
@@ -77,7 +77,7 @@ public partial class RegexprParser : ParserBase
 	IAST r(IAST r_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '^':
 		case '(':
@@ -106,7 +106,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case -1:
 			break;
@@ -119,7 +119,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_1(IAST tmp_1_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case -1:
 			alt = 0;
@@ -158,7 +158,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case -1:
 			break;
@@ -171,7 +171,7 @@ public partial class RegexprParser : ParserBase
 	IAST e(IAST e_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '^':
 		case '(':
@@ -201,7 +201,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '^':
 		case '(':
@@ -221,7 +221,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_5(IAST nt1_s, IAST tmp_5_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 			alt = 0;
@@ -254,7 +254,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '^':
 		case '(':
@@ -274,7 +274,7 @@ public partial class RegexprParser : ParserBase
 	IAST c(IAST c_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -318,7 +318,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 		case CODE:
@@ -333,7 +333,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_6(IAST nt1_s, IAST tmp_6_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 		case CODE:
@@ -367,7 +367,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 		case CODE:
@@ -382,7 +382,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_7(IAST nt1_s, IAST nt2_s, IAST tmp_7_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 		case CODE:
@@ -416,7 +416,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ID:
 		case CODE:
@@ -431,7 +431,7 @@ public partial class RegexprParser : ParserBase
 	IAST c1(IAST c1_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -461,7 +461,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '$':
 		case ID:
@@ -477,7 +477,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_2(IAST tmp_2_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '$':
 		case ID:
@@ -517,7 +517,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '$':
 		case ID:
@@ -533,7 +533,7 @@ public partial class RegexprParser : ParserBase
 	IAST t(IAST t_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -563,7 +563,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '|':
 		case '$':
@@ -580,7 +580,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_3(IAST tmp_3_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '|':
 		case '$':
@@ -624,7 +624,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '|':
 		case '$':
@@ -641,7 +641,7 @@ public partial class RegexprParser : ParserBase
 	IAST se(IAST se_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 			alt = 0;
@@ -744,7 +744,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -767,7 +767,7 @@ public partial class RegexprParser : ParserBase
 	IAST tmp_4(IAST tmp_4_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -826,7 +826,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case '(':
 		case '.':
@@ -849,7 +849,7 @@ public partial class RegexprParser : ParserBase
 	IAST rg(IAST rg_i)
 	{
 		int alt = 0;
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case CH_NOLIT:
 			alt = 0;
@@ -875,7 +875,7 @@ public partial class RegexprParser : ParserBase
 			break;
 		}
 		
-		switch (Next.ch)
+		switch (Next.token)
 		{
 		case ']':
 			break;

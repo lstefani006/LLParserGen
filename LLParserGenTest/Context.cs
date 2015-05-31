@@ -9,7 +9,8 @@ namespace LLParserGenTest
 	{
 		private int _cnt_tmp;
 		private int _cnt_lbl;
-		private readonly List<AssRoot> _ass;
+		public readonly List<AssRoot> _code;
+		public readonly List<AssRoot> _data;
 		private readonly DeclGlobal _dg;
 
 		public string NewTmp()
@@ -17,15 +18,16 @@ namespace LLParserGenTest
 			return U.F("T{0}", ++_cnt_tmp);
 		}
 
-		public string NewLbl()
+		public Label NewLbl()
 		{
-			return U.F("${0}", ++_cnt_lbl);
+			return new Label(U.F("${0}", ++_cnt_lbl));
 		}
 
 		public Context(DeclGlobal dg)
 		{
 			_dg = dg;
-			_ass = new List<AssRoot>();
+			_code = new List<AssRoot>();
+			_data = new List<AssRoot>();
 		}
 
 		public void Dispose()
@@ -35,187 +37,187 @@ namespace LLParserGenTest
 		public void add(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.iadd, rd, rs, rt));
-			else if (rs.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.fadd, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.iadd, rd, rs, rt));
+			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fadd, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void sub(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.isub, rd, rs, rt));
-			else if (rs.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.fsub, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.isub, rd, rs, rt));
+			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fsub, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void mul(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.imul, rd, rs, rt));
-			else if (rs.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.fmul, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.imul, rd, rs, rt));
+			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fmul, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void rem(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.irem, rd, rs, rt));
-			else if (rs.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.frem, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.irem, rd, rs, rt));
+			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.frem, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void div(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.idiv, rd, rs, rt));
-			else if (rs.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.fdiv, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.idiv, rd, rs, rt));
+			else if (rs.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fdiv, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void or_(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ior, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ior, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void xor(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ixor, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ixor, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void and(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.iand, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.iand, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void shl(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ishl, rd, rs, rt));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishl, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void shr(string rd, ExprValue rs, ExprValue rt)
 		{
 			Debug.Assert(rs.Type == rt.Type);
-			e();
-			/***/if (rs.Type.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ishr, rd, rs, rt));
+			startCode();
+			/***/if (rs.Type.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ishr, rd, rs, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void jmp(string addr)
+		public void jmp(Label addr)
 		{
-			e();
-			_ass.Add(new J(this, emitNextLbl, OpCode.jmp, addr));
-			emitNextLbl = null;
+			startCode();
+			_code.Add(new J(this, codeNextLbl, OpCode.jmp, addr));
+			codeNextLbl = null;
 		}
 
-		public void js(string rd, string addr, ExprType et)
+		public void js(string rd, Label addr, ExprType et)
 		{
-			e();
-			/***/if (et == null) _ass.Add(new J(this, emitNextLbl, OpCode.vjs, rd, addr));
-			else if (et.IsVoid) _ass.Add(new J(this, emitNextLbl, OpCode.vjs, rd, addr));
-			else if (et.IsInt) _ass.Add(new J(this, emitNextLbl, OpCode.ijs, rd, addr));
-			else if (et.IsBool) _ass.Add(new J(this, emitNextLbl, OpCode.ijs, rd, addr));
-			else if (et.IsDbl) _ass.Add(new J(this, emitNextLbl, OpCode.fjs, rd, addr));
-			else if (et.IsObj) _ass.Add(new J(this, emitNextLbl, OpCode.ojs, rd, addr));
+			startCode();
+			/***/if (et == null) _code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr));
+			else if (et.IsVoid) _code.Add(new J(this, codeNextLbl, OpCode.vjs, rd, addr));
+			else if (et.IsInt) _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr));
+			else if (et.IsBool) _code.Add(new J(this, codeNextLbl, OpCode.ijs, rd, addr));
+			else if (et.IsDbl) _code.Add(new J(this, codeNextLbl, OpCode.fjs, rd, addr));
+			else if (et.IsObj) _code.Add(new J(this, codeNextLbl, OpCode.ojs, rd, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
 		public void ret(ExprValue rt)
 		{
-			e();
-			/***/if (rt == null) _ass.Add(new Ret(this, emitNextLbl, OpCode.vret, rt));
-			else if (rt.IsVoid) _ass.Add(new Ret(this, emitNextLbl, OpCode.vret, rt));
-			else if (rt.IsInt) _ass.Add(new Ret(this, emitNextLbl, OpCode.iret, rt));
-			else if (rt.IsBool) _ass.Add(new Ret(this, emitNextLbl, OpCode.iret, rt));
-			else if (rt.IsDbl) _ass.Add(new Ret(this, emitNextLbl, OpCode.fret, rt));
-			else if (rt.IsObj) _ass.Add(new Ret(this, emitNextLbl, OpCode.oret, rt));
+			startCode();
+			/***/if (rt == null) _code.Add(new Ret(this, codeNextLbl, OpCode.vret, rt));
+			else if (rt.IsVoid) _code.Add(new Ret(this, codeNextLbl, OpCode.vret, rt));
+			else if (rt.IsInt) _code.Add(new Ret(this, codeNextLbl, OpCode.iret, rt));
+			else if (rt.IsBool) _code.Add(new Ret(this, codeNextLbl, OpCode.iret, rt));
+			else if (rt.IsDbl) _code.Add(new Ret(this, codeNextLbl, OpCode.fret, rt));
+			else if (rt.IsObj) _code.Add(new Ret(this, codeNextLbl, OpCode.oret, rt));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void beq(ExprValue rs, ExprValue rt, string addr)
+		public void beq(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibeq, rs, rt, addr));
-			else if (rs.IsBool) _ass.Add(new Br(this, emitNextLbl, OpCode.ibeq, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbeq, rs, rt, addr));
-			else if (rs.IsObj) _ass.Add(new Br(this, emitNextLbl, OpCode.obeq, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibeq, rs, rt, addr));
+			else if (rs.IsBool) _code.Add(new Br(this, codeNextLbl, OpCode.ibeq, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbeq, rs, rt, addr));
+			else if (rs.IsObj) _code.Add(new Br(this, codeNextLbl, OpCode.obeq, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void bne(ExprValue rs, ExprValue rt, string addr)
+		public void bne(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibne, rs, rt, addr));
-			else if (rs.IsBool) _ass.Add(new Br(this, emitNextLbl, OpCode.ibne, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbne, rs, rt, addr));
-			else if (rs.IsObj) _ass.Add(new Br(this, emitNextLbl, OpCode.obne, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibne, rs, rt, addr));
+			else if (rs.IsBool) _code.Add(new Br(this, codeNextLbl, OpCode.ibne, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbne, rs, rt, addr));
+			else if (rs.IsObj) _code.Add(new Br(this, codeNextLbl, OpCode.obne, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void blt(ExprValue rs, ExprValue rt, string addr)
+		public void blt(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.iblt, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fblt, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.iblt, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fblt, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void ble(ExprValue rs, ExprValue rt, string addr)
+		public void ble(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ible, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fble, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ible, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fble, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void bgt(ExprValue rs, ExprValue rt, string addr)
+		public void bgt(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibgt, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbgt, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibgt, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbgt, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void bge(ExprValue rs, ExprValue rt, string addr)
+		public void bge(ExprValue rs, ExprValue rt, Label addr)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new Br(this, emitNextLbl, OpCode.ibge, rs, rt, addr));
-			else if (rs.IsDbl) _ass.Add(new Br(this, emitNextLbl, OpCode.fbge, rs, rt, addr));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new Br(this, codeNextLbl, OpCode.ibge, rs, rt, addr));
+			else if (rs.IsDbl) _code.Add(new Br(this, codeNextLbl, OpCode.fbge, rs, rt, addr));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 		public void ld(string rs, int n)
 		{
@@ -224,82 +226,121 @@ namespace LLParserGenTest
 
 		public void ld(string rs, ExprValue c)
 		{
-			e();
-			/***/if (c.IsInt) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
-			else if (c.IsBool) _ass.Add(new OpDS(this, emitNextLbl, OpCode.ild, rs, c));
-			else if (c.IsDbl) _ass.Add(new OpDS(this, emitNextLbl, OpCode.fld, rs, c));
-			else if (c.IsObj) _ass.Add(new OpDS(this, emitNextLbl, OpCode.old, rs, c));
+			startCode();
+			/***/if (c.IsInt) _code.Add(new OpDS(this, codeNextLbl, OpCode.ild, rs, c));
+			else if (c.IsBool) _code.Add(new OpDS(this, codeNextLbl, OpCode.ild, rs, c));
+			else if (c.IsDbl) _code.Add(new OpDS(this, codeNextLbl, OpCode.fld, rs, c));
+			else if (c.IsObj) _code.Add(new OpDS(this, codeNextLbl, OpCode.old, rs, c));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 		public void i2d(string rd, string rs)
 		{
-			e();
-			_ass.Add(new OpDS(this, emitNextLbl, OpCode.i2f, rd, new ExprValue(rs, TypeSimple.Int)));
-			emitNextLbl = null;
+			startCode();
+			_code.Add(new OpDS(this, codeNextLbl, OpCode.i2f, rd, new ExprValue(rs, TypeSimple.Int)));
+			codeNextLbl = null;
 		}
 		public void d2i(string rd, string rs)
 		{
-			e();
-			_ass.Add(new OpDS(this, emitNextLbl, OpCode.f2i, rd, new ExprValue(rs, TypeSimple.Dbl)));
-			emitNextLbl = null;
+			startCode();
+			_code.Add(new OpDS(this, codeNextLbl, OpCode.f2i, rd, new ExprValue(rs, TypeSimple.Dbl)));
+			codeNextLbl = null;
 		}
 
 		public void ldm(string rd, ExprValue rs, int offset, ExprType et)
 		{
-			e();
-			/***/if (et.IsInt) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
-			else if (et.IsBool) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
-			else if (et.IsDbl) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.fldm, rd, rs, new ExprValue(offset)));
-			else if (et.IsObj) _ass.Add(new OpDSS(this, emitNextLbl, OpCode.oldm, rd, rs, new ExprValue(offset)));
+			startCode();
+			/***/if (et.IsInt) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
+			else if (et.IsBool) _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset)));
+			else if (et.IsDbl) _code.Add(new OpDSS(this, codeNextLbl, OpCode.fldm, rd, rs, new ExprValue(offset)));
+			else if (et.IsObj) _code.Add(new OpDSS(this, codeNextLbl, OpCode.oldm, rd, rs, new ExprValue(offset)));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 		public void stm(string rd, int offset, ExprValue rs)
 		{
-			e();
-			/***/if (rs.IsInt) _ass.Add(new OpSSS(this, emitNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.IsBool)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.IsDbl)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
-			else if (rs.IsObj)_ass.Add(new OpSSS(this, emitNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
+			startCode();
+			/***/if (rs.IsInt) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.IsBool)_code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
+			else if (rs.IsDbl)_code.Add(new OpSSS(this, codeNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
+			else if (rs.IsObj)_code.Add(new OpSSS(this, codeNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
 			else Debug.Assert(false);
-			emitNextLbl = null;
+			codeNextLbl = null;
 		}
 
-		public void newobj(string rd, int size, int vt)
+		public void newobj(string rd, int size, Label vt)
 		{
-			e();
-			_ass.Add(new OpNew(this, emitNextLbl, OpCode.onew, rd, size, vt));
-			emitNextLbl = null;
+			startCode();
+			_code.Add(new OpNew(this, codeNextLbl, OpCode.onew, rd, size, vt));
+			codeNextLbl = null;
 		}
 
-	
-		
-		U.Set<string> emitNextLbl;
 
-		public void emit(string lbl)
+		public void putByte(byte c)
 		{
-			if (emitNextLbl == null) emitNextLbl = new U.Set<string>();
-			emitNextLbl.Add(lbl);
+			startData();
+			_data.Add(new Data(this, dataNextLbl, c));
+			dataNextLbl = null;
 		}
-
-		private void e()
+		public void putString(string c)
 		{
-			if (emitNextLbl == null)
-			{
-				emitNextLbl = new U.Set<string>();
-				emitNextLbl.Add(NewLbl());
-			}
+			startData();
+			_data.Add(new Data(this, dataNextLbl, c));
+			dataNextLbl = null;
+		}
+		public void putInt(int c)
+		{
+			startData();
+			_data.Add(new Data(this, dataNextLbl, c));
+			dataNextLbl = null;
+		}
+		public void putInt(Label lbl)
+		{
+			startData();
+			_data.Add(new Data(this, dataNextLbl, lbl));
+			dataNextLbl = null;
 		}
 
-		private void ComputeLive(int istart, int iend, List<string> alwaysLive)
+		U.Set<Label> codeNextLbl;
+		U.Set<Label> dataNextLbl;
+
+		public void codeLbl(Label lbl)
+		{
+			if (codeNextLbl == null) codeNextLbl = new U.Set<Label>();
+			codeNextLbl.Add(lbl);
+		}
+		public void dataLbl(Label lbl)
+		{
+			if (dataNextLbl == null) dataNextLbl = new U.Set<Label>();
+			dataNextLbl.Add(lbl);
+		}
+
+		/// <summary>
+		/// inizio una nuova istruzione
+		/// </summary>
+		private void startCode()
+		{
+			if (codeNextLbl != null) return;
+			codeNextLbl = new U.Set<Label>();
+			codeNextLbl.Add(NewLbl());
+		}
+		/// <summary>
+		/// inizio una nuova istruzione
+		/// </summary>
+		private void startData()
+		{
+			if (dataNextLbl != null) return;
+			dataNextLbl = new U.Set<Label>();
+			dataNextLbl.Add(NewLbl());
+		}
+		public void ComputeLive(int istart, int iend, List<string> alwaysLive)
 		{
 			// capisco per ogni istruzione quale sono
 			// le istruzioni che la seguono.
 			// puo` essere quella immediatamente successiva 
 			// o un jmp da qualche parte nel codice.
 			for (int i = istart; i < iend; ++i)
-				_ass[i].ComputeSucc(this);
+				_code[i].ComputeSucc(this);
 
 			bool changed;
 			do
@@ -307,7 +348,7 @@ namespace LLParserGenTest
 				changed = false;
 				for (int i = iend - 1; i >= istart; --i)
 				{
-					var c = _ass[i];
+					var c = _code[i];
 
 					// per ogni ret devo aggiungere il codice che mi tiene viva le var in uscita
 					U.Set<string> force = new U.Set<string>();
@@ -321,12 +362,12 @@ namespace LLParserGenTest
 			} while (changed);
 		}
 
-		public string ToString(int istart, int iend)
+		public string CodeToString(int istart, int iend)
 		{
 			string r = "";
 			for (int i = istart; i < iend; ++i)
 			{
-				var v = _ass[i];
+				var v = _code[i];
 				r += v.ToString() + "\n";
 			}
 
@@ -334,7 +375,7 @@ namespace LLParserGenTest
 			{
 				r += "[";
 				bool first = true;
-				foreach (var v in _ass[_ass.Count - 1].Out)
+				foreach (var v in _code[_code.Count - 1].Out)
 				{
 					if (first == false) r += ", ";
 					first = false;
@@ -345,20 +386,47 @@ namespace LLParserGenTest
 
 			return r;
 		}
+		public string DataToString(int istart, int iend)
+		{
+			string r = "";
+			for (int i = istart; i < iend; ++i)
+			{
+				var v = _data[i];
+				r += v.ToString() + "\n";
+			}
+
+			if (true)
+			{
+				r += "[";
+				bool first = true;
+				if (_data.Count > 0)
+				{
+					foreach (var v in _data[_data.Count - 1].Out)
+					{
+						if (first == false) r += ", ";
+						first = false;
+						r += v;
+					}
+				}
+				r += "]\n";
+			}
+
+			return r;
+		}
 
 		public override string ToString()
 		{
-			return ToString(0, _ass.Count);
+			return CodeToString(0, _code.Count) + DataToString(0, _data.Count);
 		}
 
-		private Graph CreateGraph(int istart, int iend)
+		public Graph CreateGraph(int istart, int iend)
 		{
 			Graph gr = new Graph();
 
 			// creo i nodi
 			for (int i = istart; i < iend; ++i)
 			{
-				var c = _ass[i];
+				var c = _code[i];
 				foreach (var n in c.In)
 				{
 					if (gr.ExistsNode(n) == false)
@@ -375,7 +443,7 @@ namespace LLParserGenTest
 			// creo gli archi 
 			for (int i = istart; i < iend; ++i)
 			{
-				var c = _ass[i];
+				var c = _code[i];
 
 				for (int j = 0; j < c.In.Count; ++j)
 				{
@@ -387,7 +455,7 @@ namespace LLParserGenTest
 				}
 			}
 
-			var rr = _ass[iend - 1].Out;
+			var rr = _code[iend - 1].Out;
 			for (int j = 0; j < rr.Count; ++j)
 			{
 				Debug.Assert(gr.ExistsNode(rr[j]) == true);
@@ -402,154 +470,37 @@ namespace LLParserGenTest
 			return gr;
 		}
 
-		private void SetTemps(int istart, int iend, Dictionary<string, string> regs)
+		public void SetTemps(int istart, int iend, Dictionary<string, string> regs)
 		{
 			for (int i = istart; i < iend; ++i)
 			{
-				var stmt = _ass[i];
+				var stmt = _code[i];
 				foreach (var t in regs)
 					stmt.Substitute(t.Key, t.Value);
 			}
 		}
 
-
 		public AssRoot GetSuccOp(AssRoot ass)
 		{
-			for (int i = 0; i < _ass.Count; ++i)
-				if (_ass[i] == ass && i + 1 < _ass.Count)
-					return _ass[i + 1];
+			for (int i = 0; i < _code.Count; ++i)
+				if (_code[i] == ass && i + 1 < _code.Count)
+					return _code[i + 1];
 			return null;
 		}
 
-		public AssRoot GetOp(string lbl)
+		public AssRoot GetOp(Label lbl)
 		{
-			for (var i = 0; i < _ass.Count; ++i)
-				if (_ass[i].Lbl.Contains(lbl))
-					return _ass[i];
+			for (var i = 0; i < _code.Count; ++i)
+				if (_code[i].Lbl.Contains(lbl))
+					return _code[i];
 			return null;
-		}
-
-
-		private bool GenerateCode(DeclList member)
-		{
-			foreach (var f in member)
-			{
-				var df = f as DeclFun;
-				var dc = f as DeclClass;
-				
-				if (df != null)
-				{
-					if (GenerateCode(df) == false)
-						return false;
-				}
-				else if (dc != null)
-				{
-					if (GenerateCode(dc.members) == false)
-						return false;
-				}
-			}
-			return true;
-		}
-
-		public bool GenerateCode()
-		{
-			return GenerateCode(_dg.members);
-		}
-
-		public bool GenerateCode(DeclFun f)
-		{
-			bool debug = false;
-			bool optimize = true;
-
-			using (var fctx = new FunctionContex(this, f))
-			{
-				if (f.Father is DeclClass)
-				{
-					fctx.AddArgVar(new TokenAST(f.name.fileName, f.name.lineNu, MParser.THIS, "this", "this"), new TypeSimple(f.Father.name.v));
-
-					if (((DeclClass)f.Father).name.v == f.name.v)
-					{
-						if (f.ret != new TypeSimple(f.name.v))
-							throw new SyntaxError(f.lastCurly, "constructor must return object of the enclosed class");
-					}
-				}
-
-				int regAllocati = f.args.Count;
-				foreach (var a in f.args)
-					fctx.AddArgVar(a.ArgName, a.ArgType);
-
-				int istart = _ass.Count;
-				this.emit(f.AssName);
-				if (f.Father is DeclClass)
-				{
-					// la cosa è complicata... devo cercare il : base(....) se c'è altrimenti si suppone che ci sia il costruttore base()
-					var c = f.Father as DeclClass;
-					if (c.baseList.Count > 0)
-					{
-					}
-				}
-				bool unreachable = f.body.GenCode(fctx);
-				if (unreachable == false)
-				{
-					if (f.ret.IsVoid == false)
-						throw new SyntaxError(f.lastCurly, "missing return stmt");
-					fctx.Context.ret(null);
-				}
-				int iend = _ass.Count;
-
-				// if (debug) Console.WriteLine("{0}", this.ToString(istart, iend));
-
-
-				// le var in ingresso anche se non servono più non vengono sovrascritte
-				// da altre variabili (se invece si vuole ottimizzare al max si può omettere il Foreach).
-				var live = new List<string>();
-				if (optimize == false) f.args.ForEach(v => live.Add(fctx.GetVar(v.ArgName).Reg));
-				this.ComputeLive(istart, iend, live);
-				if (debug)
-				{
-					Console.WriteLine("Codice generato per la funzione {0} {1}/{2}", f.name, istart, iend);
-					Console.WriteLine("Live variables");
-					Console.WriteLine(this.ToString(istart, iend));
-				}
-
-				var gr = this.CreateGraph(istart, iend);
-				if (debug)
-				{
-					Console.WriteLine("Grafo");
-					Console.WriteLine(gr);
-				}
-
-				bool ok = false;
-				for (int k = regAllocati; k < 32; ++k)
-				{
-					var col = gr.Color(k);
-					if (col != null)
-					{
-						Console.WriteLine("Ci vogliono k={0} da r0 a r{1}, prossimo per push/js r{0}", k, k - 1);
-						var regs = col.GetRegs();
-						this.SetTemps(istart, iend, regs);
-						ok = true;
-						break;
-					}
-				}
-
-				if (ok == false)
-				{
-					Console.WriteLine("Cannot allocate registers");
-					return false;
-				}
-
-				Console.WriteLine(this.ToString(istart, iend));
-				Console.WriteLine("#####################");
-				return ok;
-			}
 		}
 
 		public DeclFun GetFun(string name, List<TypeRoot> args)
 		{
 			foreach (var f in _dg.members)
 			{
-				if (f.name.v != name) continue;
+				if (f.name.strRead != name) continue;
 				var fun = f as DeclFun;
 				if (fun == null) continue;
 				if (fun.args.Count != args.Count) continue;
@@ -566,7 +517,7 @@ namespace LLParserGenTest
 		public DeclClass GetClass(string name)
 		{
 			foreach (var f in _dg.members)
-				if (f.name.v == name)
+				if (f.name.strRead == name)
 				{
 					var c = f as DeclClass;
 					if (c != null)
@@ -574,6 +525,7 @@ namespace LLParserGenTest
 				}
 			return null;
 		}
+
 		public DeclFun GetFun(string className, string fun, List<TypeRoot> args)
 		{
 			var dc = this.GetClass(className);
@@ -584,7 +536,7 @@ namespace LLParserGenTest
 			{
 				if (m is DeclFun == false) continue;
 				var df = (DeclFun)m;
-				if (df.name.v != fun) continue;
+				if (df.name.strRead != fun) continue;
 				if (df.args.Count != args.Count) continue;
 				bool ok = true;
 				for (int i = 0; i < args.Count; ++i)
@@ -615,10 +567,10 @@ namespace LLParserGenTest
 
 		public Context Context { get { return _ctx; } }
 
-		public string NewLbl() { return _ctx.NewLbl(); }
+		public Label NewLbl() { return _ctx.NewLbl(); }
 		public string NewTmp() { return _ctx.NewTmp(); }
 
-		public void emit(string lbl) { _ctx.emit(lbl); }
+		public void emit(Label lbl) { _ctx.codeLbl(lbl); }
 
 
 		Dictionary<string, ExprValue> _localVars = new Dictionary<string, ExprValue>();
@@ -626,31 +578,31 @@ namespace LLParserGenTest
 
 		public void AddArgVar(TokenAST name, TypeRoot type)
 		{
-			if (_localVars.ContainsKey(name.v) == true)
-				throw new SyntaxError(name, "duplicated param '{0}'", name.v);
-			_localVars[name.v] = new ExprValue(U.F("r{0}", _nvar++), type);
+			if (_localVars.ContainsKey(name.strRead) == true)
+				throw new SyntaxError(name, "duplicated param '{0}'", name.strRead);
+			_localVars[name.strRead] = new ExprValue(U.F("r{0}", _nvar++), type);
 		}
 
 
 		public void AddDefVar(TokenAST name, TypeRoot ty)
 		{
-			if (_localVars.ContainsKey(name.v) == true)
-				throw new SyntaxError(name, "duplicated variable '{0}'", name.v);
-			_localVars[name.v] = new ExprValue(_ctx.NewTmp(), ty);
+			if (_localVars.ContainsKey(name.strRead) == true)
+				throw new SyntaxError(name, "duplicated variable '{0}'", name.strRead);
+			_localVars[name.strRead] = new ExprValue(_ctx.NewTmp(), ty);
 		}
 
 		public void UnDefVar(TokenAST name)
 		{
-			Debug.Assert(_localVars.ContainsKey(name.v));
-			_localVars.Remove(name.v);
+			Debug.Assert(_localVars.ContainsKey(name.strRead));
+			_localVars.Remove(name.strRead);
 		}
 
 		// bisogna confondere var con fun.
 		// .... 
 		public ExprValue GetVar(TokenAST name)
 		{
-			if (_localVars.ContainsKey(name.v) == true)
-				return _localVars[name.v];
+			if (_localVars.ContainsKey(name.strRead) == true)
+				return _localVars[name.strRead];
 
 			if (fun.Father is DeclGlobal)
 			{
@@ -659,12 +611,12 @@ namespace LLParserGenTest
 				{
 					DeclFun f = m as DeclFun;
 					if (f == null) continue;
-					if (f.name.v == name.v)
-						return new ExprValue(new ExprType(new TypeFun(dg, f.name.v)));
+					if (f.name.strRead == name.strRead)
+						return new ExprValue(new ExprType(new TypeFun(dg, f.name.strRead)));
 				}
 			}
 
-			throw new SyntaxError(name, "variable '{0}' not found", name.v);
+			throw new SyntaxError(name, "variable '{0}' not found", name.strRead);
 		}
 
 
@@ -686,12 +638,12 @@ namespace LLParserGenTest
 		public struct StackData
 		{
 			public StmtTk tk;
-			public string lblBreak;
-			public string lblContinue;
+			public Label lblBreak;
+			public Label lblContinue;
 			public TokenAST varName;
 		}
 
-		public void Push(StmtTk tk, string lblBreak, string lblContinue, TokenAST vv)
+		public void Push(StmtTk tk, Label lblBreak, Label lblContinue, TokenAST vv)
 		{
 			StackData r = new StackData();
 			r.tk = tk;

@@ -86,7 +86,7 @@ class GrammarReader
 
 					if (ret.token == RegexprParser.DIRECTIVE)
 					{
-						var args = ret.value.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+						var args = ret.strRead.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 						switch (args[0])
 						{
 						case "%parser":
@@ -126,13 +126,13 @@ class GrammarReader
 					if (ret.token != ID)
 						throw new SyntaxError(ret.fileName, ret.line, "expected identifier");
 
-					string role = ret.value;
+					string role = ret.strRead;
 					string type = null;
 					List<string> right = new List<string>();
 
 					ret = net.ReadToken(rd);
 					if (ret.token == TYPE)
-						type = ret.value;
+						type = ret.strRead;
 					else
 						net.PushBack(ret);
 
@@ -170,19 +170,19 @@ class GrammarReader
 						}
 						else if (ret.token == ID)
 						{
-							right.Add(ret.value);
+							right.Add(ret.strRead);
 						}
 						else if (ret.token == CHAR)
 						{
-							right.Add(ret.value);
+							right.Add(ret.strRead);
 						}
 						else if (ret.token == CODE)
 						{
-							right.Add(ret.value);
+							right.Add(ret.strRead);
 						}
 						else if (ret.token == NODE)
 						{
-							right.Add(ret.value);
+							right.Add(ret.strRead);
 						}
 						else if (ret.token == RESOLVER)
 						{
@@ -215,7 +215,7 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = RegexprParser.DIRECTIVE;
 			return true;
 		}));
@@ -229,7 +229,7 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		}));
 
@@ -245,7 +245,7 @@ class GrammarReader
 				}
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		}));
 
@@ -280,10 +280,10 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = DIRECTIVE;
 
-			var opts = tk.value.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+			var opts = tk.strRead.Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
 			if (opts.Length > 1)
 			{
 				switch (opts[0])
@@ -328,7 +328,7 @@ class GrammarReader
 					rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = CODE;
 			return true;
 		}));
@@ -342,7 +342,7 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = NODE;
 			return true;
 		}));
@@ -362,9 +362,9 @@ class GrammarReader
 					rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = TYPE;
-			tk.value = tk.value.Substring(1, tk.value.Length - 2);
+			tk.strRead = tk.strRead.Substring(1, tk.strRead.Length - 2);
 			return true;
 		}));
 
@@ -378,7 +378,7 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		}));
 		acts.Add(new RegAccept(new RegToken('/') & '*', (ref NFA.Token tk, LexReader rd, NFA nfa) =>
@@ -393,7 +393,7 @@ class GrammarReader
 				}
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		}));
 
@@ -458,7 +458,7 @@ class GrammarReader
 					rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			tk.token = RegexprParser.CODE;
 			return true;
 		});
@@ -493,8 +493,8 @@ class GrammarReader
 				}
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
-			tk.value = sb.ToString();
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+			tk.strRead = sb.ToString();
 			tk.token = RegexprParser.STRING;
 			return true;
 		});
@@ -523,7 +523,7 @@ class GrammarReader
 
 			// consumo qui la direttiva.
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 
 			if (args[0].StartsWith("%lexer") == false)
 				throw new ApplicationException(U.F("{0}({1}): unknonw directive", tk.fileName, tk.line));
@@ -542,7 +542,7 @@ class GrammarReader
 				rd.Read();
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		});
 
@@ -558,7 +558,7 @@ class GrammarReader
 				}
 			}
 			rd.SetMatch();
-			rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+			rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 			return false;
 		});
 
@@ -1178,7 +1178,7 @@ class Grammar
 			}
 			tw.WriteLine("{");
 			tw.WriteLine("int alt = 0;");
-			tw.WriteLine("switch (Next.ch)");
+			tw.WriteLine("switch (Next.token)");
 			tw.WriteLine("{");
 			for (var a = 0; a < p.Alt.Count; ++a)
 			{
@@ -1329,7 +1329,7 @@ class Grammar
 			tw.WriteLine("}");
 			tw.WriteLine();
 
-			tw.WriteLine("switch (Next.ch)");
+			tw.WriteLine("switch (Next.token)");
 			tw.WriteLine("{");
 
 			foreach (var f in Follow[p.Symbol])

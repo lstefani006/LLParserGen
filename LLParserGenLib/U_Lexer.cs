@@ -280,7 +280,7 @@ namespace LLParserLexerLib
 			this._a = a;
 			this._action = (ref NFA.Token tk, LexReader rd, NFA nfa) =>
 			{
-				rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 				return false;
 			};
 		}
@@ -289,7 +289,7 @@ namespace LLParserLexerLib
 			this._a = a;
 			this._action = (ref NFA.Token tk, LexReader rd, NFA nfa) =>
 			{
-				rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 				tk.token = token;
 				return true;
 			};
@@ -561,13 +561,13 @@ namespace LLParserLexerLib
 		public struct Token
 		{
 			public int token;
-			public string value;
+			public string strRead;
 			public string fileName;
 			public int line;
 
 			public override string ToString()
 			{
-				return U.F("{0}({1}: token={2} value={3}", fileName, value, token, value);
+				return U.F("{0}({1}): token={2} value={3}", this.fileName, this.line, token, strRead);
 			}
 		}
 
@@ -617,7 +617,7 @@ namespace LLParserLexerLib
 					ret.token = 0;
 					ret.fileName = null;
 					ret.line = 0;
-					ret.value = null;
+					ret.strRead = null;
 
 					if (match.Action(ref ret, rd, this))
 						return ret;
@@ -626,8 +626,8 @@ namespace LLParserLexerLib
 				{
 					Token ret;
 					ret.token = -1;
-					rd.EndToken(out ret.value, out ret.fileName, out ret.line);
-					if (ret.value == "")
+					rd.EndToken(out ret.strRead, out ret.fileName, out ret.line);
+					if (ret.strRead == "")
 						return ret;
 				}
 				else
@@ -853,7 +853,7 @@ namespace LLParserLexerLib
 					rd.Read();
 				}
 				rd.SetMatch();
-				rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 				return false;
 			});
 			acts.Add("/*", (ref NFA.Token tk, LexReader rd, NFA nfa) =>
@@ -868,7 +868,7 @@ namespace LLParserLexerLib
 					}
 				}
 				rd.SetMatch();
-				rd.EndToken(out tk.value, out tk.fileName, out tk.line);
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
 				return false;
 			});
 			acts.Add(' ');
@@ -884,8 +884,8 @@ namespace LLParserLexerLib
 					{
 						NFA.Token ret = net.ReadToken(rd);
 
-						if (ret.value != "\n")
-							Console.WriteLine("token={0} value=\"{1}\" line={2}", ret.token, ret.value, ret.line);
+						if (ret.strRead != "\n")
+							Console.WriteLine("token={0} value=\"{1}\" line={2}", ret.token, ret.strRead, ret.line);
 						else
 							Console.WriteLine("token={0} value=\"\\n\" line={1}", ret.token, ret.line);
 

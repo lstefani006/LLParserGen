@@ -1,7 +1,17 @@
+ifdef SYSTEMROOT
+	CSC=csc.exe
+	FixPath = $(subst /,\\,$1)
+else
+	CSC=mcs
+	RM=rm -f
+	FixPath = $1
+endif
 
 LLParserGen.exe : FirstFollow.cs LexParserHelper.cs Main.cs regexp.cs
-	mcs -out:LLParserGen.exe *.cs ../LLParserGenLib/*.cs U/*.cs
-	cp LLParserGen.exe ~/bin/.
+	$(CSC) -out:LLParserGen.exe *.cs \
+		$(call FixPath,$(wildcard ../LLParserGenLib/*.cs)) \
+		$(call FixPath,$(wildcard ./U/*.cs))
+	# cp LLParserGen.exe ~/bin/.
 
 clean :
-	-rm -f LLParserGen.exe M.cs
+	$(RM) -f LLParserGen.exe M.cs

@@ -1,6 +1,6 @@
 ifdef SYSTEMROOT
 	CSC=csc.exe
-	FixPath = $(subst /,\,$1)
+	FixPath = $(subst /,\\,$1)
 else
 	CSC=mcs
 	RM=rm -f

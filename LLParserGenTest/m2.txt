@@ -1,45 +1,30 @@
-class Object
+class object
 {
-	fun Object() {}
-	fun ToString(r : String) : String { return r; }
-	var a: int;
+	fun object() {} 
+	fun ToString() : string { return "object"; }
 }
 
-class String : Object, IDisposable {
-	var a: int;
-	var b: String;
-	var c: int;
+class string : Object, IDisposable {
 
-	fun String() : base() {
-		this.a = 3;
-		this.b = this;
-		this.c = 4;
-		this.Len();
-		return this;
-	}
-	fun String(a : int) : base() {
-		this.a = a;
-		return this;
-	}
+	fun string() {}
+	fun string(r : string) { this.str = r.str; this.sz = r.sz; }
 
-	fun Len() : int { return 33; }
+	fun ToString() : string { return this; }
+	fun native Len() : int { return this.sz; }
+
+	var str : Object;
+	var sz : int;
 }
 
-fun leo(luca : String, b : String) : int
+fun leo(luca : string, b : string) : int
 {
-	var d : int;
-	d=3;
+	return 3;
 
-	luca.a = 33 + luca.c;
-	d = d + 33 + luca.c;
-
-	d = luca.Len();
-	return leo(luca.b, b);
 }
 
-fun aa(): String
+fun aa(): string
 {
-	var r : String;
-	r = new String(333);
+	var r : string;
+	r = "leo";
 	return r;
 }

@@ -76,12 +76,12 @@ namespace LLParserGenTest
 
 		protected U.Set<string> _in = new U.Set<string>();
 		protected U.Set<string> _out = new U.Set<string>();
-		protected U.Set<string> _lbl = new U.Set<string>();
+		protected U.Set<Label> _lbl = new U.Set<Label>();
 		protected U.Set<AssRoot> _succ;
 
 		public U.Set<AssRoot> Succ { get { return _succ; } }
 
-		protected AssRoot(Context ctx, U.Set<string> lbl) { _lbl = lbl; }
+		protected AssRoot(Context ctx, U.Set<Label> lbl) { _lbl = lbl; }
 
 		public bool Equals(AssRoot other)
 		{
@@ -108,14 +108,14 @@ namespace LLParserGenTest
 			}
 			r = r + "] ";
 
-			r = r.PadRight(35);
+			r = r.PadRight(20);
 
-			return r + U.F("{0,-6}", this._lbl);
+			return r + U.F("{0,-30}", this._lbl);
 		}
 
 		public U.Set<string> In { get { return _in; } }
 		public U.Set<string> Out { get { return _out; } }
-		public U.Set<string> Lbl { get { return this._lbl; } }
+		public U.Set<Label> Lbl { get { return this._lbl; } }
 	}
 
 	class OpDS : AssRoot
@@ -124,7 +124,7 @@ namespace LLParserGenTest
 		string rd;
 		ExprValue rs;
 
-		public OpDS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rs)
+		public OpDS(Context ctx, U.Set<Label> lbl, OpCode op, string rd, ExprValue rs)
 			: base(ctx, lbl)
 		{
 			this.op = op;
@@ -197,7 +197,7 @@ namespace LLParserGenTest
 		readonly ExprValue rt;
 		readonly ExprValue rs;
 
-		public OpDSS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
+		public OpDSS(Context ctx, U.Set<Label> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(rd != null);
@@ -277,7 +277,7 @@ namespace LLParserGenTest
 		readonly ExprValue rt;
 		readonly ExprValue rs;
 
-		public OpSSS(Context ctx, U.Set<string> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
+		public OpSSS(Context ctx, U.Set<Label> lbl, OpCode op, string rd, ExprValue rt, ExprValue rs)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(rd != null);
@@ -350,14 +350,14 @@ namespace LLParserGenTest
 	class J : AssRoot
 	{
 		OpCode op;
-		string addr;
+		Label addr;
 		string rd;
 
-		public J(Context ctx, U.Set<string> lbl, OpCode op, string addr)
+		public J(Context ctx, U.Set<Label> lbl, OpCode op, Label addr)
 			: this(ctx, lbl, op, null, addr)
 		{
 		}
-		public J(Context ctx, U.Set<string> lbl, OpCode op, string rd, string addr)
+		public J(Context ctx, U.Set<Label> lbl, OpCode op, string rd, Label addr)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(op == OpCode.jmp || op == OpCode.ijs || op == OpCode.fjs || op == OpCode.ojs || op == OpCode.vjs);
@@ -449,7 +449,7 @@ namespace LLParserGenTest
 		readonly ExprValue rt;
 		readonly OpCode op;
 
-		public Ret(Context ctx, U.Set<string> lbl, OpCode op, ExprValue rt)
+		public Ret(Context ctx, U.Set<Label> lbl, OpCode op, ExprValue rt)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(op == OpCode.iret || op == OpCode.fret || op == OpCode.vret || op == OpCode.oret);
@@ -514,9 +514,9 @@ namespace LLParserGenTest
 		readonly OpCode op;
 		string rd;
 		int sz;
-		int vt;
+		Label vt;
 
-		public OpNew(Context ctx, U.Set<string> lbl, OpCode op, string rd, int sz, int vt)
+		public OpNew(Context ctx, U.Set<Label> lbl, OpCode op, string rd, int sz, Label vt)
 			: base(ctx, lbl)
 		{
 			this.op = op;
@@ -585,9 +585,9 @@ namespace LLParserGenTest
 		OpCode op;
 		ExprValue rs;
 		ExprValue rt;
-		string addr;
+		Label addr;
 
-		public Br(Context ctx, U.Set<string> lbl, OpCode op, ExprValue rs, ExprValue rt, string addr)
+		public Br(Context ctx, U.Set<Label> lbl, OpCode op, ExprValue rs, ExprValue rt, Label addr)
 			: base(ctx, lbl)
 		{
 			Debug.Assert(rs != null);
@@ -653,6 +653,68 @@ namespace LLParserGenTest
 		{
 			if (rs.IsReg && rs.Reg == temp) rs.SetReg(reg);
 			if (rt.IsReg && rt.Reg == temp) rt.SetReg(reg);
+		}
+	}
+
+
+	public class Label : IEquatable<Label>
+	{
+		public Label(string s) { _s = s; }
+		public override string ToString() { return _s; }
+		string _s;
+
+		public bool Equals(Label other) { return _s == other._s; }
+	}
+
+	class Data : AssRoot
+	{
+		public Data(Context ctx, U.Set<Label> lbl, int c)
+			: base(ctx, lbl)
+		{
+			this.c = c;
+		}
+		public Data(Context ctx, U.Set<Label> lbl, byte c)
+			: base(ctx, lbl)
+		{
+			this.c = c;
+		}
+		public Data(Context ctx, U.Set<Label> lbl, string s)
+			: base(ctx, lbl)
+		{
+			this.c = s;
+		}
+		public Data(Context ctx, U.Set<Label> lbl, Label s)
+			: base(ctx, lbl)
+		{
+			this.c = s;
+		}
+
+		readonly object c;
+
+
+		public override string ToString()
+		{
+			string r = "";
+			if (c is byte) r = U.F(".byte {0}", c);
+			if (c is string) r = U.F(".string {0}", c);
+			if (c is int) r = U.F(".int {0}", c);
+			if (c is Label) r = U.F(".int {0}", c);
+			return U.F("{0} {1}", InToString(), r);
+		}
+
+
+
+		public override void ComputeSucc(Context ctx)
+		{
+		}
+
+		public override bool ComputeLive(U.Set<string> force)
+		{
+			return false;
+		}
+
+		public override void Substitute(string temp, string reg)
+		{
 		}
 	}
 }

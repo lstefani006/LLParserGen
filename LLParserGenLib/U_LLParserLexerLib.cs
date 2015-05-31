@@ -72,19 +72,20 @@ namespace LLParserLexerLib
 	[Serializable]
 	public class TokenAST : SourceTrackable, IAST
 	{
-		public TokenAST(string fileName, int lineNu, int ch, string id, string v) : base(fileName, lineNu) { this.ch = ch; this.id = id;  this.v = v; }
-		public TokenAST(ISourceTrackable sc, char ch) : base(sc) { this.ch = ch; this.id = U.F("{0}", ch); this.v = this.id; }
+		public TokenAST(string fileName, int lineNu, int ch, string id, string v) : base(fileName, lineNu) { this.token = ch; this.tokenStr = id;  this.strRead = v; }
+		public TokenAST(ISourceTrackable sc, int tk, string id, string v) : this(sc.fileName, sc.lineNu, tk, id, v) {}
+		public TokenAST(ISourceTrackable sc, char tk) : base(sc) { this.token = tk; this.strRead = U.F("{0}", tk); this.tokenStr = this.strRead; }
 
-		public readonly int ch;
-		public readonly string v;    // es while (quello che ha letto)
-		public readonly string id;   // es WHILE (il token)
+		public readonly int token;         // quello che ho letto tradotto in token
+		public readonly string strRead;          // es while (quello che ha letto) come stringa
+		public readonly string tokenStr;   // la rappresentazione in stringa del token. es "WHILE" quando token=WHILE
 
 		public override string ToString()
 		{
-			if (id == null)
-				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, ch, v);
+			if (tokenStr == null)
+				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, this.token, strRead);
 			else
-				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, id, v);
+				return U.F("{0}: {1} - \"{2}\"", this.TrackMsg, this.tokenStr, strRead);
 		}
 	}
 
@@ -119,7 +120,7 @@ namespace LLParserLexerLib
 
 		protected void Error()
 		{
-			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}' '{1}'", GetToken(Next.ch), Next.v);
+			throw new SyntaxError(Next.fileName, Next.lineNu, "unexpected token '{0}' '{1}'", GetToken(Next.token), Next.strRead);
 		}
 
 		protected abstract RegAcceptList CreateRegAcceptList();
@@ -143,15 +144,16 @@ namespace LLParserLexerLib
 				if (_next == null)
 				{
 					var t = _nfa.ReadToken(_rd);
-					var id = Token.ContainsKey(t.token) ? Token[t.token] : null;
-					_next = new TokenAST(t.fileName, t.line, t.token, id, t.value);
+					string tokenStr;
+					if (Token.TryGetValue(t.token, out tokenStr) == false) tokenStr = null;
+					_next = new TokenAST(t.fileName, t.line, t.token, tokenStr, t.strRead);
 				}
 				return _next;
 			}
 		}
 		protected virtual TokenAST Match(int ch, IAST v)
 		{
-			if (Next.ch != ch)
+			if (Next.token != ch)
 				throw new SyntaxError(_next.fileName, _next.lineNu, "expected char '{0}' read {1}", (char)ch, Next.ToString());
 
 			var ret = _next;

@@ -1,6 +1,14 @@
+ifdef SYSTEMROOT
+	CSC=csc.exe
+	FixPath = $(subst /,\\,$1)
+else
+	CSC=mcs
+	RM=rm -f
+	FixPath = $1
+endif
 
 LLParserGenLib.dll : 
-	mcs -target:library -out:LLParserGenLib.dll *.cs
+	$(CSC) -target:library -out:LLParserGenLib.dll *.cs
 
 clean:
-	-rm -f LLParserGenLib.dll
+	$(RM) -f LLParserGenLib.dll

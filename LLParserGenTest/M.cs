@@ -2,6 +2,7 @@
 #pragma warning disable 0219 // variable assigned but not used.
 
 using System;
+using System.Text;
 using System.Collections.Generic;
 using LLParserLexerLib;
 
@@ -14,30 +15,33 @@ namespace LLParserGenTest
 		public const int CLASS = -4;
 		public const int VAR = -5;
 		public const int FUN = -6;
-		public const int BASE = -7;
-		public const int THIS = -8;
-		public const int IF = -9;
-		public const int WHILE = -10;
-		public const int BREAK = -11;
-		public const int CONTINUE = -12;
-		public const int RETURN = -13;
-		public const int ELSE = -14;
-		public const int OROR = -15;
-		public const int ANDAND = -16;
-		public const int EQ = -17;
-		public const int NE = -18;
-		public const int LT = -19;
-		public const int LE = -20;
-		public const int GT = -21;
-		public const int GE = -22;
-		public const int SHL = -23;
-		public const int SHR = -24;
-		public const int NUM = -25;
-		public const int FALSE = -26;
-		public const int TRUE = -27;
-		public const int NULL = -28;
-		public const int CAST = -29;
-		public const int NEW = -30;
+		public const int NATIVE = -7;
+		public const int VIRTUAL = -8;
+		public const int BASE = -9;
+		public const int THIS = -10;
+		public const int IF = -11;
+		public const int WHILE = -12;
+		public const int BREAK = -13;
+		public const int CONTINUE = -14;
+		public const int RETURN = -15;
+		public const int ELSE = -16;
+		public const int OROR = -17;
+		public const int ANDAND = -18;
+		public const int EQ = -19;
+		public const int NE = -20;
+		public const int LT = -21;
+		public const int LE = -22;
+		public const int GT = -23;
+		public const int GE = -24;
+		public const int SHL = -25;
+		public const int SHR = -26;
+		public const int NUM = -27;
+		public const int STR = -28;
+		public const int FALSE = -29;
+		public const int TRUE = -30;
+		public const int NULL = -31;
+		public const int CAST = -32;
+		public const int NEW = -33;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -53,30 +57,33 @@ namespace LLParserGenTest
 					_token.Add(-4, "CLASS");
 					_token.Add(-5, "VAR");
 					_token.Add(-6, "FUN");
-					_token.Add(-7, "BASE");
-					_token.Add(-8, "THIS");
-					_token.Add(-9, "IF");
-					_token.Add(-10, "WHILE");
-					_token.Add(-11, "BREAK");
-					_token.Add(-12, "CONTINUE");
-					_token.Add(-13, "RETURN");
-					_token.Add(-14, "ELSE");
-					_token.Add(-15, "OROR");
-					_token.Add(-16, "ANDAND");
-					_token.Add(-17, "EQ");
-					_token.Add(-18, "NE");
-					_token.Add(-19, "LT");
-					_token.Add(-20, "LE");
-					_token.Add(-21, "GT");
-					_token.Add(-22, "GE");
-					_token.Add(-23, "SHL");
-					_token.Add(-24, "SHR");
-					_token.Add(-25, "NUM");
-					_token.Add(-26, "FALSE");
-					_token.Add(-27, "TRUE");
-					_token.Add(-28, "NULL");
-					_token.Add(-29, "CAST");
-					_token.Add(-30, "NEW");
+					_token.Add(-7, "NATIVE");
+					_token.Add(-8, "VIRTUAL");
+					_token.Add(-9, "BASE");
+					_token.Add(-10, "THIS");
+					_token.Add(-11, "IF");
+					_token.Add(-12, "WHILE");
+					_token.Add(-13, "BREAK");
+					_token.Add(-14, "CONTINUE");
+					_token.Add(-15, "RETURN");
+					_token.Add(-16, "ELSE");
+					_token.Add(-17, "OROR");
+					_token.Add(-18, "ANDAND");
+					_token.Add(-19, "EQ");
+					_token.Add(-20, "NE");
+					_token.Add(-21, "LT");
+					_token.Add(-22, "LE");
+					_token.Add(-23, "GT");
+					_token.Add(-24, "GE");
+					_token.Add(-25, "SHL");
+					_token.Add(-26, "SHR");
+					_token.Add(-27, "NUM");
+					_token.Add(-28, "STR");
+					_token.Add(-29, "FALSE");
+					_token.Add(-30, "TRUE");
+					_token.Add(-31, "NULL");
+					_token.Add(-32, "CAST");
+					_token.Add(-33, "NEW");
 				}
 				return _token;
 			}
@@ -85,7 +92,7 @@ namespace LLParserGenTest
 		DeclList start(IAST start_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -111,7 +118,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case -1:
 				break;
@@ -125,7 +132,7 @@ namespace LLParserGenTest
 		DeclList decl_list_e(IAST decl_list_e_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 			case -1:
@@ -162,7 +169,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 			case -1:
@@ -177,7 +184,7 @@ namespace LLParserGenTest
 		DeclList decl_list(IAST decl_list_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -206,7 +213,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 			case -1:
@@ -221,7 +228,7 @@ namespace LLParserGenTest
 		DeclList tmp_1(IAST tmp_1_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 			case -1:
@@ -261,7 +268,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 			case -1:
@@ -276,7 +283,7 @@ namespace LLParserGenTest
 		DeclRoot decl(IAST decl_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 				alt = 0;
@@ -332,7 +339,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -351,7 +358,7 @@ namespace LLParserGenTest
 		DeclNamespace decl_namespace(IAST decl_namespace_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case NAMESPACE:
 				alt = 0;
@@ -382,7 +389,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -401,7 +408,7 @@ namespace LLParserGenTest
 		DeclClass decl_cls(IAST decl_cls_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 				alt = 0;
@@ -434,7 +441,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -453,7 +460,7 @@ namespace LLParserGenTest
 		TypeRootList base_opz(IAST base_opz_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ':':
 				alt = 0;
@@ -488,7 +495,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
 				break;
@@ -502,7 +509,7 @@ namespace LLParserGenTest
 		TypeRootList baselist(IAST baselist_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ID:
 				alt = 0;
@@ -528,7 +535,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
 				break;
@@ -542,7 +549,7 @@ namespace LLParserGenTest
 		TypeRootList tmp_2(IAST tmp_2_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
 				alt = 0;
@@ -580,7 +587,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
 				break;
@@ -594,7 +601,7 @@ namespace LLParserGenTest
 		DeclList cls_members_e(IAST cls_members_e_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				alt = 0;
@@ -629,7 +636,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -643,7 +650,7 @@ namespace LLParserGenTest
 		DeclList cls_members(IAST cls_members_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -671,7 +678,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -685,7 +692,7 @@ namespace LLParserGenTest
 		DeclList tmp_3(IAST tmp_3_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				alt = 0;
@@ -723,7 +730,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -737,7 +744,7 @@ namespace LLParserGenTest
 		DeclRoot cls_member(IAST cls_member_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case FUN:
 				alt = 0;
@@ -782,7 +789,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -799,7 +806,7 @@ namespace LLParserGenTest
 		DeclVar decl_var(IAST decl_var_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case VAR:
 				alt = 0;
@@ -830,7 +837,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -849,7 +856,7 @@ namespace LLParserGenTest
 		DeclFun decl_fun(IAST decl_fun_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case FUN:
 				alt = 0;
@@ -872,23 +879,21 @@ namespace LLParserGenTest
 					var nt6_i = default(IAST);
 					var nt7_i = default(IAST);
 					var nt8_i = default(IAST);
-					var nt9_i = default(IAST);
 					
 					TokenAST nt1_s = Match(FUN, nt1_i);
-					TokenAST nt2_s = Match(ID, nt2_i);
-					TokenAST nt3_s = Match('(', nt3_i);
-					var nt4_s = funargse(nt4_i);
-					TokenAST nt5_s = Match(')', nt5_i);
-					var nt6_s = ret_or_base(nt6_i);
-					TokenAST nt7_s = Match('{', nt7_i);
-					var nt8_s = stmtliste(nt8_i);
-					TokenAST nt9_s = Match('}', nt9_i);
-					decl_fun_s = new DeclFun(nt2_s, nt4_s, nt6_s, nt8_s, nt9_s);
+					var nt2_s = decl_fun_mod(nt2_i);
+					TokenAST nt3_s = Match(ID, nt3_i);
+					TokenAST nt4_s = Match('(', nt4_i);
+					var nt5_s = funargse(nt5_i);
+					TokenAST nt6_s = Match(')', nt6_i);
+					var nt7_s = ret_or_base(nt7_i);
+					var nt8_s = tmp_20(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_s, nt7_s, nt8_i);
+					decl_fun_s = nt8_s;
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case CLASS:
 			case FUN:
@@ -904,15 +909,131 @@ namespace LLParserGenTest
 			return decl_fun_s;
 		}
 		
+		DeclFun tmp_20(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST nt6_s, IAST nt7_s, IAST tmp_20_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case '{':
+				alt = 0;
+				break;
+			case ';':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			DeclFun tmp_20_s = default(DeclFun);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt8_i = default(IAST);
+					var nt9_i = default(IAST);
+					var nt10_i = default(IAST);
+					
+					TokenAST nt8_s = Match('{', nt8_i);
+					var nt9_s = stmtliste(nt9_i);
+					TokenAST nt10_s = Match('}', nt10_i);
+					tmp_20_s = new DeclFun(((TokenAST)nt2_s), ((TokenAST)nt3_s), ((FunArgList)nt5_s), ((TypeRoot_or_Base)nt7_s), nt9_s, nt10_s);
+				}
+				break;
+			case 1:
+				{
+					var nt8_i = default(IAST);
+					
+					TokenAST nt8_s = Match(';', nt8_i);
+					tmp_20_s = new DeclFun(((TokenAST)nt2_s), ((TokenAST)nt3_s), ((FunArgList)nt5_s), ((TypeRoot_or_Base)nt7_s), null, nt8_s);
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case CLASS:
+			case FUN:
+			case VAR:
+			case NAMESPACE:
+			case '}':
+			case -1:
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_20_s;
+		}
+		
+		TokenAST decl_fun_mod(IAST decl_fun_mod_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case ID:
+				alt = 0;
+				break;
+			case NATIVE:
+				alt = 1;
+				break;
+			case VIRTUAL:
+				alt = 2;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			TokenAST decl_fun_mod_s = default(TokenAST);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					decl_fun_mod_s = null;
+				}
+				break;
+			case 1:
+				{
+					var nt1_i = default(IAST);
+					
+					TokenAST nt1_s = Match(NATIVE, nt1_i);
+					decl_fun_mod_s = nt1_s;
+				}
+				break;
+			case 2:
+				{
+					var nt1_i = default(IAST);
+					
+					TokenAST nt1_s = Match(VIRTUAL, nt1_i);
+					decl_fun_mod_s = nt1_s;
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case ID:
+				break;
+			default:
+				Error();
+				break;
+			}
+			return decl_fun_mod_s;
+		}
+		
 		TypeRoot_or_Base ret_or_base(IAST ret_or_base_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ':':
 				alt = 0;
 				break;
 			case '{':
+			case ';':
 				alt = 1;
 				break;
 			default:
@@ -929,7 +1050,7 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(':', nt1_i);
-					var nt2_s = tmp_20(nt1_s, nt2_i);
+					var nt2_s = tmp_21(nt1_s, nt2_i);
 					ret_or_base_s = nt2_s;
 				}
 				break;
@@ -942,9 +1063,10 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
+			case ';':
 				break;
 			default:
 				Error();
@@ -953,10 +1075,10 @@ namespace LLParserGenTest
 			return ret_or_base_s;
 		}
 		
-		TypeRoot_or_Base tmp_20(IAST nt1_s, IAST tmp_20_i)
+		TypeRoot_or_Base tmp_21(IAST nt1_s, IAST tmp_21_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case BASE:
 				alt = 0;
@@ -972,7 +1094,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			TypeRoot_or_Base tmp_20_s = default(TypeRoot_or_Base);
+			TypeRoot_or_Base tmp_21_s = default(TypeRoot_or_Base);
 			switch (alt)
 			{
 			case 0:
@@ -986,7 +1108,7 @@ namespace LLParserGenTest
 					TokenAST nt3_s = Match('(', nt3_i);
 					var nt4_s = e_list_opz(nt4_i);
 					TokenAST nt5_s = Match(')', nt5_i);
-					tmp_20_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
+					tmp_21_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
 				}
 				break;
 			case 1:
@@ -1000,7 +1122,7 @@ namespace LLParserGenTest
 					TokenAST nt3_s = Match('(', nt3_i);
 					var nt4_s = e_list_opz(nt4_i);
 					TokenAST nt5_s = Match(')', nt5_i);
-					tmp_20_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
+					tmp_21_s = new TypeRoot_or_Base(new BaseInit(nt2_s, nt4_s));
 				}
 				break;
 			case 2:
@@ -1008,26 +1130,27 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					var nt2_s = type(nt2_i);
-					tmp_20_s = new TypeRoot_or_Base(nt2_s);
+					tmp_21_s = new TypeRoot_or_Base(nt2_s);
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '{':
+			case ';':
 				break;
 			default:
 				Error();
 				break;
 			}
-			return tmp_20_s;
+			return tmp_21_s;
 		}
 		
 		FunArgList funargse(IAST funargse_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				alt = 0;
@@ -1060,7 +1183,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				break;
@@ -1074,7 +1197,7 @@ namespace LLParserGenTest
 		FunArgList funargs(IAST funargs_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ID:
 				alt = 0;
@@ -1097,14 +1220,14 @@ namespace LLParserGenTest
 					TokenAST nt1_s = Match(ID, nt1_i);
 					TokenAST nt2_s = Match(':', nt2_i);
 					var nt3_s = type(nt3_i);
-					nt4_i = new FunArgList(nt1_s, nt3_s); 
+					nt4_i = new FunArgList().Add(nt1_s, nt3_s); 
 					var nt4_s = tmp_4(nt4_i);
 					funargs_s = nt4_s; 
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				break;
@@ -1118,7 +1241,7 @@ namespace LLParserGenTest
 		FunArgList tmp_4(IAST tmp_4_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				alt = 0;
@@ -1160,7 +1283,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				break;
@@ -1174,7 +1297,7 @@ namespace LLParserGenTest
 		StmtRoot stmt(IAST stmt_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case IF:
 				alt = 0;
@@ -1182,6 +1305,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1233,7 +1357,7 @@ namespace LLParserGenTest
 					var nt3_s = expr(nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					var nt5_s = stmt(nt5_i);
-					var nt6_s = tmp_21(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
+					var nt6_s = tmp_22(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
 					stmt_s = nt6_s;
 				}
 				break;
@@ -1317,13 +1441,13 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(RETURN, nt1_i);
-					var nt2_s = tmp_22(nt1_s, nt2_i);
+					var nt2_s = tmp_23(nt1_s, nt2_i);
 					stmt_s = nt2_s;
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ELSE:
 			case IF:
@@ -1336,6 +1460,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1354,10 +1479,10 @@ namespace LLParserGenTest
 			return stmt_s;
 		}
 		
-		StmtRoot tmp_21(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST tmp_21_i)
+		StmtRoot tmp_22(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST tmp_22_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case IF:
 			case VAR:
@@ -1369,6 +1494,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1382,86 +1508,6 @@ namespace LLParserGenTest
 				alt = 0;
 				break;
 			case ELSE:
-				alt = 1;
-				break;
-			default:
-				Error();
-				break;
-			}
-			
-			StmtRoot tmp_21_s = default(StmtRoot);
-			switch (alt)
-			{
-			case 0:
-				{
-					var nt6_i = default(IAST);
-					
-					tmp_21_s = new StmtBlock(new StmtIf(((TokenAST)nt1_s), ((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s))));
-				}
-				break;
-			case 1:
-				{
-					var nt6_i = default(IAST);
-					var nt7_i = default(IAST);
-					
-					TokenAST nt6_s = Match(ELSE, nt6_i);
-					var nt7_s = stmt(nt7_i);
-					tmp_21_s = new StmtBlock(new StmtIf(((TokenAST)nt1_s), ((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s)), new StmtBlock(nt7_s)));
-				}
-				break;
-			}
-			
-			switch (Next.ch)
-			{
-			case ELSE:
-			case IF:
-			case VAR:
-			case '{':
-			case WHILE:
-			case BREAK:
-			case CONTINUE:
-			case RETURN:
-			case '-':
-			case '+':
-			case NUM:
-			case ID:
-			case THIS:
-			case BASE:
-			case FALSE:
-			case TRUE:
-			case NULL:
-			case '(':
-			case CAST:
-			case NEW:
-			case '}':
-				break;
-			default:
-				Error();
-				break;
-			}
-			return tmp_21_s;
-		}
-		
-		StmtRoot tmp_22(IAST nt1_s, IAST tmp_22_i)
-		{
-			int alt = 0;
-			switch (Next.ch)
-			{
-			case ';':
-				alt = 0;
-				break;
-			case '-':
-			case '+':
-			case NUM:
-			case ID:
-			case THIS:
-			case BASE:
-			case FALSE:
-			case TRUE:
-			case NULL:
-			case '(':
-			case CAST:
-			case NEW:
 				alt = 1;
 				break;
 			default:
@@ -1474,25 +1520,24 @@ namespace LLParserGenTest
 			{
 			case 0:
 				{
-					var nt2_i = default(IAST);
+					var nt6_i = default(IAST);
 					
-					TokenAST nt2_s = Match(';', nt2_i);
-					tmp_22_s = new StmtReturn(((TokenAST)nt1_s));;
+					tmp_22_s = new StmtBlock(new StmtIf(((TokenAST)nt1_s), ((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s))));
 				}
 				break;
 			case 1:
 				{
-					var nt2_i = default(IAST);
-					var nt3_i = default(IAST);
+					var nt6_i = default(IAST);
+					var nt7_i = default(IAST);
 					
-					var nt2_s = expr(nt2_i);
-					TokenAST nt3_s = Match(';', nt3_i);
-					tmp_22_s = new StmtReturn(((TokenAST)nt1_s), nt2_s);;
+					TokenAST nt6_s = Match(ELSE, nt6_i);
+					var nt7_s = stmt(nt7_i);
+					tmp_22_s = new StmtBlock(new StmtIf(((TokenAST)nt1_s), ((ExprRoot)nt3_s), new StmtBlock(((StmtRoot)nt5_s)), new StmtBlock(nt7_s)));
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ELSE:
 			case IF:
@@ -1505,6 +1550,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1523,10 +1569,93 @@ namespace LLParserGenTest
 			return tmp_22_s;
 		}
 		
+		StmtRoot tmp_23(IAST nt1_s, IAST tmp_23_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case ';':
+				alt = 0;
+				break;
+			case '-':
+			case '+':
+			case NUM:
+			case STR:
+			case ID:
+			case THIS:
+			case BASE:
+			case FALSE:
+			case TRUE:
+			case NULL:
+			case '(':
+			case CAST:
+			case NEW:
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			StmtRoot tmp_23_s = default(StmtRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt2_i = default(IAST);
+					
+					TokenAST nt2_s = Match(';', nt2_i);
+					tmp_23_s = new StmtReturn(((TokenAST)nt1_s));;
+				}
+				break;
+			case 1:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					
+					var nt2_s = expr(nt2_i);
+					TokenAST nt3_s = Match(';', nt3_i);
+					tmp_23_s = new StmtReturn(((TokenAST)nt1_s), nt2_s);;
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case ELSE:
+			case IF:
+			case VAR:
+			case '{':
+			case WHILE:
+			case BREAK:
+			case CONTINUE:
+			case RETURN:
+			case '-':
+			case '+':
+			case NUM:
+			case STR:
+			case ID:
+			case THIS:
+			case BASE:
+			case FALSE:
+			case TRUE:
+			case NULL:
+			case '(':
+			case CAST:
+			case NEW:
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_23_s;
+		}
+		
 		StmtList stmtliste(IAST stmtliste_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case IF:
 			case VAR:
@@ -1538,6 +1667,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1577,7 +1707,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -1591,7 +1721,7 @@ namespace LLParserGenTest
 		StmtList stmtlist(IAST stmtlist_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case IF:
 			case VAR:
@@ -1603,6 +1733,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1635,7 +1766,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -1649,7 +1780,7 @@ namespace LLParserGenTest
 		StmtList tmp_5(IAST tmp_5_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				alt = 0;
@@ -1664,6 +1795,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1703,7 +1835,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '}':
 				break;
@@ -1717,11 +1849,12 @@ namespace LLParserGenTest
 		ExprRoot expr(IAST expr_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1751,7 +1884,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 			case ';':
@@ -1766,11 +1899,12 @@ namespace LLParserGenTest
 		ExprRoot e_ass(IAST e_ass_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1796,13 +1930,13 @@ namespace LLParserGenTest
 					var nt2_i = default(IAST);
 					
 					var nt1_s = e_oror(nt1_i);
-					var nt2_s = tmp_23(nt1_s, nt2_i);
+					var nt2_s = tmp_24(nt1_s, nt2_i);
 					e_ass_s = nt2_s;
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ',':
 			case ')':
@@ -1816,10 +1950,10 @@ namespace LLParserGenTest
 			return e_ass_s;
 		}
 		
-		ExprRoot tmp_23(IAST nt1_s, IAST tmp_23_i)
+		ExprRoot tmp_24(IAST nt1_s, IAST tmp_24_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '=':
 				alt = 0;
@@ -1835,7 +1969,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			ExprRoot tmp_23_s = default(ExprRoot);
+			ExprRoot tmp_24_s = default(ExprRoot);
 			switch (alt)
 			{
 			case 0:
@@ -1845,19 +1979,19 @@ namespace LLParserGenTest
 					
 					TokenAST nt2_s = Match('=', nt2_i);
 					var nt3_s = e_ass(nt3_i);
-					tmp_23_s = new ExprAss(((ExprRoot)nt1_s), nt2_s, nt3_s);
+					tmp_24_s = new ExprAss(((ExprRoot)nt1_s), nt2_s, nt3_s);
 				}
 				break;
 			case 1:
 				{
 					var nt2_i = default(IAST);
 					
-					tmp_23_s = ((ExprRoot)nt1_s);
+					tmp_24_s = ((ExprRoot)nt1_s);
 				}
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ',':
 			case ')':
@@ -1868,17 +2002,18 @@ namespace LLParserGenTest
 				Error();
 				break;
 			}
-			return tmp_23_s;
+			return tmp_24_s;
 		}
 		
 		ExprRoot e_oror(IAST e_oror_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -1911,7 +2046,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '=':
 			case ',':
@@ -1929,7 +2064,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_6(IAST tmp_6_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '=':
 			case ',':
@@ -1971,7 +2106,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '=':
 			case ',':
@@ -1989,11 +2124,12 @@ namespace LLParserGenTest
 		ExprRoot e_andand(IAST e_andand_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2026,7 +2162,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case OROR:
 			case '=':
@@ -2045,7 +2181,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_7(IAST tmp_7_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case OROR:
 			case '=':
@@ -2088,7 +2224,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case OROR:
 			case '=':
@@ -2107,11 +2243,12 @@ namespace LLParserGenTest
 		ExprRoot e_or(IAST e_or_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2144,7 +2281,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ANDAND:
 			case OROR:
@@ -2164,7 +2301,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_8(IAST tmp_8_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ANDAND:
 			case OROR:
@@ -2208,7 +2345,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ANDAND:
 			case OROR:
@@ -2228,11 +2365,12 @@ namespace LLParserGenTest
 		ExprRoot e_xor(IAST e_xor_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2265,7 +2403,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '|':
 			case ANDAND:
@@ -2286,7 +2424,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_9(IAST tmp_9_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '|':
 			case ANDAND:
@@ -2331,7 +2469,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '|':
 			case ANDAND:
@@ -2352,11 +2490,12 @@ namespace LLParserGenTest
 		ExprRoot e_and(IAST e_and_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2389,7 +2528,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '^':
 			case '|':
@@ -2411,7 +2550,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_10(IAST tmp_10_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '^':
 			case '|':
@@ -2457,7 +2596,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '^':
 			case '|':
@@ -2479,11 +2618,12 @@ namespace LLParserGenTest
 		ExprRoot e_eq(IAST e_eq_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2516,7 +2656,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '&':
 			case '^':
@@ -2539,7 +2679,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_11(IAST tmp_11_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '&':
 			case '^':
@@ -2602,7 +2742,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '&':
 			case '^':
@@ -2625,11 +2765,12 @@ namespace LLParserGenTest
 		ExprRoot e_lt(IAST e_lt_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2662,7 +2803,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case EQ:
 			case NE:
@@ -2687,7 +2828,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_12(IAST tmp_12_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case EQ:
 			case NE:
@@ -2784,7 +2925,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case EQ:
 			case NE:
@@ -2809,11 +2950,12 @@ namespace LLParserGenTest
 		ExprRoot e_sh(IAST e_sh_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -2846,7 +2988,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case LT:
 			case LE:
@@ -2875,7 +3017,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_13(IAST tmp_13_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case LT:
 			case LE:
@@ -2944,7 +3086,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case LT:
 			case LE:
@@ -2973,11 +3115,12 @@ namespace LLParserGenTest
 		ExprRoot e_add(IAST e_add_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3010,7 +3153,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case SHL:
 			case SHR:
@@ -3041,7 +3184,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_14(IAST tmp_14_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case SHL:
 			case SHR:
@@ -3112,7 +3255,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case SHL:
 			case SHR:
@@ -3143,11 +3286,12 @@ namespace LLParserGenTest
 		ExprRoot e_mul(IAST e_mul_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3180,7 +3324,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '+':
 			case '-':
@@ -3213,7 +3357,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_15(IAST tmp_15_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '+':
 			case '-':
@@ -3302,7 +3446,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '+':
 			case '-':
@@ -3335,9 +3479,10 @@ namespace LLParserGenTest
 		ExprRoot e_una(IAST e_una_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3393,7 +3538,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '*':
 			case '/':
@@ -3429,37 +3574,40 @@ namespace LLParserGenTest
 		ExprRoot e_prim(IAST e_prim_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case NUM:
 				alt = 0;
 				break;
-			case ID:
+			case STR:
 				alt = 1;
 				break;
-			case THIS:
+			case ID:
 				alt = 2;
 				break;
-			case BASE:
+			case THIS:
 				alt = 3;
 				break;
-			case FALSE:
+			case BASE:
 				alt = 4;
 				break;
-			case TRUE:
+			case FALSE:
 				alt = 5;
 				break;
-			case NULL:
+			case TRUE:
 				alt = 6;
 				break;
-			case '(':
+			case NULL:
 				alt = 7;
 				break;
-			case CAST:
+			case '(':
 				alt = 8;
 				break;
-			case NEW:
+			case CAST:
 				alt = 9;
+				break;
+			case NEW:
+				alt = 10;
 				break;
 			default:
 				Error();
@@ -3485,13 +3633,24 @@ namespace LLParserGenTest
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
 					
+					TokenAST nt1_s = Match(STR, nt1_i);
+					nt2_i = new ExprStr(nt1_s); 
+					var nt2_s = tmp_16(nt2_i);
+					e_prim_s = nt2_s; 
+				}
+				break;
+			case 2:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
 					TokenAST nt1_s = Match(ID, nt1_i);
 					nt2_i = new ExprId(nt1_s); 
 					var nt2_s = tmp_16(nt2_i);
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 2:
+			case 3:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3502,7 +3661,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 3:
+			case 4:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3513,7 +3672,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 4:
+			case 5:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3524,7 +3683,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 5:
+			case 6:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3535,7 +3694,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 6:
+			case 7:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3546,7 +3705,7 @@ namespace LLParserGenTest
 					e_prim_s = nt2_s; 
 				}
 				break;
-			case 7:
+			case 8:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3561,7 +3720,7 @@ namespace LLParserGenTest
 					e_prim_s = nt4_s; 
 				}
 				break;
-			case 8:
+			case 9:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3582,7 +3741,7 @@ namespace LLParserGenTest
 					e_prim_s = nt7_s; 
 				}
 				break;
-			case 9:
+			case 10:
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
@@ -3603,7 +3762,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '*':
 			case '/':
@@ -3639,7 +3798,7 @@ namespace LLParserGenTest
 		ExprRoot tmp_16(IAST tmp_16_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '*':
 			case '/':
@@ -3735,7 +3894,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '*':
 			case '/':
@@ -3771,7 +3930,7 @@ namespace LLParserGenTest
 		ExprList e_list_opz(IAST e_list_opz_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				alt = 0;
@@ -3779,6 +3938,7 @@ namespace LLParserGenTest
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3815,7 +3975,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ')':
 				break;
@@ -3829,11 +3989,12 @@ namespace LLParserGenTest
 		ExprList e_list(IAST e_list_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case '-':
 			case '+':
 			case NUM:
+			case STR:
 			case ID:
 			case THIS:
 			case BASE:
@@ -3866,7 +4027,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ']':
 			case ')':
@@ -3881,7 +4042,7 @@ namespace LLParserGenTest
 		ExprList tmp_17(IAST tmp_17_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ']':
 			case ')':
@@ -3920,7 +4081,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ']':
 			case ')':
@@ -3935,7 +4096,7 @@ namespace LLParserGenTest
 		TypeRoot type(IAST type_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ID:
 				alt = 0;
@@ -3961,7 +4122,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ';':
 			case ',':
@@ -3978,7 +4139,7 @@ namespace LLParserGenTest
 		TypeRoot tmp_18(IAST tmp_18_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ';':
 			case ',':
@@ -4019,7 +4180,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ';':
 			case ',':
@@ -4036,7 +4197,7 @@ namespace LLParserGenTest
 		TypeSimple type_dot(IAST type_dot_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ID:
 				alt = 0;
@@ -4062,7 +4223,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ',':
 			case '[':
@@ -4080,7 +4241,7 @@ namespace LLParserGenTest
 		TypeSimple tmp_19(IAST tmp_19_i)
 		{
 			int alt = 0;
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ',':
 			case '[':
@@ -4122,7 +4283,7 @@ namespace LLParserGenTest
 				break;
 			}
 			
-			switch (Next.ch)
+			switch (Next.token)
 			{
 			case ',':
 			case '[':
@@ -4157,6 +4318,8 @@ namespace LLParserGenTest
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('n'), new RegToken('u')), new RegToken('l')), new RegToken('l')), NULL);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('t'), new RegToken('h')), new RegToken('i')), new RegToken('s')), THIS);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('b'), new RegToken('a')), new RegToken('s')), new RegToken('e')), BASE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('n'), new RegToken('a')), new RegToken('t')), new RegToken('i')), new RegToken('v')), new RegToken('e')), NATIVE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('v'), new RegToken('i')), new RegToken('r')), new RegToken('t')), new RegToken('u')), new RegToken('a')), new RegToken('l')), VIRTUAL);
 			acts.Add(new RegToken('.'), '.');
 			acts.Add(new RegToken(','), ',');
 			acts.Add(new RegToken(';'), ';');
@@ -4191,6 +4354,42 @@ namespace LLParserGenTest
 			acts.Add(new RegOneOrMore(new RegTokenRange(48, 57)), NUM);
 			acts.Add(new RegOneOrMore(new RegOr(new RegOr(new RegOr(new RegToken(' '), new RegToken(10)), new RegToken(13)), new RegToken(9))));
 			acts.Add(new RegAnd(new RegAnd(new RegToken('/'), new RegToken('/')), new RegZeroOrMore(new RegTokenOutsideRange(10, 10))));
+			acts.Add(new RegAnd(new RegToken('/'), new RegToken('*')), (ref NFA.Token tk, LexReader rd, NFA nfa) => {
+				for (;;)
+				{
+					if (rd.Peek().ch == -1) throw new Exception("EOF in comment");
+					if (rd.Read().ch == '*' && rd.Peek().ch == '/')
+					{
+						rd.Read();
+						break;
+					}
+				}
+				rd.SetMatch();
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+				return false;
+			});
+			acts.Add(new RegToken('"'), (ref NFA.Token tk, LexReader rd, NFA nfa) => {
+				var sb = new StringBuilder();
+				sb.Append('"');
+				for (;;)
+				{
+					int ch = rd.Read().ch;
+					if (ch == -1) throw new Exception("EOF in string");
+					if (ch == '"')
+						break;
+					if (ch == '\\')
+						ch = rd.Read().ch;
+					else
+						sb.Append((char)ch);
+				}
+				sb.Append('"');
+				
+				rd.SetMatch();
+				rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+				//tk.value = sb.ToString();
+				tk.token = STR;
+				return true;
+			});
 			return acts;
 		}
 	}

@@ -6,7 +6,7 @@ using System.Linq;
 namespace LLParserGenTest
 {
 
-	class Graph {
+	public class Graph {
 		public Graph() {
 		}
 
@@ -195,7 +195,7 @@ namespace LLParserGenTest
 		}
 	}
 
-	class NodeReg {
+	public class NodeReg {
 		public NodeReg(string name, string reg) {
 			this._name = name;
 			this._oriReg = reg;
