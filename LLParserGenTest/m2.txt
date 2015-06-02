@@ -1,22 +1,28 @@
-class object
+namespace System
 {
-	fun object() {} 
-	fun ToString() : string { return "object"; }
+	class Object
+	{
+		fun Object() {} 
+		fun ToString() : String { return "System.Object"; }
+	}
+	class String : Object 
+	{
+
+		fun String() {}
+		fun String(r : String) { this.str = r.str; }
+
+		fun ToString() : String { return this; }
+
+		var str : handle;
+	}
+
+	class Leo : String {
+		fun Leo(r : int) : base("dd") {}
+	}
 }
+/*
 
-class string : Object, IDisposable {
-
-	fun string() {}
-	fun string(r : string) { this.str = r.str; }
-
-	fun ToString() : string { return this; }
-	fun native Len() : int { return 2; }
-	fun get(v : int) : char { return 'a'; }
-
-	var str : handle;
-}
-
-fun leo(luca : string, b : string) : int
+fun leo(luca : System.String, b : System.String) : int
 {
 	return 3;
 
@@ -29,4 +35,4 @@ fun aa(v : char, a : char): string
 	if (v != 'a')
 		return r;
 	return r;
-}
+}*/

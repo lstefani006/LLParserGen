@@ -66,9 +66,12 @@ namespace LLParserGenTest
 		ildm,  // load member    ldm r4, r6, 3
 		fldm,
 		oldm,
+		hldm,
+
 		istm,  // store member
 		fstm,
 		ostm,
+		hstm,
 
 		onew,
 	}

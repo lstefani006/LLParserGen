@@ -139,7 +139,6 @@ decl<DeclRoot>
 decl_namespace<DeclNamespace>
 	: NAMESPACE ID '{' decl_list_e '}'   ^new DeclNamespace($2, $4)
 	;
-			
 
 decl_cls<DeclClass>
 	: CLASS ID base_opz '{' cls_members_e '}' ^new DeclClass($2, $3, $5)

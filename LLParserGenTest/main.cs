@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using LLParserLexerLib;
 using System.Collections.Generic;
+using System.Text;
 
 namespace LLParserGenTest
 {
@@ -43,12 +44,12 @@ namespace LLParserGenTest
 
 		Bool,
 		Char,
-		Int_,
-		Hndl,
-		Dbl_,
+		Int,
+		Handle,
+		Double,
 		Void,
 		//Array,
-		Obj_,
+		Obj,
 		//Fun,
 	}
 
@@ -56,13 +57,14 @@ namespace LLParserGenTest
 	{
 		public abstract TypeBase TypeBase { get; }
 
-		public virtual string TypeName { get { Debug.Assert(false); return null; } }
+		public virtual List<string> TypeName { get { Debug.Assert(false); return null; } }
 
 		protected abstract bool TypeEqual(TypeRoot t);
 
 		public override bool Equals(object obj) { return this.TypeEqual(obj as TypeRoot); }
 		public override int GetHashCode() { return base.GetHashCode(); }
 
+		public abstract bool ResolveType(DeclRoot dr);
 		public abstract string AssName { get; }
 
 		public static TypeSimple Bool = new TypeSimple("bool");
@@ -87,63 +89,111 @@ namespace LLParserGenTest
 
 	public class TypeSimple : TypeRoot
 	{
-		string id;
+		List<string> id = new List<string>();
+		DeclRoot _dr;
 
-		public TypeSimple(TokenAST id) { this.id = id.strRead; }
-		public TypeSimple(string id) { this.id = id; }
+		public TypeSimple(TokenAST id) { Debug.Assert(this.id.Count == 0);  this.id.Add(id.strRead); }
+		public TypeSimple(string id) { Debug.Assert(this.id.Count == 0); this.id.Add(id); }
+
+		public TypeSimple Add(string id) { this.id.Add(id); return this; }
+		public TypeSimple Add(TokenAST id) { return Add(id.strRead); }
 
 		public override TypeBase TypeBase
 		{
 			get
 			{
-				if (this.id == "bool") return TypeBase.Bool;
-				if (this.id == "char") return TypeBase.Char;
-				if (this.id == "handle") return TypeBase.Hndl;
-				if (this.id == "int") return TypeBase.Int_;
-				if (this.id == "void") return TypeBase.Void;
-				if (this.id == "double") return TypeBase.Dbl_;
-				return TypeBase.Obj_;
+				if (this.id.Count != 1) return TypeBase.Obj;
+				if (this.id[0] == "bool") return TypeBase.Bool;
+				if (this.id[0] == "char") return TypeBase.Char;
+				if (this.id[0] == "handle") return TypeBase.Handle;
+				if (this.id[0] == "int") return TypeBase.Int;
+				if (this.id[0] == "void") return TypeBase.Void;
+				if (this.id[0] == "double") return TypeBase.Double;
+				return TypeBase.Obj;
 			}
 		}
-		public override string TypeName { get { Debug.Assert(TypeBase == TypeBase.Obj_); return id; } }
-
-		public TypeSimple Add(TokenAST id)
-		{
-			this.id += "." + id.strRead;
-			return this;
-		}
+		public override List<string> TypeName { get { Debug.Assert(TypeBase == TypeBase.Obj); return id; } }
 
 		protected override bool TypeEqual(TypeRoot t)
 		{
 			var st = t as TypeSimple;
 			if ((object)st != null)
-				return this.id == st.id;
+				return this.AssName == st.AssName;
 			return false;
 		}
 
-		public override string ToString() { return this.id; }
-		public override string AssName { 
-			get 
+		public override string ToString() { 
+			var s = new StringBuilder();
+			foreach (var r in this.id)
 			{
+				if (s.Length > 0) s.Append(".");
+				s.Append(r);
+			}
+			return s.ToString();
+		}
+
+		public override bool ResolveType(DeclRoot dr)
+		{
+			if (this.TypeBase != LLParserGenTest.TypeBase.Obj) return true;
+			if (_dr != null) return true;
+			_dr = dr.GetDecl(this.id, 0);
+			return _dr != null;
+		}
+
+		private string _AssName;
+		public override string AssName
+		{
+			get
+			{
+				if (_AssName != null) return _AssName;
+
 				switch (TypeBase)
 				{
-				case TypeBase.Int_: return "$i";
-				case TypeBase.Bool: return "$b";
-				case TypeBase.Char: return "$c";
-				case TypeBase.Void: return "$v";
-				case TypeBase.Obj_: return "$o" + this.id;
+				case TypeBase.Int: _AssName = "$i"; break;
+				case TypeBase.Bool: _AssName = "$b"; break;
+				case TypeBase.Char: _AssName = "$c"; break;
+				case TypeBase.Void: _AssName = "$v"; break;
+				case TypeBase.Handle: _AssName = "$h"; break;
+				case TypeBase.Obj:
+					{
+						_AssName = _dr.AssName;
+						break;
+					}
 				default: Debug.Assert(false); break;
 				}
-				return null;
-			} 
+				return _AssName;
+			}
 		}
+
+		//public override bool CanBeAssignedTo(Context ctx, TypeRoot ty)
+		//{
+		//	// TODO mancano le interfacce
+		//	if (this == ty) return true;
+		//	if (this.TypeBase == LLParserGenTest.TypeBase.Obj && ty.TypeBase == LLParserGenTest.TypeBase.Obj)
+		//	{
+		//		var ca = this.TypeName;
+		//		var cb = ty.TypeName;
+
+		//		var da = ctx.GetClass(ca);
+		//		var db = ctx.GetClass(cb);
+
+		//		// db deve essere la classe base di da
+		//		foreach (var a in da.baseList)
+		//			if (a.TypeName == db.name.strRead)
+		//				return true;
+
+		//		return false;
+		//	}
+		//	return false;
+		//}
+
 	}
 
 	public class TypeArray : TypeRoot
 	{
 		public TypeArray(TypeRoot t) { this.t = t; }
 		public readonly TypeRoot t;
-		public override TypeBase TypeBase { get { return TypeBase.Obj_; } }
+		public override TypeBase TypeBase { get { return TypeBase.Obj; } }
 
 		protected override bool TypeEqual(TypeRoot t)
 		{
@@ -153,8 +203,44 @@ namespace LLParserGenTest
 			return false;
 		}
 
+		public override bool ResolveType(DeclRoot dr)
+		{
+			return t.ResolveType(dr);
+		}
+
+
 		public override string ToString() { return t.ToString() + "[]"; }
-		public override string AssName { get { return "$a" + t.AssName; } }
+		public override string AssName
+		{
+			get
+			{
+				// TODO 
+				return "$a";//+ t.AssName; 
+			}
+		}
+
+		//public override bool CanBeAssignedTo(Context ctx, TypeRoot ty)
+		//{
+		//	// this deve derivare da ty
+		//	if (this == ty) return true;
+		//	if (this.TypeBase == LLParserGenTest.TypeBase.Obj && ty.TypeBase == LLParserGenTest.TypeBase.Obj)
+		//	{
+		//		var ca = this.TypeName;
+		//		var cb = ty.TypeName;
+
+		//		var da = ctx.GetClass(ca);
+		//		var db = ctx.GetClass(cb);
+
+		//		// db deve essere la classe base di da
+		//		foreach (var a in da.baseList)
+		//			if (a.TypeName == db.name.strRead)
+		//				return true;
+
+		//		return false;
+		//	}
+		//	return false;
+		//}
+	
 	}
 
 
@@ -213,15 +299,15 @@ namespace LLParserGenTest
 
 		public TypeRoot Type { get { return _type; } }
 
-		public bool IsNumeric { get { return _type.TypeBase == TypeBase.Int_ || _type.TypeBase == TypeBase.Dbl_; } }
+		public bool IsNumeric { get { return _type.TypeBase == TypeBase.Int || _type.TypeBase == TypeBase.Double; } }
 		public bool IsBool { get { return _type.TypeBase == TypeBase.Bool; } }
 
 		public TypeBase TypeBase { get { return _type.TypeBase; } }
 
 		// costanti
 		public bool IsConst { get { return _const != null; } }
-		public int Int { get { Debug.Assert(TypeBase == TypeBase.Int_); return (int)_const; } }
-		public double Dbl { get { Debug.Assert(TypeBase == TypeBase.Dbl_); return (double)_const; } }
+		public int Int { get { Debug.Assert(TypeBase == TypeBase.Int); return (int)_const; } }
+		public double Dbl { get { Debug.Assert(TypeBase == TypeBase.Double); return (double)_const; } }
 		public bool Bool { get { Debug.Assert(TypeBase == TypeBase.Bool); return (bool)_const; } }
 		public char Char { get { Debug.Assert(TypeBase == TypeBase.Char); return (char)_const; } }
 
@@ -243,9 +329,9 @@ namespace LLParserGenTest
 			switch (a.TypeBase)
 			{
 			case TypeBase.Bool: return a.Bool.CompareTo(b.Bool);
-			case TypeBase.Int_: return a.Int.CompareTo(b.Int);
-			case TypeBase.Dbl_: return a.Dbl.CompareTo(b.Dbl);
-			case TypeBase.Obj_:
+			case TypeBase.Int: return a.Int.CompareTo(b.Int);
+			case TypeBase.Double: return a.Dbl.CompareTo(b.Dbl);
+			case TypeBase.Obj:
 			case TypeBase.Void:
 				Debug.Assert(false);
 				break;
@@ -274,66 +360,66 @@ namespace LLParserGenTest
 		public static ExprType operator +(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int + b.Int);
-			if (a._type.TypeBase == TypeBase.Dbl_) return new ExprType(a.Dbl + b.Dbl);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int + b.Int);
+			if (a._type.TypeBase == TypeBase.Double) return new ExprType(a.Dbl + b.Dbl);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator -(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int - b.Int);
-			if (a._type.TypeBase == TypeBase.Dbl_) return new ExprType(a.Dbl - b.Dbl);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int - b.Int);
+			if (a._type.TypeBase == TypeBase.Double) return new ExprType(a.Dbl - b.Dbl);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator *(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int * b.Int);
-			if (a._type.TypeBase == TypeBase.Dbl_) return new ExprType(a.Dbl * b.Dbl);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int * b.Int);
+			if (a._type.TypeBase == TypeBase.Double) return new ExprType(a.Dbl * b.Dbl);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator /(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int / b.Int);
-			if (a._type.TypeBase == TypeBase.Dbl_) return new ExprType(a.Dbl / b.Dbl);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int / b.Int);
+			if (a._type.TypeBase == TypeBase.Double) return new ExprType(a.Dbl / b.Dbl);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator %(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int % b.Int);
-			if (a._type.TypeBase == TypeBase.Dbl_) return new ExprType(a.Dbl % b.Dbl);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int % b.Int);
+			if (a._type.TypeBase == TypeBase.Double) return new ExprType(a.Dbl % b.Dbl);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator |(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int | b.Int);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int | b.Int);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator &(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int & b.Int);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int & b.Int);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType operator ^(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int ^ b.Int);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int ^ b.Int);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType lsh(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int << b.Int);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int << b.Int);
 			throw new InvalidOperatorException();
 		}
 		public static ExprType rsh(ExprType a, ExprType b)
 		{
 			Debug.Assert(a.IsConst && b.IsConst);
-			if (a._type.TypeBase == TypeBase.Int_) return new ExprType(a.Int >> b.Int);
+			if (a._type.TypeBase == TypeBase.Int) return new ExprType(a.Int >> b.Int);
 			throw new InvalidOperatorException();
 		}
 	}
@@ -361,9 +447,9 @@ namespace LLParserGenTest
 				{
 				case TypeBase.Bool: _const = t.Bool; break;
 				case TypeBase.Char: _const = t.Char; break;
-				case TypeBase.Int_: _const = t.Int; break;
-				case TypeBase.Dbl_: _const = t.Dbl; break;
-				case TypeBase.Obj_: _const = new Null(); break;
+				case TypeBase.Int: _const = t.Int; break;
+				case TypeBase.Double: _const = t.Dbl; break;
+				case TypeBase.Obj: _const = new Null(); break;
 				default: Debug.Assert(false); break;
 				}
 			}
@@ -390,8 +476,8 @@ namespace LLParserGenTest
 		public TypeRoot Type { get { return _type; } }
 		public TypeBase TypeBase { get { return _type.TypeBase; } }
 
-		public int Int { get { Debug.Assert(_type.TypeBase == TypeBase.Int_); return (int)_const; } }
-		public double Dbl { get { Debug.Assert(_type.TypeBase == TypeBase.Dbl_); return (double)_const; } }
+		public int Int { get { Debug.Assert(_type.TypeBase == TypeBase.Int); return (int)_const; } }
+		public double Dbl { get { Debug.Assert(_type.TypeBase == TypeBase.Double); return (double)_const; } }
 		public bool Bool { get { Debug.Assert(_type.TypeBase == TypeBase.Bool); return (bool)_const; } }
 		public string Reg { get { Debug.Assert(string.IsNullOrEmpty(_reg) == false); return _reg; } }
 
@@ -439,6 +525,9 @@ namespace LLParserGenTest
 		public abstract string AssName { get; }
 		public abstract void CheckSyntax(DeclGlobal dg);
 		public abstract void GenCode(Context ctx);
+
+		public abstract DeclRoot GetDecl(List<string> id, int i);
+		public abstract DeclFun GetFun(string name, List<TypeRoot> args);
 	}
 
 	public class DeclList : List<DeclRoot>, IAST
@@ -448,6 +537,20 @@ namespace LLParserGenTest
 		{
 			foreach (var e in this)
 				e.SetFather(a);
+		}
+		public DeclRoot GetDecl(List<string> id, int i)
+		{
+			foreach (var d in this)
+			{
+				if (d is DeclFun) continue;
+				if (d.name.strRead == id[i])
+				{
+					if (i + 1 == id.Count)
+						return d;
+					return d.GetDecl(id, i + 1);
+				}
+			}
+			return null;
 		}
 	}
 
@@ -475,13 +578,38 @@ namespace LLParserGenTest
 			foreach (var d in this.members)
 				d.GenCode(ctx);
 		}
+		public override DeclRoot GetDecl(List<string> id, int i)
+		{
+			return members.GetDecl(id, i);
+		}
+
+		public override DeclFun GetFun(string name, List<TypeRoot> args)
+		{
+			foreach (var m in members)
+			{
+				var f = m as DeclFun;
+				if (f == null) break;
+				var r = f.MatchFun(name, args);
+				if (r == DeclFun.MatchFunRes.Yes)
+					return f;
+			}
+			return null;
+		}
+
+		public override string ToString()
+		{
+			return "global";
+		}
 	}
 	public class DeclNamespace : DeclRoot
 	{
 		public readonly DeclList members;
-		public readonly TokenAST id;
-		public DeclNamespace(TokenAST id, DeclList members) : base(id) { this.id = id;  this.members = members; }
+		public DeclNamespace(TokenAST name, DeclList members) : base(name) { this.members = members; }
 
+		public override string ToString()
+		{
+			return "namespace " + name.strRead;
+		}
 		public override void SetFather(DeclRoot p)
 		{
 			base.SetFather(p);
@@ -499,30 +627,67 @@ namespace LLParserGenTest
 				d.GenCode(ctx);
 		}
 
-		public override string AssName { get { return "$n" + id.strRead; } }
+		string _assName;
+		public override string AssName { get { return _assName ?? (_assName = Father.AssName + "$n" + name.strRead); } }
+
+		public override DeclRoot GetDecl(List<string> id, int i)
+		{
+			var w = members.GetDecl(id, i);
+			if (w != null) return w;
+			return Father.GetDecl(id, i);
+		}
+
+		public override DeclFun GetFun(string name, List<TypeRoot> args)
+		{
+			bool b = true;
+			foreach (var m in members)
+			{
+				var f = m as DeclFun;
+				if (f == null) break;
+				var r = f.MatchFun(name, args);
+				if (r == DeclFun.MatchFunRes.Yes)
+					return f;
+				if (r == DeclFun.MatchFunRes.OnlyName)
+					b = false;
+			}
+			if (b) return Father.GetFun(name, args);
+			return null;
+		}
+
 	}
 
 	public class DeclClass : DeclRoot
 	{
 		public readonly DeclList members;
 		public readonly TypeRootList baseList;
-		public Label vt;
-
+		public Label vt
+		{
+			get
+			{
+				return new Label(this.AssName + "$vt");
+			}
+		}
 		public DeclClass(TokenAST name, TypeRootList baseList, DeclList members) : base(name) { this.members = members; this.baseList = baseList; }
 
+		public override string ToString()
+		{
+			return "class " + name.strRead;
+		}
 		public override void SetFather(DeclRoot p)
 		{
 			base.SetFather(p);
 			members.SetFather(this);
 		}
-		public override string AssName { get { return this.Father.AssName + "$c" + this.name.strRead; } }
+
+		string _assName;
+		public override string AssName { get { return _assName ?? (_assName = Father.AssName + "$c" + this.name.strRead); } }
 
 		public override void CheckSyntax(DeclGlobal dg)
 		{
 			if (this.baseList.Count == 0)
 			{
-				if (this.name.strRead != "object")
-					this.baseList.Add(new TypeSimple("object"));
+				if (this.name.strRead != "Object")
+					this.baseList.Add(new TypeSimple("Object"));
 			}
 
 			foreach (var d in this.members)
@@ -530,7 +695,6 @@ namespace LLParserGenTest
 		}
 		public override void GenCode(Context ctx)
 		{
-			this.vt = new Label(AssName + "$vt");
 			ctx.dataLbl(vt);
 			foreach (var f in members)
 				if (f is DeclFun)
@@ -539,6 +703,47 @@ namespace LLParserGenTest
 			foreach (var d in members)
 				d.GenCode(ctx);
 		}
+
+		public int MemberSize(Context ctx)
+		{
+				int sz = 0;
+				foreach (var m in members)
+					if (m is DeclVar)
+						sz += 1;
+				if (baseList.Count > 0)
+				{
+					var dc = this.GetDecl(baseList[0].TypeName, 0) as DeclClass;
+					if (dc == null)
+						Error("cannot find class '{0}'", baseList[0].TypeName[baseList[0].TypeName.Count - 1]);
+					sz += dc.MemberSize(ctx);
+				}
+				return sz;
+		}
+		public override DeclRoot GetDecl(List<string> id, int i)
+		{
+			var w = members.GetDecl(id, i);
+			if (w != null) return w;
+			return Father.GetDecl(id, i);
+		}
+
+
+		public override DeclFun GetFun(string name, List<TypeRoot> args)
+		{
+			bool b = true;
+			foreach (var m in members)
+			{
+				var f = m as DeclFun;
+				if (f == null) break;
+				var r = f.MatchFun(name, args);
+				if (r == DeclFun.MatchFunRes.Yes)
+					return f;
+				if (r == DeclFun.MatchFunRes.OnlyName)
+					b = false;
+			}
+			if (b) return Father.GetFun(name, args);
+			return null;
+		}
+
 	}
 
 	public class DeclVar : DeclRoot
@@ -548,9 +753,27 @@ namespace LLParserGenTest
 		public override string AssName { get { return this.name.strRead; } }
 		public override void CheckSyntax(DeclGlobal dg)
 		{
+			if (Type.ResolveType(this) == false)
+				Error("cannot resolve type '{0}'", Type.ToString());
+		}
+		public override string ToString()
+		{
+			return "var " + name.strRead;
 		}
 		public override void GenCode(Context ctx)
 		{
+		}
+
+		public override DeclRoot GetDecl(List<string> id, int i)
+		{
+		
+			
+			return Father.GetDecl(id, i);
+		}
+
+		public override DeclFun GetFun(string name, List<TypeRoot> args)
+		{
+			return null;
 		}
 
 	}
@@ -583,7 +806,9 @@ namespace LLParserGenTest
 			this.lastCurly = lastCurly;
 		}
 
-		public override string AssName { get { return this.Father.AssName + "$f" + this.name.strRead + this.args.AssName; } }
+		public override string ToString() { return "fun " + name.strRead; }
+
+		public override string AssName { get {  return Father.AssName + "$f" + this.name.strRead + this.args.AssName(Father); } }
 		public override void CheckSyntax(DeclGlobal dg)
 		{
 			if (this.Father is DeclClass)
@@ -599,7 +824,7 @@ namespace LLParserGenTest
 					this.ret = new TypeSimple(this.name);   // il costruttore ritorna sempre this.
 
 					// se non chiama esplicitamente base o this vuole dire che chiama implicitamente base()
-					if (this.baseInit == null && this.name.strRead != "object")
+					if (this.baseInit == null && this.name.strRead != "Object")
 						this.baseInit = new BaseInit(new TokenAST(this.name, MParser.BASE, "BASE", "base"), new ExprList());
 				}
 				else
@@ -610,6 +835,26 @@ namespace LLParserGenTest
 			else
 			{
 				// funzione globale.
+			}
+
+			if (this.ret.ResolveType(this) == false)
+				Error("cannot resolve type '{0}'", this.ret.ToString());
+
+			foreach (var a in args)
+				if (a.ArgType.ResolveType(this) == false)
+					Error("cannot resolve type '{0}'", a.ArgType.ToString());
+
+			// this.body.CheckType(this);
+		}
+
+		public bool IsStatic
+		{
+			get {
+				if (this.Father is DeclClass) return false;
+				if (this.Father is DeclNamespace) return true;
+				if (this.Father is DeclGlobal) return true;
+				Debug.Assert(false);
+				return true;
 			}
 		}
 
@@ -626,8 +871,11 @@ namespace LLParserGenTest
 				if (true)
 				{
 					if (this.Father is DeclClass)
-						fctx.AddArgVar(new TokenAST(this.name, MParser.THIS, "THIS", "this"), new TypeSimple(this.Father.name.strRead));
-
+					{
+						var tt = new TypeSimple(this.Father.name.strRead);
+						tt.ResolveType(this);
+						fctx.AddArgVar(new TokenAST(this.name, MParser.THIS, "THIS", "this"), tt);
+					}
 					foreach (var a in this.args)
 						fctx.AddArgVar(a.ArgName, a.ArgType);
 				}
@@ -635,16 +883,38 @@ namespace LLParserGenTest
 				ctx.codeLbl(new Label(this.AssName));
 				if (this.Father is DeclClass)
 				{
+
 					// la cosa è complicata... devo cercare il : base(....) se c'è altrimenti si suppone che ci sia il costruttore base()
-					var c = this.Father as DeclClass;
-					if (c.baseList.Count > 0)
+					if (this.baseInit != null)
 					{
+						DeclClass cls = this.Father as DeclClass;
+						if (this.baseInit.t.strRead == "base")
+						{
+							cls = this.GetDecl(cls.baseList[0].TypeName, 0) as DeclClass;				
+						}
+						else if (this.baseInit.t.strRead == "this")
+						{
+							cls = this.Father as DeclClass;
+						}
+						else
+							Debug.Assert(false);
+
+						List<TypeRoot> ta = new List<TypeRoot>();
+						foreach (var tb in this.baseInit.e)
+							ta.Add(tb.CheckType(fctx).Type);
+						var bf = cls.GetFun(cls.name.strRead, ta);
+
+						var rt = fctx.GetVar(new TokenAST(this.name, MParser.THIS, "THIS", "this"));
+						ctx.ld("rp", rt);
+						foreach (var tb in this.baseInit.e)
+							tb.GenRight(fctx, "rp");
+						ctx.js(rt.Reg, new Label(bf.AssName), new ExprType(this.ret));
 					}
 				}
 				bool unreachable = this.body.GenCode(fctx);
 				if (unreachable == false)
 				{
-					if (this.ret.TypeBase != TypeBase.Obj_ && this.constructor == false)
+					if (this.ret.TypeBase != TypeBase.Obj && this.constructor == false)
 						Error("missing return stmt");
 
 					if (this.constructor)
@@ -707,6 +977,33 @@ namespace LLParserGenTest
 				}
 			}
 		}
+
+		public override DeclRoot GetDecl(List<string> id, int i)
+		{
+			return Father.GetDecl(id, i);
+		}
+
+		public enum MatchFunRes { No, OnlyName, Yes }
+
+		public MatchFunRes MatchFun(string name, List<TypeRoot> args)
+		{
+			if (name != this.name.strRead) return MatchFunRes.No;
+			if (args.Count != this.args.Count) return MatchFunRes.OnlyName;
+
+			for (int i = 0; i < args.Count; ++i)
+				if (this.args[i].ArgType != args[i]) 
+					return  MatchFunRes.OnlyName;
+			return MatchFunRes.Yes;
+		}
+
+		public override DeclFun GetFun(string name, List<TypeRoot> args)
+		{
+			var r = MatchFun(name, args);
+			if (r == MatchFunRes.Yes)
+				return this;
+			return null;
+		}
+
 	}
 
 	public class FunArg
@@ -723,10 +1020,8 @@ namespace LLParserGenTest
 
 	public class FunArgList : List<FunArg>, IAST 
 	{
-		public string AssName
+		public string AssName(DeclRoot dr)
 		{
-			get
-			{
 				var r = "";
 				if (this.Count == 0)
 					r += "$v";
@@ -735,7 +1030,6 @@ namespace LLParserGenTest
 						r += v.ArgType.AssName;
 
 				return r;
-			}
 		}
 		public FunArgList Add(TokenAST arg, TypeRoot ty) { base.Add(new FunArg(arg, ty)); return this; }
 	}
@@ -750,7 +1044,8 @@ namespace LLParserGenTest
 	{
 		// ritorna true se next unreachable
 		public abstract bool GenCode(FunctionContex ctx);
-
+		public abstract void CheckType(FunctionContex ctx);
+		
 		protected StmtRoot(TokenAST tk) : base(tk) { }
 	}
 
@@ -762,6 +1057,11 @@ namespace LLParserGenTest
 		public StmtList(StmtRoot s) : base(s.tk) { this.a = new List<StmtRoot>(); this.Add(s); }
 
 		public StmtList Add(StmtRoot s) { this.a.Add(s); return this; }
+
+		public override void CheckType(FunctionContex ctx)
+		{
+			foreach (var s in a) s.CheckType(ctx);
+		}
 
 		public override bool GenCode(FunctionContex ctx)
 		{
@@ -785,6 +1085,12 @@ namespace LLParserGenTest
 		public readonly TypeRoot type;
 		public StmtVar(TokenAST tk, TokenAST a, TypeRoot ty) : base(tk) { this.a = a; this.type = ty; }
 
+		public override void CheckType(FunctionContex ctx)
+		{
+			if (this.type.ResolveType(ctx.fun) == false)
+				Error("cannot resolve tye '{0}'", this.type.ToString());
+		}
+
 		public override bool GenCode(FunctionContex ctx)
 		{
 			ctx.AddDefVar(this.a, type);
@@ -798,6 +1104,11 @@ namespace LLParserGenTest
 
 		public StmtBlock(TokenAST tk, StmtRoot a) : base(tk) { this.sa = a; }
 		public StmtBlock(StmtRoot a) : base(a.tk) { this.sa = a; }
+
+		public override void CheckType(FunctionContex ctx)
+		{
+			sa.CheckType(ctx);
+		}
 
 		public override bool GenCode(FunctionContex ctx)
 		{
@@ -821,6 +1132,14 @@ namespace LLParserGenTest
 			this.sa = sa;
 			this.sb = sb;
 		}
+
+		public override void CheckType(FunctionContex ctx)
+		{
+			e.CheckType(ctx);
+			sa.CheckType(ctx);
+			if (sb != null) sb.CheckType(ctx);
+		}
+
 
 		public override bool GenCode(FunctionContex ctx)
 		{
@@ -891,6 +1210,13 @@ namespace LLParserGenTest
 		readonly StmtRoot s;
 		public StmtWhile(TokenAST tk, ExprRoot e, StmtRoot s) : base(tk) { this.e = e; this.s = s; }
 
+
+		public override void CheckType(FunctionContex ctx)
+		{
+			e.CheckType(ctx);
+			s.CheckType(ctx);
+		}
+
 		public override bool GenCode(FunctionContex ctx)
 		{
 			var lbl_break = ctx.NewLbl();
@@ -938,6 +1264,9 @@ namespace LLParserGenTest
 	{
 		public StmtBreak(TokenAST tk) : base(tk) { }
 
+		public override void CheckType(FunctionContex ctx)
+		{
+		}
 		public override bool GenCode(FunctionContex ctx)
 		{
 			if (ctx.Break() == false)
@@ -949,6 +1278,9 @@ namespace LLParserGenTest
 	{
 		public StmtContinue(TokenAST tk) : base(tk) { }
 
+		public override void CheckType(FunctionContex ctx)
+		{
+		}
 		public override bool GenCode(FunctionContex ctx)
 		{
 			if (ctx.Continue() == false)
@@ -963,11 +1295,17 @@ namespace LLParserGenTest
 		public StmtReturn(TokenAST tk) : base(tk) { e = null; }
 		public StmtReturn(TokenAST tk, ExprRoot e) : base(tk) { this.e = e; }
 
+		public override void CheckType(FunctionContex ctx)
+		{
+			e.CheckType(ctx);
+		}
 		public override bool GenCode(FunctionContex ctx)
 		{
+			CheckType(ctx);
+
 			if (ctx.fun.constructor)
 			{
-				if (this.e != null) Error("constructs cannot return value");
+				//if (this.e != null) Error("constructs cannot return value");
 				var re = new ExprId(new TokenAST(this.tk, MParser.THIS, "THIS", "this"));
 				var r = re.GenRight(ctx, null);
 				ctx.Return(r);
@@ -984,7 +1322,7 @@ namespace LLParserGenTest
 				TypeRoot aaa = te.Type;
 				TypeRoot bbb = ctx.fun.ret;
 
-				if (!(aaa == bbb)) 
+				if (aaa.AssName != bbb.AssName)
 					Error("wrong return type");
 			}
 
@@ -1008,6 +1346,10 @@ namespace LLParserGenTest
 		readonly ExprRoot e;
 		public StmtExpr(TokenAST tk, ExprRoot e) : base(tk) { this.e = e; }
 		public override bool GenCode(FunctionContex ctx) { e.GenRight(ctx, null); return false; }
+		public override void CheckType(FunctionContex ctx)
+		{
+			e.CheckType(ctx);
+		}
 	}
 
 	///////////////////////////////////////////////////////////
@@ -1300,7 +1642,7 @@ namespace LLParserGenTest
 			case "<":
 			case "<=":
 				if (ta.Type != tb.Type) error = true;
-				if (!(ta.TypeBase == TypeBase.Int_ || ta.TypeBase == TypeBase.Dbl_)) error = true;
+				if (!(ta.TypeBase == TypeBase.Int || ta.TypeBase == TypeBase.Double)) error = true;
 				break;
 			default:
 				Debug.Assert(false);
@@ -1439,8 +1781,8 @@ namespace LLParserGenTest
 			var tb = b.CheckType(ctx);
 
 			if (ta.Type != tb.Type) Error("operator '{0}' requires same types", tk.strRead);
-			if (!(ta.TypeBase == TypeBase.Int_ || tb.TypeBase == TypeBase.Dbl_)) Error("'{0}' requires int or double type", tk.strRead);
-			if (!(tb.TypeBase == TypeBase.Int_ || ta.TypeBase == TypeBase.Dbl_)) Error("'{0}' requires int or double type", tk.strRead);
+			if (!(ta.TypeBase == TypeBase.Int || tb.TypeBase == TypeBase.Double)) Error("'{0}' requires int or double type", tk.strRead);
+			if (!(tb.TypeBase == TypeBase.Int || ta.TypeBase == TypeBase.Double)) Error("'{0}' requires int or double type", tk.strRead);
 
 			if (ta.IsConst && tb.IsConst)
 			{
@@ -1532,9 +1874,8 @@ namespace LLParserGenTest
 			if (!(ta.IsNumeric)) Error("'{0}' requires int or double type", tk.strRead);
 			if (ta.IsConst)
 			{
-				/***/
-				if (ta.TypeBase == TypeBase.Int_) return new ExprType(0) - ta;
-				else if (ta.TypeBase == TypeBase.Dbl_) return new ExprType(0.0) - ta;
+				/***/if (ta.TypeBase == TypeBase.Int) return new ExprType(0) - ta;
+				else if (ta.TypeBase == TypeBase.Double) return new ExprType(0.0) - ta;
 				else Debug.Assert(false);
 			}
 			return ta;
@@ -1550,9 +1891,8 @@ namespace LLParserGenTest
 			{
 				var ra = a.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				/***/
-				if (ra.TypeBase == TypeBase.Int_) ctx.Context.sub(rdest, new ExprValue(0), ra);
-				else if (ra.TypeBase == TypeBase.Dbl_) ctx.Context.sub(rdest, new ExprValue(0.0), ra);
+				/***/if (ra.TypeBase == TypeBase.Int) ctx.Context.sub(rdest, new ExprValue(0), ra);
+				else if (ra.TypeBase == TypeBase.Double) ctx.Context.sub(rdest, new ExprValue(0.0), ra);
 				else Debug.Assert(false);
 				return new ExprValue(rdest, a.CheckType(ctx).Type);
 			}
@@ -1570,11 +1910,11 @@ namespace LLParserGenTest
 			var ta = e.CheckType(ctx);
 
 			bool error = true;
-			if (ctype.TypeBase == TypeBase.Int_)
+			if (ctype.TypeBase == TypeBase.Int)
 			{
 				if (ta.IsNumeric) error = false;
 			}
-			else if (ctype.TypeBase == TypeBase.Dbl_)
+			else if (ctype.TypeBase == TypeBase.Double)
 			{
 				if (ta.IsNumeric) error = false;
 			}
@@ -1583,17 +1923,15 @@ namespace LLParserGenTest
 
 			if (ta.IsConst)
 			{
-				if (ctype.TypeBase == TypeBase.Int_)
+				if (ctype.TypeBase == TypeBase.Int)
 				{
-					/***/
-					if (ta.TypeBase == TypeBase.Int_) return new ExprType((double)ta.Int);
-					else if (ta.TypeBase == TypeBase.Dbl_) return new ExprType((int)ta.Dbl);
+					/***/if (ta.TypeBase == TypeBase.Int) return new ExprType((double)ta.Int);
+					else if (ta.TypeBase == TypeBase.Double) return new ExprType((int)ta.Dbl);
 				}
-				else if (ctype.TypeBase == TypeBase.Dbl_)
+				else if (ctype.TypeBase == TypeBase.Double)
 				{
-					/***/
-					if (ta.TypeBase == TypeBase.Int_) return new ExprType((double)ta.Int);
-					else if (ta.TypeBase == TypeBase.Dbl_) return new ExprType((double)ta.Dbl);
+					/***/if (ta.TypeBase == TypeBase.Int) return new ExprType((double)ta.Int);
+					else if (ta.TypeBase == TypeBase.Double) return new ExprType((double)ta.Dbl);
 				}
 			}
 			return new ExprType(ctype);
@@ -1611,23 +1949,21 @@ namespace LLParserGenTest
 				// nessuna conversione
 				return e.GenRight(ctx, rdest);
 			}
-			else if (ctype.TypeBase == TypeBase.Int_)
+			else if (ctype.TypeBase == TypeBase.Int)
 			{
 				var aa = e.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				/***/
-				if (te.TypeBase == TypeBase.Int_) Debug.Assert(false);
-				else if (te.TypeBase == TypeBase.Dbl_) ctx.Context.d2i(rdest, aa.Reg);
+				/***/if (te.TypeBase == TypeBase.Int) Debug.Assert(false);
+				else if (te.TypeBase == TypeBase.Double) ctx.Context.d2i(rdest, aa.Reg);
 				else Debug.Assert(false);
 				return new ExprValue(rdest, ctype);
 			}
-			else if (ctype.TypeBase == TypeBase.Dbl_)
+			else if (ctype.TypeBase == TypeBase.Double)
 			{
 				var aa = e.GenRight(ctx, null);
 				if (rdest == null) rdest = ctx.NewTmp();
-				/***/
-				if (te.TypeBase == TypeBase.Int_) ctx.Context.i2d(rdest, aa.Reg);
-				else if (te.TypeBase == TypeBase.Dbl_) Debug.Assert(false);
+				/***/if (te.TypeBase == TypeBase.Int) ctx.Context.i2d(rdest, aa.Reg);
+				else if (te.TypeBase == TypeBase.Double) Debug.Assert(false);
 				else Debug.Assert(false);
 				return new ExprValue(rdest, ctype);
 			}
@@ -1650,7 +1986,9 @@ namespace LLParserGenTest
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-			cls = ctx.Context.GetClass(this.id.strRead);
+			var tt = new List<String>();
+			tt.Add(this.id.strRead);
+			cls = ctx.fun.GetDecl(tt, 0) as DeclClass;
 			if (cls == null)
 				Error("cannot find class '{0}'", this.id.strRead);
 
@@ -1658,7 +1996,7 @@ namespace LLParserGenTest
 			foreach (var e in el)
 				et.Add(e.CheckType(ctx).Type);
 
-			this.fun = ctx.Context.GetFun(this.id.strRead, this.id.strRead, et);
+			this.fun = cls.GetFun(this.id.strRead, et);
 			if (this.fun == null)
 				Error("cannot find constructor with {0} arguments of class '{1}'", et.Count, this.id);
 
@@ -1670,18 +2008,7 @@ namespace LLParserGenTest
 			var t = CheckType(ctx);
 			Debug.Assert(t.IsConst == false);
 
-			int size = 0;
-
-			var c = cls;
-			while (c != null)
-			{
-				foreach (var m in c.members) if (m is DeclVar) size += 1;
-				if (c.baseList.Count == 0) break;
-				var tb = c.baseList[0].TypeName;
-				c = ctx.Context.GetClass(tb);
-				if (c == null)
-					Error("cannot find class '{0}'", tb);
-			}
+			int size = cls.MemberSize(ctx.Context);
 
 			ctx.Context.newobj("rp", size, cls.vt);
 
@@ -1739,23 +2066,26 @@ namespace LLParserGenTest
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-			return new ExprType(new TypeSimple("string"));
+			var t = new TypeSimple("System").Add("String");
+			t.ResolveType(ctx.fun);
+			return new ExprType(t);
 		}
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
+			var te = CheckType(ctx);
+
 			var lbl = ctx.NewLbl();
 			ctx.Context.dataLbl(lbl);
 			ctx.Context.putString(a.strRead);
 
-			var cls = ctx.Context.GetClass("string");
-
-			var t = CheckType(ctx);
+			var cls = ctx.fun.GetDecl(te.Type.TypeName, 0) as DeclClass;
+			int sz = cls.MemberSize(ctx.Context);
 
 			var rd = rdest ?? ctx.NewTmp();
-			ctx.Context.newobj(rd, 1, cls.vt);
+			ctx.Context.newobj(rd, sz, cls.vt);
 			ctx.Context.stm(rd, 0, new ExprValue(lbl));
-			return new ExprValue(rd, new TypeSimple("string"));
+			return new ExprValue(rd, te.Type);
 		}
 	}
 
@@ -1788,7 +2118,7 @@ namespace LLParserGenTest
 
 		public override ExprType CheckType(FunctionContex ctx)
 		{
-			return new ExprType(new Null(), new TypeSimple("object"));
+			return new ExprType(new Null(), new TypeSimple("Object"));
 		}
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
 		{
@@ -1861,10 +2191,10 @@ namespace LLParserGenTest
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var te = e.CheckType(ctx);
-			if (te.TypeBase == TypeBase.Obj_ == false) 
+			if (te.TypeBase == TypeBase.Obj == false) 
 				Error("'.' operators require an object on left side");
 
-			var cls = ctx.Context.GetClass(te.Type.TypeName);
+			var cls = ctx.fun.GetDecl(te.Type.TypeName, 0) as DeclClass;
 			if (cls == null)
 				Error("class '{0}' not found", te.Type.TypeName);
 
@@ -1960,7 +2290,7 @@ namespace LLParserGenTest
 			}
 			else
 			{
-				// una cosa del tipo a[i]()... in delegato...
+				// una cosa del tipo a[i]()... un delegato...
 				this.e = e;
 			}
 			this.a = a;
@@ -1972,10 +2302,11 @@ namespace LLParserGenTest
 			if (this.e != null)
 			{
 				te = e.CheckType(ctx);
-				if (te.TypeBase == TypeBase.Obj_ == false)
+				if (te.TypeBase == TypeBase.Obj == false)
 					Error("object required");
 
-				if (te.Type.TypeName == this.fun.strRead)
+				// non è giusto, ma per ora puo' andare.....
+				if (te.Type.TypeName[te.Type.TypeName.Count - 1] == this.fun.strRead)
 					Error("cannot call class construct - use new operator");
 			}
 
@@ -1984,12 +2315,15 @@ namespace LLParserGenTest
 			foreach (var ai in this.a)
 				targs.Add(ai.CheckType(ctx).Type);
 
-			if (te == null)
-				_df = ctx.Context.GetFun(fun.strRead, targs);
-			else
-				_df = ctx.Context.GetFun(te.Type.TypeName, fun.strRead, targs);
+			_df = ctx.fun.GetFun(fun.strRead, targs);
 			if (_df == null)
-				Error("function '{0}' not found", this.fun.strRead);
+				Error("function '{0}' not found", fun.strRead);
+
+			if (te == null && _df.IsStatic == false)
+					Error("cannot call member function", fun.strRead);
+			if (te != null && _df.IsStatic == false)
+					Error("cannot call static function", fun.strRead);
+
 			return new ExprType(_df.ret);
 		}
 
@@ -2031,7 +2365,7 @@ namespace LLParserGenTest
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var te = e.CheckType(ctx);
-			if (te.TypeBase != TypeBase.Obj_)
+			if (te.TypeBase != TypeBase.Obj)
 				Error("array required");
 
 			var ta = te.Type as TypeArray;
@@ -2080,6 +2414,7 @@ namespace LLParserGenTest
 				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
 			}
 			if (rdest == null) rdest = ctx.NewTmp();
+			// TODO
 			//ctx.Context.js(rdest, this._df.AssName, te);
 			return new ExprValue(rdest, te.Type);
 		}
