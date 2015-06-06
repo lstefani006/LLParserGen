@@ -73,7 +73,8 @@ namespace LLParserGenTest
 		ostm,
 		hstm,
 
-		onew,
+		onewobj,
+		onewarray
 	}
 
 	public abstract class AssRoot : IEquatable<AssRoot>
@@ -529,7 +530,7 @@ namespace LLParserGenTest
 			this.sz = sz;
 			this.vt = vt;
 
-			Debug.Assert(op == OpCode.onew);
+			Debug.Assert(op == OpCode.onewobj);
 		}
 
 		public override bool ComputeLive(U.Set<string> force)

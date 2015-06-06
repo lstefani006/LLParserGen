@@ -15,18 +15,41 @@ namespace System
 
 		var str : handle;
 	}
+	class Array : Object
+	{
+		var Rank : int { get { return 0; } }
+		var Len : int { get { return 0; } }
+	}
+
 
 	class Leo : String {
 		fun Leo(r : int) : base("dd") {}
+		fun ToString() : String { return "this"; }
+
+		var a : int { get { if (this.b > 0) return 222 + this.a; else return 0; } }
+
+		var b : int;
 	}
 }
-/*
 
-fun leo(luca : System.String, b : System.String) : int
+fun leo(m : int) : System.Leo
 {
-	return 3;
+	var i : int;
+	var t : int [];
+
+	//t = new int [3];
+	i = 0;
+	while (i > 0)
+	{
+		if (i > 2)
+			return new System.Leo(3);
+		i = i - 1;
+	}
+
+	return new System.Leo(i);
 
 }
+/*
 
 fun aa(v : char, a : char): string
 {

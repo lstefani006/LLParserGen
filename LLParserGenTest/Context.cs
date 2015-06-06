@@ -5,6 +5,7 @@ using LLParserLexerLib;
 
 namespace LLParserGenTest
 {
+
 	public class Context : IDisposable
 	{
 		private int _cnt_tmp;
@@ -325,13 +326,13 @@ namespace LLParserGenTest
 		public void i2d(string rd, string rs)
 		{
 			startCode();
-			_code.Add(new OpDS(this, codeNextLbl, OpCode.i2f, rd, new ExprValue(rs, TypeSimple.Int)));
+			_code.Add(new OpDS(this, codeNextLbl, OpCode.i2f, rd, new ExprValue(rs, RefTypeSimple.Int)));
 			codeNextLbl = null;
 		}
 		public void d2i(string rd, string rs)
 		{
 			startCode();
-			_code.Add(new OpDS(this, codeNextLbl, OpCode.f2i, rd, new ExprValue(rs, TypeSimple.Dbl)));
+			_code.Add(new OpDS(this, codeNextLbl, OpCode.f2i, rd, new ExprValue(rs, RefTypeSimple.Double)));
 			codeNextLbl = null;
 		}
 
@@ -366,7 +367,13 @@ namespace LLParserGenTest
 		public void newobj(string rd, int size, Label vt)
 		{
 			startCode();
-			_code.Add(new OpNew(this, codeNextLbl, OpCode.onew, rd, size, vt));
+			_code.Add(new OpNew(this, codeNextLbl, OpCode.onewobj, rd, size, vt));
+			codeNextLbl = null;
+		}
+		public void newarray(string rd, int rank, Label vt)
+		{
+			startCode();
+			_code.Add(new OpNew(this, codeNextLbl, OpCode.onewarray, rd, rank, vt));
 			codeNextLbl = null;
 		}
 
@@ -671,7 +678,7 @@ namespace LLParserGenTest
 		Dictionary<string, ExprValue> _localVars = new Dictionary<string, ExprValue>();
 		int _nvar = 0;
 
-		public void AddArgVar(TokenAST name, TypeRoot type)
+		public void AddArgVar(TokenAST name, RefTypeRoot type)
 		{
 			if (_localVars.ContainsKey(name.strRead) == true)
 				throw new SyntaxError(name, "duplicated param '{0}'", name.strRead);
@@ -679,7 +686,7 @@ namespace LLParserGenTest
 		}
 
 
-		public void AddDefVar(TokenAST name, TypeRoot ty)
+		public void AddDefVar(TokenAST name, RefTypeRoot ty)
 		{
 			if (_localVars.ContainsKey(name.strRead) == true)
 				throw new SyntaxError(name, "duplicated variable '{0}'", name.strRead);

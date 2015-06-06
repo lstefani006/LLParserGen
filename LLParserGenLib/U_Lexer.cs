@@ -76,7 +76,7 @@ namespace LLParserLexerLib
 
 		public override string ToString()
 		{
-			if (_token >= 32 && _token < 128)
+			if (_token != '\'' && _token >= 32 && _token < 128)
 				return U.F("new RegToken('{0}')", (char)_token);
 			else
 				return U.F("new RegToken({0})", _token);
