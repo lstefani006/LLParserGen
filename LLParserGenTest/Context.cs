@@ -341,12 +341,12 @@ namespace LLParserGenTest
 			startCode();
 			switch (et.TypeBase)
 			{
-			case TypeBase.Int: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
-			case TypeBase.Bool: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
-			case TypeBase.Char: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildm, rd, rs, new ExprValue(offset))); break;
-			case TypeBase.Double: _code.Add(new OpDSS(this, codeNextLbl, OpCode.fldm, rd, rs, new ExprValue(offset))); break;
-			case TypeBase.Obj: _code.Add(new OpDSS(this, codeNextLbl, OpCode.oldm, rd, rs, new ExprValue(offset))); break;
-			case TypeBase.Handle: _code.Add(new OpDSS(this, codeNextLbl, OpCode.hldm, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Int: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildan, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Bool: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildan, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Char: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ildan, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Double: _code.Add(new OpDSS(this, codeNextLbl, OpCode.fldan, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Obj: _code.Add(new OpDSS(this, codeNextLbl, OpCode.oldan, rd, rs, new ExprValue(offset))); break;
+			case TypeBase.Handle: _code.Add(new OpDSS(this, codeNextLbl, OpCode.hldan, rd, rs, new ExprValue(offset))); break;
 			default: Debug.Assert(false); break;
 			}
 			codeNextLbl = null;
@@ -354,12 +354,12 @@ namespace LLParserGenTest
 		public void stm(string rd, int offset, ExprValue rs)
 		{
 			startCode();
-			/***/if (rs.TypeBase == TypeBase.Int) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.TypeBase == TypeBase.Bool) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.TypeBase == TypeBase.Char) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istm, rd, new ExprValue(offset), rs));
-			else if (rs.TypeBase == TypeBase.Double) _code.Add(new OpSSS(this, codeNextLbl, OpCode.fstm, rd, new ExprValue(offset), rs));
-			else if (rs.TypeBase == TypeBase.Obj) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ostm, rd, new ExprValue(offset), rs));
-			else if (rs.TypeBase == TypeBase.Handle) _code.Add(new OpSSS(this, codeNextLbl, OpCode.hstm, rd, new ExprValue(offset), rs));
+			/***/if (rs.TypeBase == TypeBase.Int) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Bool) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Char) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Double) _code.Add(new OpSSS(this, codeNextLbl, OpCode.fstan, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Obj) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ostan, rd, new ExprValue(offset), rs));
+			else if (rs.TypeBase == TypeBase.Handle) _code.Add(new OpSSS(this, codeNextLbl, OpCode.hstan, rd, new ExprValue(offset), rs));
 			else Debug.Assert(false);
 			codeNextLbl = null;
 		}
@@ -377,6 +377,63 @@ namespace LLParserGenTest
 			codeNextLbl = null;
 		}
 
+		public void ldan(string rd, int rank, ExprType et)
+		{
+			startCode();
+			switch (et.TypeBase)
+			{
+			case TypeBase.Int: _code.Add(new OpDS(this, codeNextLbl, OpCode.ildan, rd, new ExprValue(rank))); break;
+			case TypeBase.Bool: _code.Add(new OpDS(this, codeNextLbl, OpCode.ildan, rd, new ExprValue(rank))); break;
+			case TypeBase.Char: _code.Add(new OpDS(this, codeNextLbl, OpCode.ildan, rd, new ExprValue(rank))); break;
+			case TypeBase.Double: _code.Add(new OpDS(this, codeNextLbl, OpCode.fldan, rd, new ExprValue(rank))); break;
+			case TypeBase.Obj: _code.Add(new OpDS(this, codeNextLbl, OpCode.oldan, rd, new ExprValue(rank))); break;
+			case TypeBase.Handle: _code.Add(new OpDS(this, codeNextLbl, OpCode.hldan, rd, new ExprValue(rank))); break;
+			default: Debug.Assert(false); break;
+			}
+			codeNextLbl = null;
+		}
+		public void stan(string rd, int rank, ExprValue rs)
+		{
+			startCode();
+			/***/
+			if (rs.TypeBase == TypeBase.Int) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(rank), rs));
+			else if (rs.TypeBase == TypeBase.Bool) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(rank), rs));
+			else if (rs.TypeBase == TypeBase.Char) _code.Add(new OpSSS(this, codeNextLbl, OpCode.istan, rd, new ExprValue(rank), rs));
+			else if (rs.TypeBase == TypeBase.Double) _code.Add(new OpSSS(this, codeNextLbl, OpCode.fstan, rd, new ExprValue(rank), rs));
+			else if (rs.TypeBase == TypeBase.Obj) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ostan, rd, new ExprValue(rank), rs));
+			else if (rs.TypeBase == TypeBase.Handle) _code.Add(new OpSSS(this, codeNextLbl, OpCode.hstan, rd, new ExprValue(rank), rs));
+			else Debug.Assert(false);
+			codeNextLbl = null;
+		}
+
+
+		public void sta(string array, ExprValue index, ExprValue rs)
+		{
+			startCode();
+			/***/if (rs.TypeBase == TypeBase.Int) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ista, array, (index), rs));
+			else if (rs.TypeBase == TypeBase.Bool) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ista, array, (index), rs));
+			else if (rs.TypeBase == TypeBase.Char) _code.Add(new OpSSS(this, codeNextLbl, OpCode.ista, array, (index), rs));
+			else if (rs.TypeBase == TypeBase.Double) _code.Add(new OpSSS(this, codeNextLbl, OpCode.fsta, array, (index), rs));
+			else if (rs.TypeBase == TypeBase.Obj) _code.Add(new OpSSS(this, codeNextLbl, OpCode.osta, array, (index), rs));
+			else if (rs.TypeBase == TypeBase.Handle) _code.Add(new OpSSS(this, codeNextLbl, OpCode.hsta, array, (index), rs));
+			else Debug.Assert(false);
+			codeNextLbl = null;
+		}
+		public void lda(string rd, ExprValue array, ExprValue index, ExprType et)
+		{
+			startCode();
+			switch (et.TypeBase)
+			{
+			case TypeBase.Int: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ilda, rd, array, index)); break;
+			case TypeBase.Bool: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ilda, rd, array, index)); break;
+			case TypeBase.Char: _code.Add(new OpDSS(this, codeNextLbl, OpCode.ilda, rd, array, index)); break;
+			case TypeBase.Double: _code.Add(new OpDSS(this, codeNextLbl, OpCode.flda, rd, array, index)); break;
+			case TypeBase.Obj: _code.Add(new OpDSS(this, codeNextLbl, OpCode.olda, rd, array, index)); break;
+			case TypeBase.Handle: _code.Add(new OpDSS(this, codeNextLbl, OpCode.hlda, rd, array, index)); break;
+			default: Debug.Assert(false); break;
+			}
+			codeNextLbl = null;
+		}
 
 		public void putByte(byte c)
 		{

@@ -17,8 +17,11 @@ namespace System
 	}
 	class Array : Object
 	{
-		var Rank : int { get { return 0; } }
-		var Len : int { get { return 0; } }
+		var _rank : int;
+		var _len  : int;
+
+		var Rank : int { get { return this._rank; } }
+		var Len  : int { get { return this._len; } }
 	}
 
 
@@ -32,30 +35,17 @@ namespace System
 	}
 }
 
-fun leo(m : int) : System.Leo
+fun leo(a : int [], b : int [], c : int []) : System.Leo
 {
 	var i : int;
-	var t : int [];
 
-	//t = new int [3];
 	i = 0;
-	while (i > 0)
+	while (i < a.Len)
 	{
-		if (i > 2)
-			return new System.Leo(3);
-		i = i - 1;
+		c[i] = a[i] * b[i];
+		i = i + 1;
 	}
 
+
 	return new System.Leo(i);
-
 }
-/*
-
-fun aa(v : char, a : char): string
-{
-	var r : string;
-	r = "leo";
-	if (v != 'a')
-		return r;
-	return r;
-}*/

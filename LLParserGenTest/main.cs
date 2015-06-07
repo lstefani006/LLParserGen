@@ -136,10 +136,18 @@ namespace LLParserGenTest
 		public readonly int rank;
 		public override TypeBase TypeBase { get { return TypeBase.Obj; } }
 
-		public override bool ResolveType(DeclRoot dr) { return t.ResolveType(dr); }
+		public override bool ResolveType(DeclRoot dr) { 
+			List<string> r = new List<string>(); 
+			r.Add("System"); r.Add("Array"); 
+			_dr = dr.GetDecl(r, 0);
+
+			t.ResolveType(dr);
+
+			return _dr != null; 
+		}
 
 		public override string ToString() { return t.ToString() + "[]"; }
-		public override string AssName { get { return "$a" + t.AssName; } }	
+		public override string AssName { get { return "$a" + rank.ToString() + t.AssName; } }	
 	}
 
 
@@ -1577,7 +1585,10 @@ namespace LLParserGenTest
 		public override ExprType CheckType(FunctionContex ctx)
 		{
 			var tdst = dst.CheckType(ctx); 
-			var tsrc = src.CheckType(ctx); 
+			var tsrc = src.CheckType(ctx);
+
+			tdst.Type.ResolveType(ctx.fun);
+			tsrc.Type.ResolveType(ctx.fun);
 
 			if (tdst.Type != tsrc.Type)
 				Error("cannot assign expression of type '{0}' to '{1}'", tdst.Type, tsrc.Type);
@@ -2621,6 +2632,10 @@ namespace LLParserGenTest
 				Error("array required");
 
 			// TODO controllare il rank
+			Debug.Assert(this.a.Count == 1, "array multi dimensionali da fare");
+			// ci sono 2 cose da fare - array multidimensionali
+			// e il fatto che se si ha v = new int[2][,]
+			// con v[0] si ritorna un int[,]
 
 			var targs = new List<RefTypeRoot>();
 			foreach (var ai in this.a)
@@ -2638,9 +2653,29 @@ namespace LLParserGenTest
 
 		public override ExprValue GenLeftPost(FunctionContex ctx, ExprValue v)
 		{
-			var ea = e.GenRight(ctx, null);
-			//TODO ctx.Context.stm(ea.Reg, _off_var, v);
-			return v;
+
+			if (this.a.Count == 1)
+			{
+				var ra_array = this.e.GenRight(ctx, null);
+				var ra_idx = this.a[0].GenRight(ctx, null);
+				ctx.Context.sta(ra_array.Reg, ra_idx, v);
+				return v;
+			}
+			else
+			{
+				var ra = this.e.GenRight(ctx, "rp");
+				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
+
+				// gli indici
+				for (int i = 0; i < this.a.Count; ++i)
+				{
+					var idx = this.a[i].GenRight(ctx, "rp");
+					if (idx.IsReg == false || idx.Reg != "rp") ctx.Context.ld("rp", idx);
+				}
+				var rdest = ctx.NewTmp();
+				ctx.Context.stan(rdest, this.a.Count, v);
+				return v;
+			}
 		}
 
 		public override ExprValue GenRight(FunctionContex ctx, string rdest)
@@ -2651,20 +2686,39 @@ namespace LLParserGenTest
 			foreach (var e in this.a)
 				targs.Add(e.CheckType(ctx));
 
-			var ra = this.e.GenRight(ctx, "rp");
-			if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
 
-			ctx.Context.ld("rp", this.a.Count);
-
-			for (int i = 0; i < this.a.Count; ++i)
+			// il numero degli indici
+			int nidx = this.a.Count;
+			if (nidx == 1)
 			{
-				ra = this.a[i].GenRight(ctx, "rp");
-				if (ra.IsReg == false || ra.Reg != "rp") ctx.Context.ld("rp", ra);
+				// this
+				var ra_array = this.e.GenRight(ctx, null);
+
+				// indici
+				var ra_idx = this.a[0].GenRight(ctx, null);
+
+				// destinazione
+				rdest = rdest ?? ctx.NewTmp();
+				ctx.Context.lda(rdest, ra_array, ra_idx, new ExprType(te.Type));
+				return new ExprValue(rdest, te.Type);
 			}
-			if (rdest == null) rdest = ctx.NewTmp();
-			// TODO
-			//ctx.Context.js(rdest, this._df.AssName, te);
-			return new ExprValue(rdest, te.Type);
+			else
+			{
+				// this
+				var ra_array = this.e.GenRight(ctx, "rp");
+				if (ra_array.IsReg == false || ra_array.Reg != "rp") ctx.Context.ld("rp", ra_array);
+				
+				// gli indici
+				for (int i = 0; i < nidx; ++i)
+				{
+					ra_array = this.a[i].GenRight(ctx, "rp");
+					if (ra_array.IsReg == false || ra_array.Reg != "rp") ctx.Context.ld("rp", ra_array);
+				}
+				rdest = rdest ?? ctx.NewTmp();
+				ctx.Context.ldan(rdest, nidx, new ExprType(te.Type));
+				return new ExprValue(rdest, te.Type);
+			}
+
 		}
 	}
 

@@ -63,15 +63,26 @@ namespace LLParserGenTest
 		f2i,
 		i2f,
 
-		ildm,  // load member    ldm r4, r6, 3
-		fldm,
-		oldm,
-		hldm,
+		ildan,  // load member    ldm r4, r6, 3
+		fldan,
+		oldan,
+		hldan,
 
-		istm,  // store member
-		fstm,
-		ostm,
-		hstm,
+		istan,  // store member
+		fstan,
+		ostan,
+		hstan,
+
+
+		ilda,  // load member    ldm r4, r6, 3
+		flda,
+		olda,
+		hlda,
+
+		ista,  // store member
+		fsta,
+		osta,
+		hsta,
 
 		onewobj,
 		onewarray
@@ -137,7 +148,11 @@ namespace LLParserGenTest
 			this.rd = rd;
 			this.rs = rs;
 
-			Debug.Assert(op == OpCode.f2i || op == OpCode.i2f || op == OpCode.ild || op == OpCode.fld || op == OpCode.old);
+			string v = op.ToString().Substring(1);
+			Debug.Assert(op == OpCode.f2i ||
+				v == "ld" ||
+				v == "lda" ||
+				v == "ldm");
 		}
 
 		public override bool ComputeLive(U.Set<string> force)
@@ -530,7 +545,7 @@ namespace LLParserGenTest
 			this.sz = sz;
 			this.vt = vt;
 
-			Debug.Assert(op == OpCode.onewobj);
+			Debug.Assert(op == OpCode.onewobj || op == OpCode.onewarray);
 		}
 
 		public override bool ComputeLive(U.Set<string> force)
