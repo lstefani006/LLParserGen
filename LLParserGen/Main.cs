@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Text;
 using System.IO;
-using LLParserLexerLib;
-using System.Collections.Generic;
 
 class _
 {
@@ -10,14 +7,13 @@ class _
 	{
 		try
 		{
-			bool debug = false;
-			bool check = false;
+			var debug = false;
+			var check = false;
 
 			string grammarFileName = null;
 			string codeFileName = null;
 
-			var cp = new U.CommandProcessor("d|debug|c|check", args);
-			cp.Program = "LLParserGen";
+			var cp = new U.CommandProcessor("d|debug|c|check", args) { Program = "LLParserGen" };
 			while (cp.Read())
 			{
 				switch (cp.Option)
@@ -45,14 +41,14 @@ class _
 				return 1;
 			}
 
-			GrammarReader gr = new GrammarReader();
-			ParserOptions po = new ParserOptions();
+			var gr = new GrammarReader();
+			var po = new ParserOptions();
 			using (var tr = File.OpenText(grammarFileName))
 			{
 				gr.Read(grammarFileName, tr, po);
 			}
 
-			var G = gr.G;	
+			var G = gr.G;
 			var lexerActions = gr.LexerActions;
 
 			if (G.CheckGrammar(Console.Out) == false)

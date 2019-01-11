@@ -8,15 +8,12 @@ namespace LLParserLexerLib
 {
 	internal static class U
 	{
-		public static string F(string fmt, params object[] args)
-		{
-			return string.Format(System.Globalization.CultureInfo.InvariantCulture, fmt, args);
-		}
+		public static string F(string fmt, params object[] args) => string.Format(System.Globalization.CultureInfo.InvariantCulture, fmt, args);
 	}
 
 	public class RegAcceptList : IEnumerable<RegAccept>
 	{
-		private List<RegAccept> _a = new List<RegAccept>();
+		private readonly List<RegAccept> _a = new List<RegAccept>();
 
 		public void Add(RegRoot rg) { _a.Add(new RegAccept(rg)); }
 		public void Add(RegRoot rg, int token) { _a.Add(new RegAccept(rg, token)); }
@@ -55,7 +52,7 @@ namespace LLParserLexerLib
 		public static RegRoot R(string s)
 		{
 			RegRoot a = new RegToken(s[0]);
-			foreach (char c in s.Substring(1))
+			foreach (var c in s.Substring(1))
 				a = new RegAnd(a, new RegToken(c));
 			return a;
 		}
@@ -137,14 +134,8 @@ namespace LLParserLexerLib
 			a = new NFA.Node();
 			b = new NFA.Node();
 
-			NFA.Node a1;
-			NFA.Node a2;
-			_a.CreateNFA(out a1, out a2);
-
-			NFA.Node b1;
-			NFA.Node b2;
-			_b.CreateNFA(out b1, out b2);
-
+			_a.CreateNFA(out NFA.Node a1, out NFA.Node a2);
+			_b.CreateNFA(out NFA.Node b1, out NFA.Node b2);
 
 			a.Add(new NFA.EdgeEmpty(a1));
 			a.Add(new NFA.EdgeEmpty(b1));
@@ -153,10 +144,7 @@ namespace LLParserLexerLib
 			b2.Add(new NFA.EdgeEmpty(b));
 		}
 
-		public override string ToString()
-		{
-			return U.F("new RegOr({0}, {1})", _a.ToString(), _b.ToString());
-		}
+		public override string ToString() => U.F("new RegOr({0}, {1})", _a.ToString(), _b.ToString());
 
 		readonly RegRoot _a, _b;
 	}
@@ -169,109 +157,80 @@ namespace LLParserLexerLib
 		}
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
-			NFA.Node a1;
-			_a.CreateNFA(out a, out a1);
-
-			NFA.Node b1;
-			_b.CreateNFA(out b1, out b);
-
+			_a.CreateNFA(out a, out var a1);
+			_b.CreateNFA(out var b1, out b);
 			a1.Add(new NFA.EdgeEmpty(b1));
 		}
-		public override string ToString()
-		{
-			return U.F("new RegAnd({0}, {1})", _a.ToString(), _b.ToString());
-		}
-		readonly RegRoot _a, _b;
+		public override string ToString() => U.F("new RegAnd({0}, {1})", _a.ToString(), _b.ToString());
+		private readonly RegRoot _a, _b;
 	}
 	public class RegZeroOrOne : RegRoot
 	{
-		public RegZeroOrOne(RegRoot a)
-		{
-			_a = a;
-		}
+		private readonly RegRoot _a;
+		public RegZeroOrOne(RegRoot a) => _a = a;
+
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
 			_a.CreateNFA(out a, out b);
 			a.Add(new NFA.EdgeEmpty(b));
 		}
-		readonly RegRoot _a;
-		public override string ToString()
-		{
-			return U.F("new RegZeroOrOne({0})", _a.ToString());
-		}
+
+		public override string ToString() => U.F("new RegZeroOrOne({0})", _a.ToString());
 	}
 	public class RegZeroOrMore : RegRoot
 	{
-		public RegZeroOrMore(RegRoot a)
-		{
-			_a = a;
-		}
+		readonly RegRoot _a;
+		public RegZeroOrMore(RegRoot a) => _a = a;
+
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
 			_a.CreateNFA(out a, out b);
 			a.Add(new NFA.EdgeEmpty(b));
 			b.Add(new NFA.EdgeEmpty(a));
 		}
-		readonly RegRoot _a;
-		public override string ToString()
-		{
-			return U.F("new RegZeroOrMore({0})", _a.ToString());
-		}
+		public override string ToString() => U.F("new RegZeroOrMore({0})", _a.ToString());
+
 	}
 	public class RegOneOrMore : RegRoot
 	{
-		public RegOneOrMore(RegRoot a)
-		{
-			_a = a;
-		}
+		readonly RegRoot _a;
+
+		public RegOneOrMore(RegRoot a) => _a = a;
+
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
 			_a.CreateNFA(out a, out b);
 			b.Add(new NFA.EdgeEmpty(a));
 		}
-		readonly RegRoot _a;
-		public override string ToString()
-		{
-			return U.F("new RegOneOrMore({0})", _a.ToString());
-		}
+		public override string ToString() => U.F("new RegOneOrMore({0})", _a.ToString());
 	}
 	public class RegStartLine : RegRoot
 	{
-		public RegStartLine(RegRoot a)
-		{
-			_a = a;
-		}
+		readonly RegRoot _a;
+
+		public RegStartLine(RegRoot a) => _a = a;
+
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
 			a = new NFA.Node();
-			NFA.Node r;
-			_a.CreateNFA(out r, out b);
+			_a.CreateNFA(out var r, out b);
 			a.Add(new NFA.EdgeStartLine(r));
 		}
-		readonly RegRoot _a;
-		public override string ToString()
-		{
-			return U.F("new RegStartLine({0})", _a.ToString());
-		}
+		public override string ToString() => U.F("new RegStartLine({0})", _a.ToString());
 	}
 	public class RegEndLine : RegRoot
 	{
-		public RegEndLine(RegRoot a)
-		{
-			_a = a;
-		}
+		readonly RegRoot _a;
+
+		public RegEndLine(RegRoot a) => _a = a;
+
 		public override void CreateNFA(out NFA.Node a, out NFA.Node b)
 		{
 			b = new NFA.Node();
-			NFA.Node r;
-			_a.CreateNFA(out a, out r);
+			_a.CreateNFA(out a, out var r);
 			r.Add(new NFA.EdgeEndLine(b));
 		}
-		readonly RegRoot _a;
-		public override string ToString()
-		{
-			return U.F("new RegEndLine({0})", _a.ToString());
-		}
+		public override string ToString() => U.F("new RegEndLine({0})", _a.ToString());
 	}
 	public class RegAccept
 	{
@@ -314,13 +273,8 @@ namespace LLParserLexerLib
 	{
 		public abstract class Edge
 		{
-			public Edge(Node node)
-			{
-				this.Node = node;
-			}
-
+			public Edge(Node node) => this.Node = node;
 			public abstract Node Move(int token);
-
 			public readonly Node Node;
 		}
 
@@ -338,8 +292,8 @@ namespace LLParserLexerLib
 				return (token >= this._tokenStart && token <= this._tokenEnd) ? this.Node : null;
 			}
 
-			int _tokenStart;
-			int _tokenEnd;
+			private readonly int _tokenStart;
+			private readonly int _tokenEnd;
 		}
 
 		public class EdgeOutsideRange : Edge
@@ -378,41 +332,22 @@ namespace LLParserLexerLib
 
 		public class EdgeStart : EdgeEmpty
 		{
-			public EdgeStart(int state, Node node)
-				: base(node)
-			{
-				State = state;
-			}
-
+			public EdgeStart(int state, Node node) : base(node) => State = state;
 			public readonly int State;
 		}
 
 		public class EdgeEmpty : Edge
 		{
-			public EdgeEmpty(Node node)
-				: base(node)
-			{
-			}
-
-			public override Node Move(int token)
-			{
-				//return (token == -1) ? this.Node : null;
-				return null;
-			}
+			public EdgeEmpty(Node node) : base(node) { }
+			public override Node Move(int token) => null;
 		}
 		public class EdgeStartLine : EdgeEmpty
 		{
-			public EdgeStartLine(Node node)
-				: base(node)
-			{
-			}
+			public EdgeStartLine(Node node) : base(node) { }
 		}
 		public class EdgeEndLine : EdgeEmpty
 		{
-			public EdgeEndLine(Node node)
-				: base(node)
-			{
-			}
+			public EdgeEndLine(Node node) : base(node) { }
 		}
 
 

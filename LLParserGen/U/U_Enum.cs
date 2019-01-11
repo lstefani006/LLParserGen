@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 public static partial class U
 {
@@ -11,7 +6,7 @@ public static partial class U
 	{
 		public static bool IsDefined<T>(string enumString) where T : struct
 		{
-			if (String.IsNullOrEmpty(enumString))
+			if (string.IsNullOrEmpty(enumString))
 				throw new NullReferenceException(enumString);
 			if (typeof(T).IsEnum == false)
 				throw new ArgumentException("Type given must be an Enum", "T");
@@ -19,7 +14,7 @@ public static partial class U
 		}
 		public static T ParseEnum<T>(string enumString) where T : struct
 		{
-			if (String.IsNullOrEmpty(enumString))
+			if (string.IsNullOrEmpty(enumString))
 				throw new NullReferenceException(enumString);
 			if (typeof(T).IsEnum == false)
 				throw new ArgumentException("Type given must be an Enum", "T");
