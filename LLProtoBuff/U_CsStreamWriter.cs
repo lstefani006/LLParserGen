@@ -45,13 +45,13 @@ public partial class U
 				_sw.WriteLine("{");
 				_tab += 1;
 			}
-			else if (s == "}")
+			else if (s == "}" || s == "};")
 			{
 				_tab -= 1;
 				Tab();
-				_sw.WriteLine("}");
+				_sw.WriteLine(s);
 			}
-			else if (s.StartsWith("case") || s.StartsWith("default"))
+			else if (s.StartsWith("case") || s.StartsWith("default") || s == "public:" || s == "private:" || s == "protected:")
 			{
 				_tab -= 1;
 				Tab();

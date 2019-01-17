@@ -24,4 +24,6 @@ message PhoneNumber {
 
 message AddressBook {
   repeated Person people = 1;
+  repeated string nnn = 2;
+  Person AAA = 3;
 }

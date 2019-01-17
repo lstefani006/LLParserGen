@@ -2,7 +2,7 @@
   "profiles": {
     "LLProtoBuff": {
       "commandName": "Project",
-      "commandLineArgs": "../../../pb.txt"
+      "commandLineArgs": "-cpp ../../../pb.txt"
     }
   }
 }
