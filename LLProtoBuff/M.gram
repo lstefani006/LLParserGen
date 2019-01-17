@@ -1,0 +1,175 @@
+%lexer
+
+syntax   ^SYNTAX
+float    ^FLOAT
+double   ^DOUBLE
+
+int32    ^INT32
+int64    ^INT64
+uint32   ^UINT32
+uint64   ^UINT64
+sint32   ^SINT32
+sint64   ^SINT64
+fixed32  ^FIXED32
+fixed64  ^FIXED64
+sfixed32 ^SFIXED32
+sfixed64 ^SFIXED64
+bool     ^BOOL
+string   ^STRING
+bytes    ^BYTES
+
+enum     ^ENUM
+repeated ^REPEATED
+oneof    ^ONEOF
+
+package  ^PACKAGE
+import   ^IMPORT
+syntax   ^SYNTAX
+message  ^MESSAGE
+
+service ^SERVICE
+rpc     ^RPC
+returns ^RETURNS
+
+"="    ^(=)
+";"    ^(;)
+"{"    ^({)
+"}"    ^(})
+"("    ^(()
+")"    ^())
+
+(_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])* ^ID
+[0-9]+                                ^NUM
+(\ |\n|\r|\t)+                        ^()
+\/\/.*                                ^()
+
+"/*"                                   
+{
+	for (;;)
+	{
+		if (rd.Peek().ch == -1) throw new Exception("EOF in comment");
+		if (rd.Read().ch == '*' && rd.Peek().ch == '/')
+		{
+			rd.Read();
+			break;
+		}
+	}
+	rd.SetMatch();
+	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+	return false;
+}
+"\""
+{
+	var sb = new StringBuilder();
+	sb.Append('"');
+	for (;;)
+	{
+		int ch = rd.Read().ch;
+		if (ch == -1) throw new Exception("EOF in string");
+		if (ch == '"')
+			break;
+		if (ch == '\\')
+			ch = rd.Read().ch;
+		else
+			sb.Append((char)ch);
+	}
+	sb.Append('"');
+
+	rd.SetMatch();
+	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+	tk.strRead = sb.ToString();
+	tk.token = STR;
+	return true;
+}
+/*
+"'"{
+	int ch = rd.Read().ch;
+	if (ch == -1) throw new Exception("EOF in char");
+	if (rd.Read().ch != '\'') throw new Exception("unterminated char");
+
+	rd.SetMatch();
+	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+	tk.strRead = ((char)ch).ToString();
+	tk.token = CHR;
+	return true;
+}
+*/
+
+%parser 
+%parser.class MParser
+%parser.using System
+%parser.using System.Text
+%parser.using LLProtoBuff
+%parser.namespace PB
+
+start<DeclList>
+	: decl_list ^$1
+	;
+
+decl_list<DeclList>
+	: decl              ^new DeclList($1)
+	| decl_list decl    ^$1.Add($2)
+	;
+
+decl<DeclRoot>
+	: IMPORT STR ';'                    ^new ImportDecl($2)
+	| SYNTAX '=' STR ';'                ^new SyntaxDecl($3)
+	| PACKAGE ID ';'                    ^new PackageDecl($2)
+	| MESSAGE ID '{' message_list '}'   ^new MessageDecl($2, $4)
+	| ENUM ID '{' enum_list '}'         ^new EnumDecl($2, $4)
+	| SERVICE ID '{' service_list '}'   ^new ServiceDecl($2, $4) 
+	;
+
+service_list<ServiceList>
+	: service                     ^new ServiceList($1)
+	| service_list service        ^$1.Add($2)
+	;
+service<Service>
+	: RPC ID '(' ID ')' RETURNS '(' ID ')'    ^new Service($2, $4, $8)
+	;
+
+enum_list<EnumList>
+	: enum_decl                 ^new EnumList($1)
+	| enum_list enum_decl       ^$1.Add($2)
+	;
+enum_decl<EnumType>
+	: ID '=' NUM ';'            ^new EnumType($1, $3)
+	;
+
+message_list<FieldList>
+	: field                  ^new FieldList($1)
+	| message_list field     ^$1.Add($2)
+	;
+field<FieldRoot>
+	: type ID '=' NUM ';'               ^new Optional($1, $2, $4)
+	| REPEATED field                    ^new Repeated($2)
+	| ONEOF ID '{' oneof_list '}'       ^new OneOf($2, $4)
+	;
+
+oneof_list<OneOfList>
+	: oneof                ^new OneOfList($1)
+	| oneof_list oneof     ^$1.Add($2)
+	;
+
+oneof<Optional>
+	: type ID '=' NUM ';   ^new Optional($1, $2, $4)
+	;
+
+type<TokenAST>
+	: ID         ^$1
+	| DOUBLE     ^$1
+	| FLOAT      ^$1
+	| INT32      ^$1
+	| INT64      ^$1
+	| UINT32     ^$1
+	| UINT64     ^$1
+	| SINT32     ^$1
+	| SINT64     ^$1
+	| FIXED32    ^$1
+	| FIXED64    ^$1
+	| SFIXED32   ^$1
+	| SFIXED64   ^$1
+	| BOOL       ^$1
+	| STRING     ^$1
+	| BYTES      ^$1
+	;

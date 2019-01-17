@@ -77,7 +77,7 @@ namespace LLParserLexerLib
 		public TokenAST(ISourceTrackable sc, char tk) : base(sc) { this.token = tk; this.strRead = U.F("{0}", tk); this.tokenStr = this.strRead; }
 
 		public readonly int token;         // quello che ho letto tradotto in token
-		public readonly string strRead;          // es while (quello che ha letto) come stringa
+		public readonly string strRead;    // es while (quello che ha letto) come stringa
 		public readonly string tokenStr;   // la rappresentazione in stringa del token. es "WHILE" quando token=WHILE
 
 		public override string ToString()

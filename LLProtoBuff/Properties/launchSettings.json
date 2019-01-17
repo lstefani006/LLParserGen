@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LLProtoBuff": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../pb.txt"
+    }
+  }
+}
