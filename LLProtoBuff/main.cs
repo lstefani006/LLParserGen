@@ -352,6 +352,9 @@ namespace LLProtoBuff
 {
 	public static class ParserExt
 	{
+		public static string pbType(this Repeated r) { return r.TYPE.strRead; }
+		public static string pbType(this Optional r) { return r.TYPE.strRead; }
+
 		public static string csType(this Repeated r) { return $"List<{csRequired(r.TYPE)}>"; }
 		public static string csType(this Optional r) { return csRequired(r.TYPE); }
 
@@ -368,12 +371,12 @@ namespace LLProtoBuff
 
 		public static bool isObject(this Optional r, List<string> enumList)
 		{
-			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead) == false) return true;
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.pbType()) == false) return true;
 			return false;
 		}
 		public static bool isObject(this Repeated r, List<string> enumList)
 		{
-			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead) == false) return true;
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.pbType()) == false) return true;
 			return false;
 		}
 
@@ -416,10 +419,10 @@ namespace LLProtoBuff
 			case MParser.UINT64: return "uint64_t";
 			case MParser.SINT32: return "int32_t";
 			case MParser.SINT64: return "int64_t";
-			case MParser.FIXED32: return "int";
-			case MParser.FIXED64: return "long";
-			case MParser.SFIXED32: return "int";
-			case MParser.SFIXED64: return "long";
+			case MParser.FIXED32: return "int32_t";
+			case MParser.FIXED64: return "int64_t";
+			case MParser.SFIXED32: return "int32_t";
+			case MParser.SFIXED64: return "int64_t";
 			case MParser.BOOL: return "bool";
 			case MParser.STRING: return "std::string";
 			case MParser.BYTES: return "std::vector<uint8_t>";
@@ -433,14 +436,14 @@ namespace LLProtoBuff
 		{
 			if (r.TYPE.token == MParser.STRING) return $"{r.varName()}.clear();";
 			if (r.TYPE.token == MParser.BYTES) return $"{r.varName()}.clear();";
-			if (r.TYPE.token == MParser.STRING) return $"{r.varName()}.clear();";
-			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead)) return $"{r.varName()} = ({r.cppType(enumList)})0;";
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.pbType())) return $"{r.varName()} = ({r.cppType(enumList)})0;";
 			if (r.TYPE.token == MParser.BOOL) return $"{r.varName()} = false;";
 			if (r.TYPE.token == MParser.ID) return $"{r.varName()} = nullptr;";
 			return $"{r.varName()} = 0;";
 		}
 		public static string cppInit(this Repeated r)
 		{
+			// sono tutti std::vector
 			return $"{r.varName()}.clear();";
 		}
 
@@ -586,21 +589,19 @@ namespace LLProtoBuff
 						tw.WriteLine("{");
 						foreach (var em in en.Fields)
 						{
-							if (em.IsOneOf)
+							if (em is OneOf r)
 							{
-								var r = em as OneOf;
 								foreach (var er in r.List)
 									tw.WriteLine($"{er.varName()} = default({er.csType()});");
+								tw.WriteLine($"{r.varName()} = 0;");
 							}
-							else if (em.IsOptional)
+							else if (em is Optional er)
 							{
-								var r = em as Optional;
-								tw.WriteLine($"{r.varName()} = default({r.csType()});");
+								tw.WriteLine($"{er.varName()} = default({er.csType()});");
 							}
-							else if (em.IsRepeated)
+							else if (em is Repeated rp)
 							{
-								var r = em as Repeated;
-								tw.WriteLine($"{r.varName()}.Clear();");
+								tw.WriteLine($"{rp.varName()}.Clear();");
 							}
 						}
 						tw.WriteLine("}");
