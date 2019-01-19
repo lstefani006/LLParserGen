@@ -11,10 +11,10 @@ using System.Threading;
 using LLProtoBuff;
 using System.Threading.Tasks;
 using PBUtils;
+using System.Collections.Generic;
 
 namespace PB
 {
-
 	public partial class MParser
 	{
 		public MParser() : base(0) { }
@@ -194,280 +194,189 @@ namespace PBUtils
 			return ret;
 		}
 
-		public static int write(Stream s, int fieldNumber, PbObject ww)
-		{
-			int ret = 0;
-			if (ww == null) return ret;
-			int sz = ww.PbWrite(null);
-			var aa = (fieldNumber << 3) | (int)WireType.LengthDelimited;
-			ret += write_varint(s, aa);
-			ret += write_varint(s, sz);
-			ret += ww.PbWrite(s);
-			return ret;
-		}
-		public static int write(Stream s, int fieldNumber, PbObject[] ww)
-		{
-			int ret = 0;
-			if (ww == null) return ret;
-			for (int i = 0; i < ww.Length; ++i)
-				ret += write(s, fieldNumber, ww[i]);
+		//public static int write(Stream s, int fieldNumber, PbObject ww)
+		//{
+		//	int ret = 0;
+		//	if (ww == null) return ret;
+		//	int sz = ww.PbWrite(null);
+		//	var aa = (fieldNumber << 3) | (int)WireType.LengthDelimited;
+		//	ret += write_varint(s, aa);
+		//	ret += write_varint(s, sz);
+		//	ret += ww.PbWrite(s);
+		//	return ret;
+		//}
+		//public static int write(Stream s, int fieldNumber, PbObject[] ww)
+		//{
+		//	int ret = 0;
+		//	if (ww == null) return ret;
+		//	for (int i = 0; i < ww.Length; ++i)
+		//		ret += write(s, fieldNumber, ww[i]);
 
-			return ret;
-		}
+		//	return ret;
+		//}
 
-		static async Task<Tuple<bool, ulong>> readVarintAsync(Stream s, bool allowEof, CancellationToken ct)
-		{
-			var b = new byte[1];
-			ulong ret = 0;
-			int r = await s.ReadAsync(b, 0, 1, ct);
-			if (r <= 0)
-				return Tuple.Create(true, 0ul);
+		//static async Task<Tuple<bool, ulong>> readVarintAsync(Stream s, bool allowEof, CancellationToken ct)
+		//{
+		//	var b = new byte[1];
+		//	ulong ret = 0;
+		//	int r = await s.ReadAsync(b, 0, 1, ct);
+		//	if (r <= 0)
+		//		return Tuple.Create(true, 0ul);
 
-			for (int i = 0; ; i += 7)
-			{
-				if (r != 1) throw new EndOfStreamException();
-				ulong by = b[0];
-				ret |= (by & 127) << i;
-				if ((by & 128) == 0)
-					return Tuple.Create(false, ret);
-				r = await s.ReadAsync(b, 0, 1, ct);
-			}
-		}
+		//	for (int i = 0; ; i += 7)
+		//	{
+		//		if (r != 1) throw new EndOfStreamException();
+		//		ulong by = b[0];
+		//		ret |= (by & 127) << i;
+		//		if ((by & 128) == 0)
+		//			return Tuple.Create(false, ret);
+		//		r = await s.ReadAsync(b, 0, 1, ct);
+		//	}
+		//}
+		//public struct TagData
+		//{
+		//	public int fieldNumber;
+		//	public int sz;
+		//	public WireType wireType;
+		//	public MemoryStream ms;
+		//}
+		//public static async Task<TagData> readTagAsync(Stream s, CancellationToken ct)
+		//{
+		//	var ret = new TagData { fieldNumber = 0, sz = -1 };
+		//	var r = await readVarintAsync(s, allowEof: true, ct: ct);
+		//	if (r.Item1) return ret;
 
-		public struct TagData
-		{
-			public int fieldNumber;
-			public int sz;
-			public WireType wireType;
-			public MemoryStream ms;
-		}
-		public static async Task<TagData> readTagAsync(Stream s, CancellationToken ct)
-		{
-			var ret = new TagData { fieldNumber = 0, sz = -1 };
-			var r = await readVarintAsync(s, allowEof: true, ct: ct);
-			if (r.Item1) return ret;
+		//	ret.fieldNumber = (int)(r.Item2 >> 3);
+		//	ret.wireType = (WireType)(r.Item2 & 7);
+		//	switch (ret.wireType)
+		//	{
+		//	case WireType.Bit32: ret.sz = 4; break;
+		//	case WireType.Bit64: ret.sz = 8; break;
+		//	case WireType.Varint: ret.sz = -1; break;
+		//	case WireType.LengthDelimited: ret.sz = (int)(await readVarintAsync(s, false, ct)).Item2; break;
+		//	default: throw new InvalidDataException();
+		//	}
 
-			ret.fieldNumber = (int)(r.Item2 >> 3);
-			ret.wireType = (WireType)(r.Item2 & 7);
-			switch (ret.wireType)
-			{
-			case WireType.Bit32: ret.sz = 4; break;
-			case WireType.Bit64: ret.sz = 8; break;
-			case WireType.Varint: ret.sz = -1; break;
-			case WireType.LengthDelimited: ret.sz = (int)(await readVarintAsync(s, false, ct)).Item2; break;
-			default: throw new InvalidDataException();
-			}
+		//	if (ret.sz > 0)
+		//	{
+		//		var buff = new byte[ret.sz];
+		//		await s.ReadAsync(buff, 0, ret.sz, ct);
+		//		ret.ms = new MemoryStream(buff);
+		//	}
+		//	else
+		//	{
+		//		ret.ms = new MemoryStream();
+		//		for (;;)
+		//		{
+		//			int b = s.ReadByte();
+		//			if (b < 0) throw new EndOfStreamException();
+		//			ret.ms.WriteByte((byte)b);
+		//			if ((b & 0x80) == 0) break;
+		//		}
+		//		ret.ms.Position = 0;
+		//	}
+		//	return ret;	
+		//}
 
-			if (ret.sz > 0)
-			{
-				var buff = new byte[ret.sz];
-				await s.ReadAsync(buff, 0, ret.sz, ct);
-				ret.ms = new MemoryStream(buff);
-			}
-			else
-			{
-				ret.ms = new MemoryStream();
-				for (;;)
-				{
-					int b = s.ReadByte();
-					if (b < 0) throw new EndOfStreamException();
-					ret.ms.WriteByte((byte)b);
-					if ((b & 0x80) == 0) break;
-				}
-				ret.ms.Position = 0;
-			}
-			return ret;	
-		}
+		//public static async Task<int> readAsyncInt(Stream s, PbType pbType, int sz, CancellationToken ct)
+		//{
+		//	if (sz == -1)
+		//		return (int)((await readVarintAsync(s, false, ct)).Item2);
+		//	Debug.Assert(false);
+		//	return 0;
+		//}
 
-		public static async Task<int> readAsyncInt(Stream s, PbType pbType, int sz, CancellationToken ct)
-		{
-			if (sz == -1)
-				return (int)((await readVarintAsync(s, false, ct)).Item2);
-			Debug.Assert(false);
-			return 0;
-		}
-
-		public static async Task<string> readAsyncString(Stream s, PbType pbType, int sz, CancellationToken ct)
-		{
-			var b = new byte[sz];
-			await s.ReadAsync(b, 0, sz, ct);
-			return Encoding.UTF8.GetString(b);
-		}
-		public static async Task<T> readObjectAsync<T>(Stream s, PbType pbType, CancellationToken ct) where T : PbObject, new()
-		{
-			var r = new T();
-			await r.PbReadAsync(s, ct);
-			return r;
-		}
+		//public static async Task<string> readAsyncString(Stream s, PbType pbType, int sz, CancellationToken ct)
+		//{
+		//	var b = new byte[sz];
+		//	await s.ReadAsync(b, 0, sz, ct);
+		//	return Encoding.UTF8.GetString(b);
+		//}
+		//public static async Task<T> readObjectAsync<T>(Stream s, PbType pbType, CancellationToken ct) where T : PbObject, new()
+		//{
+		//	var r = new T();
+		//	await r.PbReadAsync(s, ct);
+		//	return r;
+		//}
 	}
 
-	public interface PbObject
-	{
-		int PbWrite(Stream s);
-		Task PbReadAsync(Stream s, CancellationToken ct);
-	}
-	class Leo : PbObject
-	{
-		public int a;
-		public string g;
-		public Leo f;
+	//public interface PbObject
+	//{
+	//	int PbWrite(Stream s);
+	//	Task PbReadAsync(Stream s, CancellationToken ct);
+	//}
+	//class Leo : PbObject
+	//{
+	//	public int a;
+	//	public string g;
+	//	public Leo f;
 
-		public async Task PbReadAsync(Stream s, CancellationToken ct)
-		{
-			a = 0;
-			g = null;
-			f = null;
-			for (; ; )
-			{
-				var tk = await EE.readTagAsync(s, ct);
-				if (tk.fieldNumber == 0) break;
-				switch (tk.fieldNumber)
-				{
-				case 1:
-					a = await EE.readAsyncInt(tk.ms, EE.PbType.INT32, tk.sz, ct);
-					break;
-				case 2:
-					g = await EE.readAsyncString(tk.ms, EE.PbType.STRING, tk.sz, ct);
-					break;
-				case 3:
-					f = await EE.readObjectAsync<Leo>(tk.ms, EE.PbType.embeddedMessage, ct);
-					break;
-				}
-			}
-		}
-		public int PbWrite(Stream s)
-		{
-			int ret = 0;
-			ret += EE.write(s, 1, EE.PbType.INT32, a);
-			ret += EE.write(s, 2, g);
-			ret += EE.write(s, 3, f);
-			return ret;
-		}
+	//	public async Task PbReadAsync(Stream s, CancellationToken ct)
+	//	{
+	//		a = 0;
+	//		g = null;
+	//		f = null;
+	//		for (; ; )
+	//		{
+	//			var tk = await EE.readTagAsync(s, ct);
+	//			if (tk.fieldNumber == 0) break;
+	//			switch (tk.fieldNumber)
+	//			{
+	//			case 1:
+	//				a = await EE.readAsyncInt(tk.ms, EE.PbType.INT32, tk.sz, ct);
+	//				break;
+	//			case 2:
+	//				g = await EE.readAsyncString(tk.ms, EE.PbType.STRING, tk.sz, ct);
+	//				break;
+	//			case 3:
+	//				f = await EE.readObjectAsync<Leo>(tk.ms, EE.PbType.embeddedMessage, ct);
+	//				break;
+	//			}
+	//		}
+	//	}
+	//	public int PbWrite(Stream s)
+	//	{
+	//		int ret = 0;
+	//		ret += EE.write(s, 1, EE.PbType.INT32, a);
+	//		ret += EE.write(s, 2, g);
+	//		ret += EE.write(s, 3, f);
+	//		return ret;
+	//	}
 
-	}
+	//}
 
 }
 
 
 namespace LLProtoBuff
 {
-	class Program
+	public static class ParserExt
 	{
-		static void Main(string[] args)
+		public static string csType(this Repeated r) { return $"List<{csRequired(r.TYPE)}>"; }
+		public static string csType(this Optional r) { return csRequired(r.TYPE); }
+
+		public static string cppType(this Repeated r, List<string> enumList) { return $"std::vector<{cppRequired(r.TYPE, enumList)}>"; }
+		public static string cppType(this Optional r, List<string> enumList) { return cppRequired(r.TYPE, enumList); }
+
+
+		public static int tag(this Repeated r) { return int.Parse(r.NUM.strRead); }
+		public static int tag(this Optional r) { return int.Parse(r.NUM.strRead); }
+
+		public static string varName(this Repeated r) { return r.ID.strRead; }
+		public static string varName(this Optional r) { return r.ID.strRead; }
+		public static string varName(this OneOf r) => r.ID.strRead;
+
+		public static bool isObject(this Optional r, List<string> enumList)
 		{
-			Leo f = new Leo();
-			f.a = 3;
-			f.g = "leo";
-
-			var ms = new MemoryStream();
-			f.PbWrite(ms);
-			ms.Position = 0;
-			Task.Run(async () => await f.PbReadAsync(ms, CancellationToken.None)).Wait();
-
-
-			
-			try
-			{
-				using (var rd = args.Length == 1 ? new LexReader(args[0]) : new LexReader(Console.In, "stdin"))
-				{
-					var p = new MParser();
-					var dg = p.Start(rd);
-
-					var tw = new U.CsStreamWriter(Console.Out);
-
-					// syntax
-					if (dg.Count(e => e.IsSyntax) == 0) throw new SyntaxError("\"syntax\" declaration missing");
-					if (dg.Count(e => e.IsSyntax) > 1) throw new SyntaxError("duplicate \"syntax\" declaration");
-					if ((dg.FirstOrDefault(e => e.IsSyntax) as SyntaxDecl).ID.strRead != "\"proto3\"") throw new SyntaxError("invalid syntax declaration");
-
-					// package (uno solo ??)
-					if (dg.Count(e => e.IsPackage) > 2) throw new SyntaxError("duplicate \"package\" declaration");
-
-					var pkg = dg.FirstOrDefault(e => e.IsPackage);
-					if (pkg != null)
-					{
-						tw.WriteLine("public enum {0}", ((PackageDecl)pkg).Str.strRead);
-						tw.WriteLine("{");
-					}
-
-					foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
-					{
-						tw.WriteLine("public enum {0}", en.ID.strRead);
-						tw.WriteLine("{");
-						foreach (var em in en.List)
-							tw.WriteLine("{0} = {1};", em.ID.strRead, em.NUM.strRead);
-						tw.WriteLine("}");
-					}
-					foreach (var en in from v in dg where v.IsMessage select (MessageDecl)v)
-					{
-						tw.WriteLine("public class {0}", en.ID.strRead);
-						tw.WriteLine("{");
-						foreach (var em in en.Fields)
-						{
-							if (em.IsOneOf)
-							{
-								var r = em as OneOf;
-								tw.WriteLine($"public int {r.ID.strRead} {{ get; set; }}");
-								foreach (var er in r.List)
-								{
-									tw.WriteLine($"public {csOptional(er.TYPE)} {er.ID.strRead} {{ get => _{er.ID.strRead}; set {{ _{er.ID.strRead} = value; {r.ID.strRead} = {er.NUM.strRead}; }} }}");
-									tw.WriteLine($"private {csOptional(er.TYPE)} _{er.ID.strRead};");
-									tw.WriteLine($"private bool IsSet_{er.ID.strRead} => {r.ID.strRead} == {er.NUM.strRead};");
-								}
-							}
-							else if (em.IsOptional)
-							{
-								var r = em as Optional;
-								tw.WriteLine($"public {csOptional(r.TYPE)} {r.ID.strRead} {{ get; set; }} }}");
-							}
-							else if (em.IsRepeated)
-							{
-								var r = em as Repeated;
-								tw.WriteLine($"public List<{csRequired(r.TYPE)}> {r.ID.strRead} {{ get; set; }}");
-							}
-						}
-						tw.WriteLine("}");
-					}
-					if (pkg != null)
-						tw.WriteLine("}");
-
-				}
-			}
-			catch (SyntaxError ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
-			catch (Exception ex)
-			{
-				Console.WriteLine(ex.Message);
-			}
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead) == false) return true;
+			return false;
+		}
+		public static bool isObject(this Repeated r, List<string> enumList)
+		{
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead) == false) return true;
+			return false;
 		}
 
-		static string csOptional(TokenAST a)
-		{
-			switch (a.token)
-			{
-			case MParser.ID: return a.strRead;
-			case MParser.DOUBLE: return "double?";
-			case MParser.FLOAT: return "float?";
-			case MParser.INT32: return "int?";
-			case MParser.INT64: return "long?";
-			case MParser.UINT32: return "uint?";
-			case MParser.UINT64: return "ulong?";
-			case MParser.SINT32: return "int?";
-			case MParser.SINT64: return "long?";
-			case MParser.FIXED32: return "int?";
-			case MParser.FIXED64: return "long?";
-			case MParser.SFIXED32: return "int?";
-			case MParser.SFIXED64: return "long?";
-			case MParser.BOOL: return "bool?";
-			case MParser.STRING: return "string";
-			case MParser.BYTES: return "List<byte>";
-			default:
-				Debug.Assert(false);
-				return null;
-			}
-		}
 		static string csRequired(TokenAST a)
 		{
 			switch (a.token)
@@ -492,6 +401,600 @@ namespace LLProtoBuff
 				Debug.Assert(false);
 				return null;
 			}
+		}
+
+		static string cppRequired(TokenAST a, List<string> enumList)
+		{
+			switch (a.token)
+			{
+			case MParser.ID: if (enumList.Contains(a.strRead) == false) return a.strRead + "*"; else return a.strRead;
+			case MParser.DOUBLE: return "double";
+			case MParser.FLOAT: return "float";
+			case MParser.INT32: return "int32_t";
+			case MParser.INT64: return "int64_t";
+			case MParser.UINT32: return "uint32_t";
+			case MParser.UINT64: return "uint64_t";
+			case MParser.SINT32: return "int32_t";
+			case MParser.SINT64: return "int64_t";
+			case MParser.FIXED32: return "int";
+			case MParser.FIXED64: return "long";
+			case MParser.SFIXED32: return "int";
+			case MParser.SFIXED64: return "long";
+			case MParser.BOOL: return "bool";
+			case MParser.STRING: return "std::string";
+			case MParser.BYTES: return "std::vector<uint8_t>";
+			default:
+				Debug.Assert(false);
+				return null;
+			}
+		}
+
+		public static string cppInit(this Optional r, List<string> enumList)
+		{
+			if (r.TYPE.token == MParser.STRING) return $"{r.varName()}.clear();";
+			if (r.TYPE.token == MParser.BYTES) return $"{r.varName()}.clear();";
+			if (r.TYPE.token == MParser.STRING) return $"{r.varName()}.clear();";
+			if (r.TYPE.token == MParser.ID && enumList.Contains(r.TYPE.strRead)) return $"{r.varName()} = ({r.cppType(enumList)})0;";
+			if (r.TYPE.token == MParser.BOOL) return $"{r.varName()} = false;";
+			if (r.TYPE.token == MParser.ID) return $"{r.varName()} = nullptr;";
+			return $"{r.varName()} = 0;";
+		}
+		public static string cppInit(this Repeated r)
+		{
+			return $"{r.varName()}.clear();";
+		}
+
+
+	}
+
+	class Program
+	{
+		static void Main(string[] args)
+		{
+			try
+			{
+				bool cs = false;
+				bool hpp = false;
+				bool cpp = false;
+
+				int i;
+				for (i = 0; i < args.Length; ++i)
+				{
+					bool b = false;
+					switch (args[i])
+					{
+					case "-cs": cs = true; break;
+					case "-cpp": cpp = true; break;
+					case "-hpp": hpp = true; break;
+					default:
+						b = true;
+						break;
+					}
+					if (b) break;
+				}
+
+				string fileIn = null;
+				if (i < args.Length)
+				{
+					fileIn = args[i];
+					++i;
+				}
+				else
+				{
+					Console.WriteLine("missing file");
+					return;
+				}
+
+				using (var rd = new LexReader(fileIn))
+				{
+					var p = new MParser();
+					var dg = p.Start(rd);
+
+					using (TextWriter xw = Console.Out)
+					{
+						var tw = new U.CsStreamWriter(xw);
+
+						if (dg.Count(e => e.IsSyntax) == 0) throw new SyntaxError("\"syntax\" declaration missing");
+						if (dg.Count(e => e.IsSyntax) > 1) throw new SyntaxError("duplicate \"syntax\" declaration");
+						if ((dg.FirstOrDefault(e => e.IsSyntax) as SyntaxDecl).ID.strRead != "\"proto3\"") throw new SyntaxError("invalid syntax declaration");
+
+						// package (uno solo ??)
+						if (dg.Count(e => e.IsPackage) > 2) throw new SyntaxError("duplicate \"package\" declaration");
+
+						/***/
+						if (cs) GenCS(dg, tw);
+						else if (hpp) {
+							string fhpp = fileIn != null ? Path.GetFileNameWithoutExtension(fileIn) + ".hpp" : null;
+							GenHPP(dg, tw, fhpp);
+						}
+						else if (cpp)
+						{
+							string fhpp = fileIn != null ? Path.GetFileNameWithoutExtension(fileIn) + ".hpp" : null;
+							GenCPP(dg, tw, fhpp);
+						}
+						else Console.WriteLine("please specify -cs -cpp -hpp");
+					}
+				}
+			}
+			catch (SyntaxError ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
+			}
+		}
+
+		private static void GenCS(DeclList dg, U.CsStreamWriter tw)
+		{
+			tw.WriteLine("using System.Collections.Generic;");
+			tw.WriteLine();
+
+
+			var pkg = dg.FirstOrDefault(e => e.IsPackage);
+			if (pkg != null)
+			{
+				tw.WriteLine("namespace {0}", ((PackageDecl)pkg).Str.strRead);
+				tw.WriteLine("{");
+			}
+
+
+			var enumList = new List<string>();
+
+			foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
+			{
+				enumList.Add(en.ID.strRead);
+				tw.WriteLine("public enum {0}", en.ID.strRead);
+				tw.WriteLine("{");
+				foreach (var em in en.List)
+					tw.WriteLine("{0} = {1},", em.ID.strRead, em.NUM.strRead);
+				tw.WriteLine("}");
+
+			}
+			foreach (var en in from v in dg where v.IsMessage select (MessageDecl)v)
+			{
+				if (true)
+				{
+					tw.WriteLine("public class {0} : U.PB.PbObject", en.ID.strRead);
+					tw.WriteLine("{");
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							tw.WriteLine($"public int {r.varName()} {{ get; set; }}");
+							foreach (var er in r.List)
+								tw.WriteLine($"public {er.csType()} {er.varName()} {{ get => _{er.varName()}; set {{ _{er.varName()} = value; {r.varName()} = {er.tag()}; }} }}");
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+						}
+					}
+					tw.WriteLine();
+
+					if (true)
+					{
+						tw.WriteLine("void Clear()");
+						tw.WriteLine("{");
+						foreach (var em in en.Fields)
+						{
+							if (em.IsOneOf)
+							{
+								var r = em as OneOf;
+								foreach (var er in r.List)
+									tw.WriteLine($"{er.varName()} = default({er.csType()});");
+							}
+							else if (em.IsOptional)
+							{
+								var r = em as Optional;
+								tw.WriteLine($"{r.varName()} = default({r.csType()});");
+							}
+							else if (em.IsRepeated)
+							{
+								var r = em as Repeated;
+								tw.WriteLine($"{r.varName()}.Clear();");
+							}
+						}
+						tw.WriteLine("}");
+					}
+
+
+					if (true)
+					{
+						tw.WriteLine($"public void Write(U.PB.PbStreamOut w)");
+						tw.WriteLine("{");
+						foreach (var em in en.Fields)
+						{
+							if (em.IsOneOf)
+							{
+								var r = em as OneOf;
+								foreach (var er in r.List)
+								{
+									tw.WriteLine($"if ({r.varName()} == {er.tag()})");
+									if (enumList.Contains(er.csType()) == false)
+										tw.WriteLine($"w.Write({er.tag()}, {er.varName()});");
+									else
+										tw.WriteLine($"w.Write({er.tag()}, (int){er.varName()});");
+								}
+							}
+							else if (em.IsOptional)
+							{
+								var r = em as Optional;
+								if (enumList.Contains(r.csType()) == false)
+									tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								else
+									tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+							}
+							else if (em.IsRepeated)
+							{
+								var r = em as Repeated;
+								if (enumList.Contains(r.csType()) == false)
+									tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								else
+									tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+							}
+						}
+						tw.WriteLine("}");
+					}
+					tw.WriteLine();
+
+					if (true)
+					{
+						tw.WriteLine($"public void Read(U.PB.PbStreamIn r)");
+						tw.WriteLine("{");
+						if (enumList.Count > 0) tw.WriteLine("int en = 0;");
+						tw.WriteLine("Clear();");
+						tw.WriteLine("for (;;)");
+						tw.WriteLine("{");
+						tw.WriteLine("U.PB.WireType wt;");
+						tw.WriteLine("int tag = r.ReadTag(out wt);");
+						tw.WriteLine("switch (tag)");
+						tw.WriteLine("{");
+						tw.WriteLine("case 0: return;");
+
+						foreach (var em in en.Fields)
+						{
+							if (em.IsOneOf)
+							{
+								var r = em as OneOf;
+								foreach (var er in r.List)
+								{
+									if (enumList.Contains(er.csType()) == false)
+										tw.WriteLine($"case {er.tag()}: r.Read(wt, ref _{er.varName()}); {r.varName()} = {er.tag()}; break;");
+									else
+										tw.WriteLine($"case {er.tag()}: r.Read(wt, ref en); _{er.varName()} = ({er.csType()}) en; {r.varName()} = {er.tag()}; break;");
+								}
+							}
+							else if (em.IsOptional)
+							{
+								var r = em as Optional;
+								if (enumList.Contains(r.csType()) == false)
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
+								else
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref en); _{r.varName()} = ({r.csType()}) en; break;");
+							}
+							else if (em.IsRepeated)
+							{
+								var r = em as Repeated;
+								if (enumList.Contains(r.TYPE.strRead) == false)
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
+								else
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref en); _{r.varName()} = ({r.csType()}) en; break;");
+
+							}
+						}
+						tw.WriteLine("default: r.Skip(wt); break;");
+						tw.WriteLine("}");
+						tw.WriteLine("}");
+						tw.WriteLine("}");
+					}
+					tw.WriteLine();
+
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							foreach (var er in r.List)
+								tw.WriteLine($"private {er.csType()} _{er.varName()};");
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							tw.WriteLine($"private {r.csType()} _{r.varName()};");
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							tw.WriteLine($"private {r.csType()} _{r.varName()};");
+						}
+					}
+					tw.WriteLine();
+
+					tw.WriteLine("}");
+				}
+			}
+
+			if (pkg != null)
+				tw.WriteLine("}");
+		}
+
+		private static void GenHPP(DeclList dg, U.CsStreamWriter tw, string fileHpp)
+		{
+			tw.WriteLine("#ifndef __{0}__", fileHpp.Replace('.', '_'));
+			tw.WriteLine("#define __{0}__", fileHpp.Replace('.', '_'));
+			tw.WriteLine();
+			tw.WriteLine("#include \"Pb.h\"");
+
+			var pkg = dg.FirstOrDefault(e => e.IsPackage);
+			if (pkg != null)
+			{
+				tw.WriteLine("namespace {0}", ((PackageDecl)pkg).Str.strRead);
+				tw.WriteLine("{");
+			}
+			tw.WriteLine();
+
+			foreach (var en in from v in dg where v.IsMessage select (MessageDecl)v)
+			{
+				var className = en.ID.strRead;
+				tw.WriteLine("class {0};", className);
+			}
+			tw.WriteLine();
+
+			var enumList = new List<string>();
+
+			foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
+			{
+				enumList.Add(en.ID.strRead);
+				tw.WriteLine("enum {0}", en.ID.strRead);
+				tw.WriteLine("{");
+				foreach (var em in en.List)
+					tw.WriteLine("{0} = {1},", em.ID.strRead, em.NUM.strRead);
+				tw.WriteLine("};");
+			}
+			tw.WriteLine();
+
+			foreach (var en in from v in dg where v.IsMessage select (MessageDecl)v)
+			{
+				var className = en.ID.strRead;
+
+				tw.WriteLine("class {0} : public PbObject", className);
+				tw.WriteLine("{");
+				tw.WriteLine("public:");
+				tw.WriteLine($"{className}();");
+				tw.WriteLine($"~{className}();");
+				tw.WriteLine($"void Clear();");
+				tw.WriteLine($"void Write(PbStreamOut &w);");
+				tw.WriteLine($"void Read(PbStreamIn &r);");
+
+				tw.WriteLine();
+				if (true)
+				{
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							tw.WriteLine($"int {r.varName()};");
+
+							foreach (var er in r.List)
+								tw.WriteLine($"{er.cppType(enumList)} {er.varName()};");
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							tw.WriteLine($"{r.cppType(enumList)} {r.varName()};");
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							tw.WriteLine($"{r.cppType(enumList)} {r.varName()};");
+						}
+					}
+				}
+
+				tw.WriteLine("};");
+				tw.WriteLine();
+			}
+
+			if (pkg != null)
+				tw.WriteLine("}");
+			tw.WriteLine("#endif");
+		}
+
+		private static void GenCPP(DeclList dg, U.CsStreamWriter tw, string fileHpp)
+		{
+			if (!string.IsNullOrEmpty(fileHpp))
+			{
+				tw.WriteLine($"#include \"{fileHpp}\"");
+				tw.WriteLine();
+			}
+			var pkg = dg.FirstOrDefault(e => e.IsPackage);
+			if (pkg != null)
+			{
+				tw.WriteLine("namespace {0}", ((PackageDecl)pkg).Str.strRead);
+				tw.WriteLine("{");
+			}
+
+			var enumList = new List<string>();
+			foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
+				enumList.Add(en.ID.strRead);
+
+			foreach (var en in from v in dg where v.IsMessage select (MessageDecl)v)
+			{
+				string className = en.ID.strRead;
+
+				if (true)
+				{
+					tw.WriteLine($"{className}::{className}()");
+					tw.WriteLine("{");
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							foreach (var er in r.List)
+								tw.WriteLine(er.cppInit(enumList));
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							tw.WriteLine(r.cppInit(enumList));
+						}
+						else if (em.IsRepeated)
+						{
+							// repeated optional non sono compatibili.
+							var r = em as Repeated;
+							tw.WriteLine(r.cppInit());
+						}
+					}
+					tw.WriteLine("}");
+				}
+
+				if (true)
+				{
+					tw.WriteLine($"{className}::~{className}()");
+					tw.WriteLine("{");
+					tw.WriteLine("Clear();");
+					tw.WriteLine("}");
+				}
+				if (true)
+				{
+					tw.WriteLine($"void {className}::Clear()");
+					tw.WriteLine("{");
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							foreach (var er in r.List)
+							{
+								// TODO OneOf può essere repeated
+								if (er.isObject(enumList))
+									tw.WriteLine($"delete {er.varName()};");
+								tw.WriteLine(er.cppInit(enumList));
+							}
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							if (r.isObject(enumList))
+								tw.WriteLine($"delete {r.varName()};");
+							tw.WriteLine(r.cppInit(enumList));
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							if (r.isObject(enumList))
+								tw.WriteLine($"for (auto p : {r.varName()}) delete p;");
+							tw.WriteLine(r.cppInit());
+						}
+					}
+					tw.WriteLine("}");
+				}
+
+				if (true)
+				{
+					tw.WriteLine($"void {className}::Write(PbStreamOut &w)");
+					tw.WriteLine("{");
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							foreach (var er in r.List)
+							{
+								tw.WriteLine($"if ({r.varName()} == {er.tag()})");
+								if (enumList.Contains(er.cppType(enumList)) == false)
+									tw.WriteLine($"w.Write({er.tag()}, {er.varName()});");
+								else
+									tw.WriteLine($"w.Write({er.tag()}, (int){er.varName()});");
+							}
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							if (enumList.Contains(r.cppType(enumList)) == false)
+								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+							else
+								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							if (enumList.Contains(r.cppType(enumList)) == false)
+								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+							else
+								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+						}
+					}
+					tw.WriteLine("}");
+				}
+
+				if (true)
+				{
+					tw.WriteLine($"void {className}::Read(PbStreamIn &r)");
+					tw.WriteLine("{");
+					tw.WriteLine("Clear();");
+					if (enumList.Count > 0) tw.WriteLine("int en = 0;");
+					tw.WriteLine("for (;;)");
+					tw.WriteLine("{");
+					tw.WriteLine("WireType wt;");
+					tw.WriteLine("int tag = r.ReadTag(wt);");
+					tw.WriteLine("switch (tag)");
+					tw.WriteLine("{");
+					tw.WriteLine("case 0: return;");
+
+					foreach (var em in en.Fields)
+					{
+						if (em.IsOneOf)
+						{
+							var r = em as OneOf;
+							foreach (var er in r.List)
+							{
+								if (enumList.Contains(er.TYPE.strRead) == false)
+									tw.WriteLine($"case {er.tag()}: r.Read(wt, {er.varName()}); {r.varName()} = {er.tag()}; break;");
+								else
+									tw.WriteLine($"case {er.tag()}: r.Read(wt, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
+							}
+						}
+						else if (em.IsOptional)
+						{
+							var r = em as Optional;
+							if (enumList.Contains(r.cppType(enumList)) == false)
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
+							else
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+						}
+						else if (em.IsRepeated)
+						{
+							var r = em as Repeated;
+							if (enumList.Contains(r.cppType(enumList)) == false)
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
+							else
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+
+						}
+					}
+					tw.WriteLine("default: r.Skip(wt); break;");
+					tw.WriteLine("}");
+					tw.WriteLine("}");
+					tw.WriteLine("}");
+				}
+
+				tw.WriteLine();
+			}
+
+			if (pkg != null)
+				tw.WriteLine("}");
 		}
 	}
 }
