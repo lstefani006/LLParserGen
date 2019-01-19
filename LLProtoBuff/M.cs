@@ -477,6 +477,8 @@ namespace PB
 					var nt7_i = default(IAST);
 					var nt8_i = default(IAST);
 					var nt9_i = default(IAST);
+					var nt10_i = default(IAST);
+					var nt11_i = default(IAST);
 					
 					TokenAST nt1_s = Match(RPC, nt1_i);
 					TokenAST nt2_s = Match(ID, nt2_i);
@@ -487,6 +489,8 @@ namespace PB
 					TokenAST nt7_s = Match('(', nt7_i);
 					TokenAST nt8_s = Match(ID, nt8_i);
 					TokenAST nt9_s = Match(')', nt9_i);
+					TokenAST nt10_s = Match('{', nt10_i);
+					TokenAST nt11_s = Match('}', nt11_i);
 					service_s = new Service(nt2_s, nt4_s, nt8_s);
 				}
 				break;

@@ -369,16 +369,11 @@ namespace LLProtoBuff
 		public static string varName(this Optional r) { return r.ID.strRead; }
 		public static string varName(this OneOf r) => r.ID.strRead;
 
-		public static bool isObject(this Optional r, List<string> enumList)
-		{
-			if (r.TYPE.token == MParser.ID && enumList.Contains(r.pbType()) == false) return true;
-			return false;
-		}
-		public static bool isObject(this Repeated r, List<string> enumList)
-		{
-			if (r.TYPE.token == MParser.ID && enumList.Contains(r.pbType()) == false) return true;
-			return false;
-		}
+		public static bool isObject(this Optional r, List<string> enumList) => r.TYPE.token == MParser.ID && !enumList.Contains(r.pbType());
+		public static bool isObject(this Repeated r, List<string> enumList) => r.TYPE.token == MParser.ID && !enumList.Contains(r.pbType());
+		public static bool isEnum(this Optional r, List<string> enumList) => r.TYPE.token == MParser.ID && enumList.Contains(r.pbType());
+		public static bool isEnum(this Repeated r, List<string> enumList) => r.TYPE.token == MParser.ID && enumList.Contains(r.pbType());
+
 
 		static string csRequired(TokenAST a)
 		{
@@ -452,7 +447,7 @@ namespace LLProtoBuff
 
 	class Program
 	{
-		static void Main(string[] args)
+		static int Main(string[] args)
 		{
 			try
 			{
@@ -485,7 +480,7 @@ namespace LLProtoBuff
 				else
 				{
 					Console.WriteLine("missing file");
-					return;
+					return 1;
 				}
 
 				using (var rd = new LexReader(fileIn))
@@ -506,7 +501,8 @@ namespace LLProtoBuff
 
 						/***/
 						if (cs) GenCS(dg, tw);
-						else if (hpp) {
+						else if (hpp)
+						{
 							string fhpp = fileIn != null ? Path.GetFileNameWithoutExtension(fileIn) + ".hpp" : null;
 							GenHPP(dg, tw, fhpp);
 						}
@@ -521,12 +517,15 @@ namespace LLProtoBuff
 			}
 			catch (SyntaxError ex)
 			{
-				Console.WriteLine(ex.Message);
+				Console.Error.WriteLine(ex.Message);
+				return 1;
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine(ex.Message);
+				Console.Error.WriteLine(ex.Message);
+				return 1;
 			}
+			return 0;
 		}
 
 		private static void GenCS(DeclList dg, U.CsStreamWriter tw)
@@ -566,9 +565,15 @@ namespace LLProtoBuff
 						if (em.IsOneOf)
 						{
 							var r = em as OneOf;
-							tw.WriteLine($"public int {r.varName()} {{ get; set; }}");
 							foreach (var er in r.List)
-								tw.WriteLine($"public {er.csType()} {er.varName()} {{ get => _{er.varName()}; set {{ _{er.varName()} = value; {r.varName()} = {er.tag()}; }} }}");
+							{
+								tw.WriteLine($"public bool IsSet{er.varName()} => _tag_{r.varName()} == {er.tag()};");
+								tw.WriteLine($"public {er.csType()} {er.varName()}");
+								tw.WriteLine("{");
+								tw.WriteLine($"get => IsSet{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
+								tw.WriteLine($"set {{ _{r.varName()} = value; _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
+								tw.WriteLine("}");
+							}
 						}
 						else if (em.IsOptional)
 						{
@@ -591,9 +596,8 @@ namespace LLProtoBuff
 						{
 							if (em is OneOf r)
 							{
-								foreach (var er in r.List)
-									tw.WriteLine($"{er.varName()} = default({er.csType()});");
-								tw.WriteLine($"{r.varName()} = 0;");
+								tw.WriteLine($"_{r.varName()} = null;");
+								tw.WriteLine($"_tag_{r.varName()} = 0;");
 							}
 							else if (em is Optional er)
 							{
@@ -607,7 +611,6 @@ namespace LLProtoBuff
 						tw.WriteLine("}");
 					}
 
-
 					if (true)
 					{
 						tw.WriteLine($"public void Write(U.PB.PbStreamOut w)");
@@ -619,17 +622,16 @@ namespace LLProtoBuff
 								var r = em as OneOf;
 								foreach (var er in r.List)
 								{
-									tw.WriteLine($"if ({r.varName()} == {er.tag()})");
-									if (enumList.Contains(er.csType()) == false)
-										tw.WriteLine($"w.Write({er.tag()}, {er.varName()});");
+									if (!er.isEnum(enumList))
+										tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, {er.varName()});");
 									else
-										tw.WriteLine($"w.Write({er.tag()}, (int){er.varName()});");
+										tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, (int){er.varName()});");
 								}
 							}
 							else if (em.IsOptional)
 							{
 								var r = em as Optional;
-								if (enumList.Contains(r.csType()) == false)
+								if (!r.isEnum(enumList))
 									tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
 								else
 									tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
@@ -637,7 +639,7 @@ namespace LLProtoBuff
 							else if (em.IsRepeated)
 							{
 								var r = em as Repeated;
-								if (enumList.Contains(r.csType()) == false)
+								if (!r.isEnum(enumList))
 									tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
 								else
 									tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
@@ -651,7 +653,6 @@ namespace LLProtoBuff
 					{
 						tw.WriteLine($"public void Read(U.PB.PbStreamIn r)");
 						tw.WriteLine("{");
-						if (enumList.Count > 0) tw.WriteLine("int en = 0;");
 						tw.WriteLine("Clear();");
 						tw.WriteLine("for (;;)");
 						tw.WriteLine("{");
@@ -665,30 +666,31 @@ namespace LLProtoBuff
 						{
 							if (em.IsOneOf)
 							{
+
 								var r = em as OneOf;
 								foreach (var er in r.List)
 								{
-									if (enumList.Contains(er.csType()) == false)
-										tw.WriteLine($"case {er.tag()}: r.Read(wt, ref _{er.varName()}); {r.varName()} = {er.tag()}; break;");
+									if (!er.isEnum(enumList))
+										tw.WriteLine($"case {er.tag()}: {{ var t = {er.varName()}; r.Read(wt, ref t); {er.varName()} = t; }} break;");
 									else
-										tw.WriteLine($"case {er.tag()}: r.Read(wt, ref en); _{er.varName()} = ({er.csType()}) en; {r.varName()} = {er.tag()}; break;");
+										tw.WriteLine($"case {er.tag()}: {{ var t = (int){er.varName()}; r.Read(wt, ref t); {er.varName()} = ({er.csType()}) t; }} break;");
 								}
 							}
 							else if (em.IsOptional)
 							{
 								var r = em as Optional;
-								if (enumList.Contains(r.csType()) == false)
+								if (!r.isEnum(enumList))
 									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
 								else
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref en); _{r.varName()} = ({r.csType()}) en; break;");
+									tw.WriteLine($"case {r.tag()}: {{ var t = (int){r.varName()}; r.Read(wt, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
 							}
 							else if (em.IsRepeated)
 							{
 								var r = em as Repeated;
-								if (enumList.Contains(r.TYPE.strRead) == false)
+								if (!r.isEnum(enumList))
 									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
 								else
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, ref en); _{r.varName()} = ({r.csType()}) en; break;");
+									tw.WriteLine($"case {r.tag()}: {{ var t; (int){r.varName()}; r.Read(wt, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
 
 							}
 						}
@@ -704,8 +706,8 @@ namespace LLProtoBuff
 						if (em.IsOneOf)
 						{
 							var r = em as OneOf;
-							foreach (var er in r.List)
-								tw.WriteLine($"private {er.csType()} _{er.varName()};");
+							tw.WriteLine($"private object _{r.varName()};");
+							tw.WriteLine($"private int _tag_{r.varName()};");
 						}
 						else if (em.IsOptional)
 						{
@@ -724,6 +726,17 @@ namespace LLProtoBuff
 				}
 			}
 
+			foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
+			{
+				tw.WriteLine($"public static class {s.Name.strRead}");
+				tw.WriteLine("{");
+				foreach (var f in s.Fun)
+				{
+					tw.WriteLine($"public static {f.Res.strRead} {f.Name.strRead}(BFC_Interface t, {f.Req.strRead} req) => Stub.PbCall<{f.Req.strRead}, {f.Res.strRead}>(t, \"{f.Name.strRead}\", req);");
+				}
+				tw.WriteLine("}");
+			}
+
 			if (pkg != null)
 				tw.WriteLine("}");
 		}
@@ -734,6 +747,7 @@ namespace LLProtoBuff
 			tw.WriteLine("#define __{0}__", fileHpp.Replace('.', '_'));
 			tw.WriteLine();
 			tw.WriteLine("#include \"Pb.h\"");
+			tw.WriteLine();
 
 			var pkg = dg.FirstOrDefault(e => e.IsPackage);
 			if (pkg != null)
@@ -804,6 +818,19 @@ namespace LLProtoBuff
 
 				tw.WriteLine("};");
 				tw.WriteLine();
+			}
+
+			foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
+			{
+				tw.WriteLine($"class {s.Name.strRead}");
+				tw.WriteLine("{");
+				tw.WriteLine("public:");
+				tw.WriteLine($"bool Exec(const std::string &fName, PbStreamIn &sin, PbStreamOut &sout);");
+				foreach (var f in s.Fun)
+				{
+					tw.WriteLine($"virtual void {f.Name.strRead}({f.Req.strRead} &req, {f.Res.strRead} &res) = 0;");
+				}
+				tw.WriteLine("};");
 			}
 
 			if (pkg != null)
@@ -914,7 +941,7 @@ namespace LLProtoBuff
 							foreach (var er in r.List)
 							{
 								tw.WriteLine($"if ({r.varName()} == {er.tag()})");
-								if (enumList.Contains(er.cppType(enumList)) == false)
+								if (!er.isEnum(enumList))
 									tw.WriteLine($"w.Write({er.tag()}, {er.varName()});");
 								else
 									tw.WriteLine($"w.Write({er.tag()}, (int){er.varName()});");
@@ -923,7 +950,7 @@ namespace LLProtoBuff
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
-							if (enumList.Contains(r.cppType(enumList)) == false)
+							if (!r.isEnum(enumList))
 								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
 							else
 								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
@@ -931,7 +958,7 @@ namespace LLProtoBuff
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
-							if (enumList.Contains(r.cppType(enumList)) == false)
+							if (!r.isEnum(enumList))
 								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
 							else
 								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
@@ -961,7 +988,7 @@ namespace LLProtoBuff
 							var r = em as OneOf;
 							foreach (var er in r.List)
 							{
-								if (enumList.Contains(er.TYPE.strRead) == false)
+								if (!er.isEnum(enumList))
 									tw.WriteLine($"case {er.tag()}: r.Read(wt, {er.varName()}); {r.varName()} = {er.tag()}; break;");
 								else
 									tw.WriteLine($"case {er.tag()}: r.Read(wt, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
@@ -970,7 +997,7 @@ namespace LLProtoBuff
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
-							if (enumList.Contains(r.cppType(enumList)) == false)
+							if (!r.isEnum(enumList))
 								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
 							else
 								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
@@ -978,7 +1005,7 @@ namespace LLProtoBuff
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
-							if (enumList.Contains(r.cppType(enumList)) == false)
+							if (!r.isEnum(enumList))
 								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
 							else
 								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
@@ -992,8 +1019,33 @@ namespace LLProtoBuff
 				}
 
 				tw.WriteLine();
+
 			}
 
+			if (true)
+			{
+				foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
+				{
+					tw.WriteLine($"bool {s.Name.strRead}::Exec(const std::string &fName, PbStreamIn &sin, PbStreamOut &sout)");
+					tw.WriteLine("{");
+					foreach (var f in s.Fun)
+					{
+						tw.WriteLine($"if (fName == \"{f.Name.strRead}\")");
+						tw.WriteLine("{");
+						tw.WriteLine($"{f.Req.strRead} req;");
+						tw.WriteLine($"req.Read(sin);");
+						tw.WriteLine($"{f.Res.strRead} res;");
+
+						tw.WriteLine($"{f.Name.strRead}(req, res);");
+
+						tw.WriteLine($"res.Write(sout);");
+						tw.WriteLine("return true;");
+						tw.WriteLine("}");
+					}
+					tw.WriteLine("return false;");
+					tw.WriteLine("}");
+				}
+			}
 			if (pkg != null)
 				tw.WriteLine("}");
 		}

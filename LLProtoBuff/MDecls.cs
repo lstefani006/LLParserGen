@@ -49,6 +49,7 @@ namespace LLProtoBuff
 		public virtual bool IsPackage => false;
 		public virtual bool IsMessage => false;
 		public virtual bool IsEnum => false;
+		public virtual bool IsService => false;
 	}
 
 	public class EnumType : IAST
@@ -74,26 +75,28 @@ namespace LLProtoBuff
 	}
 	public class ServiceDecl : DeclRoot, IAST
 	{
-		private TokenAST nt2_s;
-		private ServiceList nt4_s;
+		public override bool IsService => true;
+
+		public readonly TokenAST Name;
+		public readonly ServiceList Fun;
 
 		public ServiceDecl(TokenAST nt2_s, ServiceList nt4_s)
 		{
-			this.nt2_s = nt2_s;
-			this.nt4_s = nt4_s;
+			this.Name = nt2_s;
+			this.Fun = nt4_s;
 		}
 	}
 	public class Service : IAST
 	{
-		private TokenAST nt2_s;
-		private TokenAST nt4_s;
-		private TokenAST nt8_s;
+		public readonly TokenAST Name;
+		public readonly TokenAST Req;
+		public readonly TokenAST Res;
 
 		public Service(TokenAST nt2_s, TokenAST nt4_s, TokenAST nt8_s)
 		{
-			this.nt2_s = nt2_s;
-			this.nt4_s = nt4_s;
-			this.nt8_s = nt8_s;
+			this.Name = nt2_s;
+			this.Req = nt4_s;
+			this.Res = nt8_s;
 		}
 	}
 

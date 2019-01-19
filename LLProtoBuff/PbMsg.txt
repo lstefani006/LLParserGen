@@ -8,6 +8,7 @@ enum PhoneType {
 }
 
 message Person {
+	bool erer = 6;
   string name = 1;
   int32 id = 2;
   string email = 3;
@@ -26,4 +27,9 @@ message AddressBook {
   repeated Person people = 1;
   repeated string nnn = 2;
   Person AAA = 3;
+}
+
+service Tank
+{
+	rpc Ping(AddressBook) returns (AddressBook) {}
 }

@@ -125,7 +125,7 @@ service_list<ServiceList>
 	| service_list service        ^$1.Add($2)
 	;
 service<Service>
-	: RPC ID '(' ID ')' RETURNS '(' ID ')'    ^new Service($2, $4, $8)
+	: RPC ID '(' ID ')' RETURNS '(' ID ')'   '{'   '}'   ^new Service($2, $4, $8)
 	;
 
 enum_list<EnumList>
@@ -152,7 +152,7 @@ oneof_list<OneOfList>
 	;
 
 oneof<Optional>
-	: type ID '=' NUM ';   ^new Optional($1, $2, $4)
+	: type ID '=' NUM ';'   ^new Optional($1, $2, $4)
 	;
 
 type<TokenAST>
