@@ -17,6 +17,9 @@ namespace LLProtoBuff
 		public DeclList(DeclRoot d) : base(d)
 		{
 		}
+		public DeclList() : base()
+		{
+		}
 	}
 	public class EnumList : AList<EnumList, EnumType>
 	{
@@ -50,6 +53,7 @@ namespace LLProtoBuff
 		public virtual bool IsMessage => false;
 		public virtual bool IsEnum => false;
 		public virtual bool IsService => false;
+		public virtual bool IsImport => false;
 	}
 
 	public class EnumType : IAST
@@ -157,12 +161,14 @@ namespace LLProtoBuff
 
 	class ImportDecl : DeclRoot, IAST
 	{
-		private TokenAST nt2_s;
+		public TokenAST ID;
 
 		public ImportDecl(TokenAST nt2_s)
 		{
-			this.nt2_s = nt2_s;
+			this.ID = nt2_s;
 		}
+
+		public override bool IsImport => true; 
 	}
 	class MessageDecl : DeclRoot, IAST
 	{
