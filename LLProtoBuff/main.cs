@@ -355,6 +355,12 @@ namespace LLProtoBuff
 		public static string pbType(this Repeated r) { return r.TYPE.strRead; }
 		public static string pbType(this Optional r) { return r.TYPE.strRead; }
 
+
+		public static string pbBaseType(this Repeated r) { if (r.TYPE.token == MParser.ID) return "none"; else return r.TYPE.strRead; }
+		public static string pbBaseType(this Optional r) { if (r.TYPE.token == MParser.ID) return "none"; else return r.TYPE.strRead; }
+
+
+
 		public static string csType(this Repeated r) { return $"List<{csRequired(r.TYPE)}>"; }
 		public static string csType(this Optional r) { return csRequired(r.TYPE); }
 
@@ -556,6 +562,8 @@ namespace LLProtoBuff
 			tw.WriteLine();
 
 			tw.WriteLine("using System.Collections.Generic;");
+			tw.WriteLine("using et_tariff_engine;");
+
 			tw.WriteLine();
 
 
@@ -646,26 +654,26 @@ namespace LLProtoBuff
 							foreach (var er in r.List)
 							{
 								if (!er.isEnum(enumList))
-									tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, {er.varName()});");
+									tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, U.PB.PbType.pb_{er.pbBaseType()}, {er.varName()});");
 								else
-									tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, (int){er.varName()});");
+									tw.WriteLine($"if (IsSet{er.varName()}) w.Write({er.tag()}, U.PB.PbType.pb_{er.pbBaseType()}, (int){er.varName()});");
 							}
 						}
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, U.PB.PbType.pb_{r.pbBaseType()}, {r.varName()});");
 							else
-								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, U.PB.PbType.pb_{r.pbBaseType()}, (int){r.varName()});");
 						}
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, U.PB.PbType.pb_{r.pbBaseType()}, {r.varName()});");
 							else
-								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, U.PB.PbType.pb_{r.pbBaseType()}, (int){r.varName()});");
 						}
 					}
 					tw.WriteLine("}");
@@ -694,26 +702,26 @@ namespace LLProtoBuff
 							foreach (var er in r.List)
 							{
 								if (!er.isEnum(enumList))
-									tw.WriteLine($"case {er.tag()}: {{ var t = {er.varName()}; r.Read(wt, ref t); {er.varName()} = t; }} break;");
+									tw.WriteLine($"case {er.tag()}: {{ var t = {er.varName()}; r.Read(wt, U.PB.PbType.pb_{er.pbBaseType()}, ref t); {er.varName()} = t; }} break;");
 								else
-									tw.WriteLine($"case {er.tag()}: {{ var t = (int){er.varName()}; r.Read(wt, ref t); {er.varName()} = ({er.csType()}) t; }} break;");
+									tw.WriteLine($"case {er.tag()}: {{ var t = (int){er.varName()}; r.Read(wt, U.PB.PbType.pb_{er.pbBaseType()}, ref t); {er.varName()} = ({er.csType()}) t; }} break;");
 							}
 						}
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, U.PB.PbType.pb_{r.pbBaseType()}, ref _{r.varName()}); break;");
 							else
-								tw.WriteLine($"case {r.tag()}: {{ var t = (int){r.varName()}; r.Read(wt, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
+								tw.WriteLine($"case {r.tag()}: {{ var t = (int){r.varName()}; r.Read(wt, U.PB.PbType.pb_{r.pbBaseType()}, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
 						}
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, ref _{r.varName()}); break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, U.PB.PbType.pb_{r.pbBaseType()}, ref _{r.varName()}); break;");
 							else
-								tw.WriteLine($"case {r.tag()}: {{ var t; (int){r.varName()}; r.Read(wt, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
+								tw.WriteLine($"case {r.tag()}: {{ var t; (int){r.varName()}; r.Read(wt, U.PB.PbType.pb_{r.pbBaseType()}, ref t); {r.varName()} = ({r.csType()}) t; }} break;");
 
 						}
 					}
@@ -753,11 +761,11 @@ namespace LLProtoBuff
 
 			foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
 			{
-				tw.WriteLine($"public static partial class {s.Name.strRead}");
+				tw.WriteLine($"public partial class {s.Name.strRead}");
 				tw.WriteLine("{");
 				foreach (var f in s.Fun)
 				{
-					tw.WriteLine($"public static {f.Res.strRead} {f.Name.strRead}(T2Interface t, {f.Req.strRead} req) => T2Lib.PbCall<{f.Req.strRead}, {f.Res.strRead}>(t, \"{f.Name.strRead}\", req);");
+					tw.WriteLine($"public {f.Res.strRead} {f.Name.strRead}({f.Req.strRead} req) => PbCall<{f.Req.strRead}, {f.Res.strRead}>(\"{f.Name.strRead}\", req);");
 				}
 				tw.WriteLine("}");
 			}
@@ -981,26 +989,26 @@ namespace LLProtoBuff
 							{
 								tw.WriteLine($"if ({r.varName()} == {er.tag()})");
 								if (!er.isEnum(enumList))
-									tw.WriteLine($"w.Write({er.tag()}, {er.varName()});");
+									tw.WriteLine($"w.Write({er.tag()}, PbType::pb_{er.pbBaseType()}, {er.varName()});");
 								else
-									tw.WriteLine($"w.Write({er.tag()}, (int){er.varName()});");
+									tw.WriteLine($"w.Write({er.tag()}, PbType::pb_{er.pbBaseType()}, (int){er.varName()});");
 							}
 						}
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, {r.varName()});");
 							else
-								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, (int){r.varName()});");
 						}
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"w.Write({r.tag()}, {r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, {r.varName()});");
 							else
-								tw.WriteLine($"w.Write({r.tag()}, (int){r.varName()});");
+								tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, (int){r.varName()});");
 						}
 					}
 					tw.WriteLine("}");
@@ -1055,26 +1063,26 @@ namespace LLProtoBuff
 							foreach (var er in r.List)
 							{
 								if (!er.isEnum(enumList))
-									tw.WriteLine($"case {er.tag()}: r.Read(wt, {er.varName()}); {r.varName()} = {er.tag()}; break;");
+									tw.WriteLine($"case {er.tag()}: r.Read(wt, PbType::pb_{er.pbBaseType()}, {er.varName()}); {r.varName()} = {er.tag()}; break;");
 								else
-									tw.WriteLine($"case {er.tag()}: r.Read(wt, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
+									tw.WriteLine($"case {er.tag()}: r.Read(wt, PbType::pb_{er.pbBaseType()}, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
 							}
 						}
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, {r.varName()}); break;");
 							else
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
 						}
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
 							if (!r.isEnum(enumList))
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, {r.varName()}); break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, {r.varName()}); break;");
 							else
-								tw.WriteLine($"case {r.tag()}: r.Read(wt, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+								tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
 
 						}
 					}

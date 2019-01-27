@@ -1,9 +1,15 @@
 %lexer
 
 syntax   ^SYNTAX
+package  ^PACKAGE
+import   ^IMPORT
+service ^SERVICE
+message  ^MESSAGE
+rpc     ^RPC
+returns ^RETURNS
+
 float    ^FLOAT
 double   ^DOUBLE
-
 int32    ^INT32
 int64    ^INT64
 uint32   ^UINT32
@@ -21,15 +27,6 @@ bytes    ^BYTES
 enum     ^ENUM
 repeated ^REPEATED
 oneof    ^ONEOF
-
-package  ^PACKAGE
-import   ^IMPORT
-syntax   ^SYNTAX
-message  ^MESSAGE
-
-service ^SERVICE
-rpc     ^RPC
-returns ^RETURNS
 
 "="    ^(=)
 ";"    ^(;)
