@@ -12,33 +12,36 @@ namespace PB
 	public partial class MParser : ParserBase
 	{
 		public const int IMPORT = -2;
-		public const int STR = -3;
-		public const int SYNTAX = -4;
+		public const int SYNTAX = -3;
+		public const int STR = -4;
 		public const int PACKAGE = -5;
 		public const int ID = -6;
 		public const int MESSAGE = -7;
 		public const int ENUM = -8;
 		public const int SERVICE = -9;
-		public const int RPC = -10;
-		public const int RETURNS = -11;
-		public const int NUM = -12;
-		public const int REPEATED = -13;
-		public const int ONEOF = -14;
-		public const int DOUBLE = -15;
-		public const int FLOAT = -16;
-		public const int INT32 = -17;
-		public const int INT64 = -18;
-		public const int UINT32 = -19;
-		public const int UINT64 = -20;
-		public const int SINT32 = -21;
-		public const int SINT64 = -22;
-		public const int FIXED32 = -23;
-		public const int FIXED64 = -24;
-		public const int SFIXED32 = -25;
-		public const int SFIXED64 = -26;
-		public const int BOOL = -27;
-		public const int STRING = -28;
-		public const int BYTES = -29;
+		public const int OPTION = -10;
+		public const int PUBLIC = -11;
+		public const int RPC = -12;
+		public const int RETURNS = -13;
+		public const int NUM = -14;
+		public const int OPTIONAL = -15;
+		public const int REPEATED = -16;
+		public const int ONEOF = -17;
+		public const int DOUBLE = -18;
+		public const int FLOAT = -19;
+		public const int INT32 = -20;
+		public const int INT64 = -21;
+		public const int UINT32 = -22;
+		public const int UINT64 = -23;
+		public const int SINT32 = -24;
+		public const int SINT64 = -25;
+		public const int FIXED32 = -26;
+		public const int FIXED64 = -27;
+		public const int SFIXED32 = -28;
+		public const int SFIXED64 = -29;
+		public const int BOOL = -30;
+		public const int STRING = -31;
+		public const int BYTES = -32;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -50,33 +53,36 @@ namespace PB
 					_token = new Dictionary<int, string>();
 					_token.Add(-1, "EOF");
 					_token.Add(-2, "IMPORT");
-					_token.Add(-3, "STR");
-					_token.Add(-4, "SYNTAX");
+					_token.Add(-3, "SYNTAX");
+					_token.Add(-4, "STR");
 					_token.Add(-5, "PACKAGE");
 					_token.Add(-6, "ID");
 					_token.Add(-7, "MESSAGE");
 					_token.Add(-8, "ENUM");
 					_token.Add(-9, "SERVICE");
-					_token.Add(-10, "RPC");
-					_token.Add(-11, "RETURNS");
-					_token.Add(-12, "NUM");
-					_token.Add(-13, "REPEATED");
-					_token.Add(-14, "ONEOF");
-					_token.Add(-15, "DOUBLE");
-					_token.Add(-16, "FLOAT");
-					_token.Add(-17, "INT32");
-					_token.Add(-18, "INT64");
-					_token.Add(-19, "UINT32");
-					_token.Add(-20, "UINT64");
-					_token.Add(-21, "SINT32");
-					_token.Add(-22, "SINT64");
-					_token.Add(-23, "FIXED32");
-					_token.Add(-24, "FIXED64");
-					_token.Add(-25, "SFIXED32");
-					_token.Add(-26, "SFIXED64");
-					_token.Add(-27, "BOOL");
-					_token.Add(-28, "STRING");
-					_token.Add(-29, "BYTES");
+					_token.Add(-10, "OPTION");
+					_token.Add(-11, "PUBLIC");
+					_token.Add(-12, "RPC");
+					_token.Add(-13, "RETURNS");
+					_token.Add(-14, "NUM");
+					_token.Add(-15, "OPTIONAL");
+					_token.Add(-16, "REPEATED");
+					_token.Add(-17, "ONEOF");
+					_token.Add(-18, "DOUBLE");
+					_token.Add(-19, "FLOAT");
+					_token.Add(-20, "INT32");
+					_token.Add(-21, "INT64");
+					_token.Add(-22, "UINT32");
+					_token.Add(-23, "UINT64");
+					_token.Add(-24, "SINT32");
+					_token.Add(-25, "SINT64");
+					_token.Add(-26, "FIXED32");
+					_token.Add(-27, "FIXED64");
+					_token.Add(-28, "SFIXED32");
+					_token.Add(-29, "SFIXED64");
+					_token.Add(-30, "BOOL");
+					_token.Add(-31, "STRING");
+					_token.Add(-32, "BYTES");
 				}
 				return _token;
 			}
@@ -93,6 +99,7 @@ namespace PB
 			case MESSAGE:
 			case ENUM:
 			case SERVICE:
+			case OPTION:
 				alt = 0;
 				break;
 			default:
@@ -135,6 +142,7 @@ namespace PB
 			case MESSAGE:
 			case ENUM:
 			case SERVICE:
+			case OPTION:
 				alt = 0;
 				break;
 			default:
@@ -152,7 +160,7 @@ namespace PB
 					
 					var nt1_s = decl(nt1_i);
 					nt2_i = new DeclList(nt1_s); 
-					var nt2_s = tmp_1(nt2_i);
+					var nt2_s = tmp_2(nt2_i);
 					decl_list_s = nt2_s; 
 				}
 				break;
@@ -169,7 +177,7 @@ namespace PB
 			return decl_list_s;
 		}
 		
-		DeclList tmp_1(IAST tmp_1_i)
+		DeclList tmp_2(IAST tmp_2_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -183,6 +191,7 @@ namespace PB
 			case MESSAGE:
 			case ENUM:
 			case SERVICE:
+			case OPTION:
 				alt = 1;
 				break;
 			default:
@@ -190,14 +199,14 @@ namespace PB
 				break;
 			}
 			
-			DeclList tmp_1_s = default(DeclList);
+			DeclList tmp_2_s = default(DeclList);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_1_s = (DeclList)tmp_1_i; 
+					tmp_2_s = (DeclList)tmp_2_i; 
 				}
 				break;
 			case 1:
@@ -206,9 +215,9 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					var nt1_s = decl(nt1_i);
-					nt2_i = ((DeclList)tmp_1_i).Add(nt1_s); 
-					var nt2_s = tmp_1(nt2_i);
-					tmp_1_s = nt2_s; 
+					nt2_i = ((DeclList)tmp_2_i).Add(nt1_s);; 
+					var nt2_s = tmp_2(nt2_i);
+					tmp_2_s = nt2_s; 
 				}
 				break;
 			}
@@ -221,7 +230,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_1_s;
+			return tmp_2_s;
 		}
 		
 		DeclRoot decl(IAST decl_i)
@@ -247,6 +256,9 @@ namespace PB
 			case SERVICE:
 				alt = 5;
 				break;
+			case OPTION:
+				alt = 6;
+				break;
 			default:
 				Error();
 				break;
@@ -259,12 +271,10 @@ namespace PB
 				{
 					var nt1_i = default(IAST);
 					var nt2_i = default(IAST);
-					var nt3_i = default(IAST);
 					
 					TokenAST nt1_s = Match(IMPORT, nt1_i);
-					TokenAST nt2_s = Match(STR, nt2_i);
-					TokenAST nt3_s = Match(';', nt3_i);
-					decl_s = new ImportDecl(nt2_s);
+					var nt2_s = tmp_7(nt1_s, nt2_i);
+					decl_s = nt2_s;
 				}
 				break;
 			case 1:
@@ -316,13 +326,15 @@ namespace PB
 					var nt3_i = default(IAST);
 					var nt4_i = default(IAST);
 					var nt5_i = default(IAST);
+					var nt6_i = default(IAST);
 					
 					TokenAST nt1_s = Match(ENUM, nt1_i);
 					TokenAST nt2_s = Match(ID, nt2_i);
 					TokenAST nt3_s = Match('{', nt3_i);
 					var nt4_s = enum_list(nt4_i);
 					TokenAST nt5_s = Match('}', nt5_i);
-					decl_s = new EnumDecl(nt2_s, nt4_s);
+					var nt6_s = tmp_8(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_i);
+					decl_s = nt6_s;
 				}
 				break;
 			case 5:
@@ -341,6 +353,22 @@ namespace PB
 					decl_s = new ServiceDecl(nt2_s, nt4_s) ;
 				}
 				break;
+			case 6:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					var nt5_i = default(IAST);
+					
+					TokenAST nt1_s = Match(OPTION, nt1_i);
+					TokenAST nt2_s = Match(ID, nt2_i);
+					TokenAST nt3_s = Match('=', nt3_i);
+					TokenAST nt4_s = Match(STR, nt4_i);
+					TokenAST nt5_s = Match(';', nt5_i);
+					decl_s = new OptionDecl(nt2_s, nt4_s);
+				}
+				break;
 			}
 			
 			switch (Next.token)
@@ -351,6 +379,7 @@ namespace PB
 			case MESSAGE:
 			case ENUM:
 			case SERVICE:
+			case OPTION:
 			case -1:
 				break;
 			default:
@@ -358,6 +387,128 @@ namespace PB
 				break;
 			}
 			return decl_s;
+		}
+		
+		DeclRoot tmp_7(IAST nt1_s, IAST tmp_7_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case STR:
+				alt = 0;
+				break;
+			case PUBLIC:
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			DeclRoot tmp_7_s = default(DeclRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					
+					TokenAST nt2_s = Match(STR, nt2_i);
+					TokenAST nt3_s = Match(';', nt3_i);
+					tmp_7_s = new ImportDecl(nt2_s);
+				}
+				break;
+			case 1:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					
+					TokenAST nt2_s = Match(PUBLIC, nt2_i);
+					TokenAST nt3_s = Match(STR, nt3_i);
+					TokenAST nt4_s = Match(';', nt4_i);
+					tmp_7_s = new ImportDecl(nt3_s);
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case IMPORT:
+			case SYNTAX:
+			case PACKAGE:
+			case MESSAGE:
+			case ENUM:
+			case SERVICE:
+			case OPTION:
+			case -1:
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_7_s;
+		}
+		
+		DeclRoot tmp_8(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST tmp_8_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case IMPORT:
+			case SYNTAX:
+			case PACKAGE:
+			case MESSAGE:
+			case ENUM:
+			case SERVICE:
+			case OPTION:
+			case -1:
+				alt = 0;
+				break;
+			case ';':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			DeclRoot tmp_8_s = default(DeclRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt6_i = default(IAST);
+					
+					tmp_8_s = new EnumDecl(((TokenAST)nt2_s), ((EnumList)nt4_s));
+				}
+				break;
+			case 1:
+				{
+					var nt6_i = default(IAST);
+					
+					TokenAST nt6_s = Match(';', nt6_i);
+					tmp_8_s = new EnumDecl(((TokenAST)nt2_s), ((EnumList)nt4_s));
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case IMPORT:
+			case SYNTAX:
+			case PACKAGE:
+			case MESSAGE:
+			case ENUM:
+			case SERVICE:
+			case OPTION:
+			case -1:
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_8_s;
 		}
 		
 		ServiceList service_list(IAST service_list_i)
@@ -383,7 +534,7 @@ namespace PB
 					
 					var nt1_s = service(nt1_i);
 					nt2_i = new ServiceList(nt1_s); 
-					var nt2_s = tmp_2(nt2_i);
+					var nt2_s = tmp_3(nt2_i);
 					service_list_s = nt2_s; 
 				}
 				break;
@@ -400,7 +551,7 @@ namespace PB
 			return service_list_s;
 		}
 		
-		ServiceList tmp_2(IAST tmp_2_i)
+		ServiceList tmp_3(IAST tmp_3_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -416,14 +567,14 @@ namespace PB
 				break;
 			}
 			
-			ServiceList tmp_2_s = default(ServiceList);
+			ServiceList tmp_3_s = default(ServiceList);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_2_s = (ServiceList)tmp_2_i; 
+					tmp_3_s = (ServiceList)tmp_3_i; 
 				}
 				break;
 			case 1:
@@ -432,9 +583,9 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					var nt1_s = service(nt1_i);
-					nt2_i = ((ServiceList)tmp_2_i).Add(nt1_s); 
-					var nt2_s = tmp_2(nt2_i);
-					tmp_2_s = nt2_s; 
+					nt2_i = ((ServiceList)tmp_3_i).Add(nt1_s); 
+					var nt2_s = tmp_3(nt2_i);
+					tmp_3_s = nt2_s; 
 				}
 				break;
 			}
@@ -447,7 +598,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_2_s;
+			return tmp_3_s;
 		}
 		
 		Service service(IAST service_i)
@@ -531,7 +682,7 @@ namespace PB
 					
 					var nt1_s = enum_decl(nt1_i);
 					nt2_i = new EnumList(nt1_s); 
-					var nt2_s = tmp_3(nt2_i);
+					var nt2_s = tmp_4(nt2_i);
 					enum_list_s = nt2_s; 
 				}
 				break;
@@ -548,7 +699,7 @@ namespace PB
 			return enum_list_s;
 		}
 		
-		EnumList tmp_3(IAST tmp_3_i)
+		EnumList tmp_4(IAST tmp_4_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -564,14 +715,14 @@ namespace PB
 				break;
 			}
 			
-			EnumList tmp_3_s = default(EnumList);
+			EnumList tmp_4_s = default(EnumList);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_3_s = (EnumList)tmp_3_i; 
+					tmp_4_s = (EnumList)tmp_4_i; 
 				}
 				break;
 			case 1:
@@ -580,9 +731,9 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					var nt1_s = enum_decl(nt1_i);
-					nt2_i = ((EnumList)tmp_3_i).Add(nt1_s); 
-					var nt2_s = tmp_3(nt2_i);
-					tmp_3_s = nt2_s; 
+					nt2_i = ((EnumList)tmp_4_i).Add(nt1_s); 
+					var nt2_s = tmp_4(nt2_i);
+					tmp_4_s = nt2_s; 
 				}
 				break;
 			}
@@ -595,7 +746,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_3_s;
+			return tmp_4_s;
 		}
 		
 		EnumType enum_decl(IAST enum_decl_i)
@@ -647,66 +798,10 @@ namespace PB
 			int alt = 0;
 			switch (Next.token)
 			{
-			case REPEATED:
-			case ONEOF:
-			case ID:
-			case DOUBLE:
-			case FLOAT:
-			case INT32:
-			case INT64:
-			case UINT32:
-			case UINT64:
-			case SINT32:
-			case SINT64:
-			case FIXED32:
-			case FIXED64:
-			case SFIXED32:
-			case SFIXED64:
-			case BOOL:
-			case STRING:
-			case BYTES:
-				alt = 0;
-				break;
-			default:
-				Error();
-				break;
-			}
-			
-			FieldList message_list_s = default(FieldList);
-			switch (alt)
-			{
-			case 0:
-				{
-					var nt1_i = default(IAST);
-					var nt2_i = default(IAST);
-					
-					var nt1_s = field(nt1_i);
-					nt2_i = new FieldList(nt1_s); 
-					var nt2_s = tmp_4(nt2_i);
-					message_list_s = nt2_s; 
-				}
-				break;
-			}
-			
-			switch (Next.token)
-			{
-			case '}':
-				break;
-			default:
-				Error();
-				break;
-			}
-			return message_list_s;
-		}
-		
-		FieldList tmp_4(IAST tmp_4_i)
-		{
-			int alt = 0;
-			switch (Next.token)
-			{
 			case '}':
 				alt = 0;
 				break;
+			case OPTIONAL:
 			case REPEATED:
 			case ONEOF:
 			case ID:
@@ -732,25 +827,22 @@ namespace PB
 				break;
 			}
 			
-			FieldList tmp_4_s = default(FieldList);
+			FieldList message_list_s = default(FieldList);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_4_s = (FieldList)tmp_4_i; 
+					message_list_s = new FieldList();
 				}
 				break;
 			case 1:
 				{
 					var nt1_i = default(IAST);
-					var nt2_i = default(IAST);
 					
-					var nt1_s = field(nt1_i);
-					nt2_i = ((FieldList)tmp_4_i).Add(nt1_s); 
-					var nt2_s = tmp_4(nt2_i);
-					tmp_4_s = nt2_s; 
+					var nt1_s = tmp_1(nt1_i);
+					message_list_s = nt1_s;
 				}
 				break;
 			}
@@ -763,10 +855,314 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_4_s;
+			return message_list_s;
+		}
+		
+		FieldList tmp_1(IAST tmp_1_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case OPTIONAL:
+			case REPEATED:
+			case ONEOF:
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+				alt = 0;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			FieldList tmp_1_s = default(FieldList);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					var nt1_s = field(nt1_i);
+					nt2_i = (new FieldList()).Add(nt1_s); 
+					var nt2_s = tmp_5(nt2_i);
+					tmp_1_s = nt2_s; 
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_1_s;
+		}
+		
+		FieldList tmp_5(IAST tmp_5_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case '}':
+				alt = 0;
+				break;
+			case OPTIONAL:
+			case REPEATED:
+			case ONEOF:
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			FieldList tmp_5_s = default(FieldList);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					tmp_5_s = (FieldList)tmp_5_i; 
+				}
+				break;
+			case 1:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					var nt1_s = field(nt1_i);
+					nt2_i = ((FieldList)tmp_5_i).Add(nt1_s); 
+					var nt2_s = tmp_5(nt2_i);
+					tmp_5_s = nt2_s; 
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_5_s;
 		}
 		
 		FieldRoot field(IAST field_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case REPEATED:
+			case ONEOF:
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+				alt = 0;
+				break;
+			case OPTIONAL:
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			FieldRoot field_s = default(FieldRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt1_i = default(IAST);
+					
+					var nt1_s = field_non_optional(nt1_i);
+					field_s = nt1_s;
+				}
+				break;
+			case 1:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					
+					TokenAST nt1_s = Match(OPTIONAL, nt1_i);
+					var nt2_s = tmp_9(nt1_s, nt2_i);
+					field_s = nt2_s;
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case OPTIONAL:
+			case REPEATED:
+			case ONEOF:
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return field_s;
+		}
+		
+		FieldRoot tmp_9(IAST nt1_s, IAST tmp_9_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+				alt = 0;
+				break;
+			case REPEATED:
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			FieldRoot tmp_9_s = default(FieldRoot);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					var nt5_i = default(IAST);
+					var nt6_i = default(IAST);
+					
+					var nt2_s = type(nt2_i);
+					TokenAST nt3_s = Match(ID, nt3_i);
+					TokenAST nt4_s = Match('=', nt4_i);
+					TokenAST nt5_s = Match(NUM, nt5_i);
+					TokenAST nt6_s = Match(';', nt6_i);
+					tmp_9_s = new Optional(nt2_s, nt3_s, nt5_s, true);
+				}
+				break;
+			case 1:
+				{
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					
+					TokenAST nt2_s = Match(REPEATED, nt2_i);
+					var nt3_s = field_non_optional(nt3_i);
+					tmp_9_s = new Repeated(nt3_s, true);
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case OPTIONAL:
+			case REPEATED:
+			case ONEOF:
+			case ID:
+			case DOUBLE:
+			case FLOAT:
+			case INT32:
+			case INT64:
+			case UINT32:
+			case UINT64:
+			case SINT32:
+			case SINT64:
+			case FIXED32:
+			case FIXED64:
+			case SFIXED32:
+			case SFIXED64:
+			case BOOL:
+			case STRING:
+			case BYTES:
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_9_s;
+		}
+		
+		FieldRoot field_non_optional(IAST field_non_optional_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -800,7 +1196,7 @@ namespace PB
 				break;
 			}
 			
-			FieldRoot field_s = default(FieldRoot);
+			FieldRoot field_non_optional_s = default(FieldRoot);
 			switch (alt)
 			{
 			case 0:
@@ -816,7 +1212,7 @@ namespace PB
 					TokenAST nt3_s = Match('=', nt3_i);
 					TokenAST nt4_s = Match(NUM, nt4_i);
 					TokenAST nt5_s = Match(';', nt5_i);
-					field_s = new Optional(nt1_s, nt2_s, nt4_s);
+					field_non_optional_s = new Optional(nt1_s, nt2_s, nt4_s, false);
 				}
 				break;
 			case 1:
@@ -825,8 +1221,8 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(REPEATED, nt1_i);
-					var nt2_s = field(nt2_i);
-					field_s = new Repeated(nt2_s);
+					var nt2_s = field_non_optional(nt2_i);
+					field_non_optional_s = new Repeated(nt2_s, false);
 				}
 				break;
 			case 2:
@@ -842,13 +1238,14 @@ namespace PB
 					TokenAST nt3_s = Match('{', nt3_i);
 					var nt4_s = oneof_list(nt4_i);
 					TokenAST nt5_s = Match('}', nt5_i);
-					field_s = new OneOf(nt2_s, nt4_s);
+					field_non_optional_s = new OneOf(nt2_s, nt4_s);
 				}
 				break;
 			}
 			
 			switch (Next.token)
 			{
+			case OPTIONAL:
 			case REPEATED:
 			case ONEOF:
 			case ID:
@@ -873,7 +1270,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return field_s;
+			return field_non_optional_s;
 		}
 		
 		OneOfList oneof_list(IAST oneof_list_i)
@@ -914,7 +1311,7 @@ namespace PB
 					
 					var nt1_s = oneof(nt1_i);
 					nt2_i = new OneOfList(nt1_s); 
-					var nt2_s = tmp_5(nt2_i);
+					var nt2_s = tmp_6(nt2_i);
 					oneof_list_s = nt2_s; 
 				}
 				break;
@@ -931,7 +1328,7 @@ namespace PB
 			return oneof_list_s;
 		}
 		
-		OneOfList tmp_5(IAST tmp_5_i)
+		OneOfList tmp_6(IAST tmp_6_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -962,14 +1359,14 @@ namespace PB
 				break;
 			}
 			
-			OneOfList tmp_5_s = default(OneOfList);
+			OneOfList tmp_6_s = default(OneOfList);
 			switch (alt)
 			{
 			case 0:
 				{
 					var nt1_i = default(IAST);
 					
-					tmp_5_s = (OneOfList)tmp_5_i; 
+					tmp_6_s = (OneOfList)tmp_6_i; 
 				}
 				break;
 			case 1:
@@ -978,9 +1375,9 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					var nt1_s = oneof(nt1_i);
-					nt2_i = ((OneOfList)tmp_5_i).Add(nt1_s); 
-					var nt2_s = tmp_5(nt2_i);
-					tmp_5_s = nt2_s; 
+					nt2_i = ((OneOfList)tmp_6_i).Add(nt1_s); 
+					var nt2_s = tmp_6(nt2_i);
+					tmp_6_s = nt2_s; 
 				}
 				break;
 			}
@@ -993,7 +1390,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_5_s;
+			return tmp_6_s;
 		}
 		
 		Optional oneof(IAST oneof_i)
@@ -1040,7 +1437,7 @@ namespace PB
 					TokenAST nt3_s = Match('=', nt3_i);
 					TokenAST nt4_s = Match(NUM, nt4_i);
 					TokenAST nt5_s = Match(';', nt5_i);
-					oneof_s = new Optional(nt1_s, nt2_s, nt4_s);
+					oneof_s = new Optional(nt1_s, nt2_s, nt4_s, false);
 				}
 				break;
 			}
@@ -1278,6 +1675,14 @@ namespace PB
 		{
 			var acts = new RegAcceptList();
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('s'), new RegToken('y')), new RegToken('n')), new RegToken('t')), new RegToken('a')), new RegToken('x')), SYNTAX);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('p'), new RegToken('a')), new RegToken('c')), new RegToken('k')), new RegToken('a')), new RegToken('g')), new RegToken('e')), PACKAGE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('i'), new RegToken('m')), new RegToken('p')), new RegToken('o')), new RegToken('r')), new RegToken('t')), IMPORT);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('s'), new RegToken('e')), new RegToken('r')), new RegToken('v')), new RegToken('i')), new RegToken('c')), new RegToken('e')), SERVICE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('m'), new RegToken('e')), new RegToken('s')), new RegToken('s')), new RegToken('a')), new RegToken('g')), new RegToken('e')), MESSAGE);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('p'), new RegToken('u')), new RegToken('b')), new RegToken('l')), new RegToken('i')), new RegToken('c')), PUBLIC);
+			acts.Add(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('p')), new RegToken('c')), RPC);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('e')), new RegToken('t')), new RegToken('u')), new RegToken('r')), new RegToken('n')), new RegToken('s')), RETURNS);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('o'), new RegToken('p')), new RegToken('t')), new RegToken('i')), new RegToken('o')), new RegToken('n')), OPTION);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('f'), new RegToken('l')), new RegToken('o')), new RegToken('a')), new RegToken('t')), FLOAT);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('d'), new RegToken('o')), new RegToken('u')), new RegToken('b')), new RegToken('l')), new RegToken('e')), DOUBLE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('i'), new RegToken('n')), new RegToken('t')), new RegToken('3')), new RegToken('2')), INT32);
@@ -1296,13 +1701,7 @@ namespace PB
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('e'), new RegToken('n')), new RegToken('u')), new RegToken('m')), ENUM);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('e')), new RegToken('p')), new RegToken('e')), new RegToken('a')), new RegToken('t')), new RegToken('e')), new RegToken('d')), REPEATED);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('o'), new RegToken('n')), new RegToken('e')), new RegToken('o')), new RegToken('f')), ONEOF);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('p'), new RegToken('a')), new RegToken('c')), new RegToken('k')), new RegToken('a')), new RegToken('g')), new RegToken('e')), PACKAGE);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('i'), new RegToken('m')), new RegToken('p')), new RegToken('o')), new RegToken('r')), new RegToken('t')), IMPORT);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('s'), new RegToken('y')), new RegToken('n')), new RegToken('t')), new RegToken('a')), new RegToken('x')), SYNTAX);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('m'), new RegToken('e')), new RegToken('s')), new RegToken('s')), new RegToken('a')), new RegToken('g')), new RegToken('e')), MESSAGE);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('s'), new RegToken('e')), new RegToken('r')), new RegToken('v')), new RegToken('i')), new RegToken('c')), new RegToken('e')), SERVICE);
-			acts.Add(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('p')), new RegToken('c')), RPC);
-			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('r'), new RegToken('e')), new RegToken('t')), new RegToken('u')), new RegToken('r')), new RegToken('n')), new RegToken('s')), RETURNS);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('o'), new RegToken('p')), new RegToken('t')), new RegToken('i')), new RegToken('o')), new RegToken('n')), new RegToken('a')), new RegToken('l')), OPTIONAL);
 			acts.Add(new RegToken('='), '=');
 			acts.Add(new RegToken(';'), ';');
 			acts.Add(new RegToken('{'), '{');

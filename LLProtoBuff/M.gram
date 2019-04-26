@@ -3,10 +3,12 @@
 syntax   ^SYNTAX
 package  ^PACKAGE
 import   ^IMPORT
-service ^SERVICE
+service  ^SERVICE
 message  ^MESSAGE
-rpc     ^RPC
-returns ^RETURNS
+public   ^PUBLIC
+rpc      ^RPC
+returns  ^RETURNS
+option   ^OPTION
 
 float    ^FLOAT
 double   ^DOUBLE
@@ -27,6 +29,7 @@ bytes    ^BYTES
 enum     ^ENUM
 repeated ^REPEATED
 oneof    ^ONEOF
+optional ^OPTIONAL
 
 "="    ^(=)
 ";"    ^(;)
@@ -105,16 +108,19 @@ start<DeclList>
 
 decl_list<DeclList>
 	: decl              ^new DeclList($1)
-	| decl_list decl    ^$1.Add($2)
+	| decl_list decl    ^$1.Add($2);
 	;
 
 decl<DeclRoot>
 	: IMPORT STR ';'                    ^new ImportDecl($2)
+	| IMPORT PUBLIC STR ';'             ^new ImportDecl($3)
 	| SYNTAX '=' STR ';'                ^new SyntaxDecl($3)
 	| PACKAGE ID ';'                    ^new PackageDecl($2)
 	| MESSAGE ID '{' message_list '}'   ^new MessageDecl($2, $4)
 	| ENUM ID '{' enum_list '}'         ^new EnumDecl($2, $4)
+	| ENUM ID '{' enum_list '}' ';'     ^new EnumDecl($2, $4)
 	| SERVICE ID '{' service_list '}'   ^new ServiceDecl($2, $4) 
+	| OPTION ID '=' STR ';'             ^new OptionDecl($2, $4)
 	;
 
 service_list<ServiceList>
@@ -134,12 +140,19 @@ enum_decl<EnumType>
 	;
 
 message_list<FieldList>
-	: field                  ^new FieldList($1)
+	:                        ^new FieldList()
 	| message_list field     ^$1.Add($2)
 	;
+
 field<FieldRoot>
-	: type ID '=' NUM ';'               ^new Optional($1, $2, $4)
-	| REPEATED field                    ^new Repeated($2)
+	: field_non_optional                    ^$1
+	| OPTIONAL type ID '=' NUM ';'          ^new Optional($2, $3, $5, true)
+	| OPTIONAL REPEATED field_non_optional  ^new Repeated($3, true)
+	;
+
+field_non_optional<FieldRoot>
+	: type ID '=' NUM ';'               ^new Optional($1, $2, $4, false)
+	| REPEATED field_non_optional       ^new Repeated($2, false)
 	| ONEOF ID '{' oneof_list '}'       ^new OneOf($2, $4)
 	;
 
@@ -149,7 +162,7 @@ oneof_list<OneOfList>
 	;
 
 oneof<Optional>
-	: type ID '=' NUM ';'   ^new Optional($1, $2, $4)
+	: type ID '=' NUM ';'   ^new Optional($1, $2, $4, false)
 	;
 
 type<TokenAST>

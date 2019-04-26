@@ -9,8 +9,8 @@ namespace LLProtoBuff
 	public class AList<C, T> : List<T>, IAST where C : AList<C, T>
 	{
 		public AList() : base() { }
-		public AList(T d) : base() { this.Add(d); }
-		public new C Add(T d) { base.Add(d); return (C)this; }
+		public AList(T d) : base() { if (d != null) this.Add(d); }
+		public new C Add(T d) { if (d != null) base.Add(d); return (C)this; }
 	}
 	public class DeclList : AList<DeclList, DeclRoot>
 	{
@@ -29,6 +29,10 @@ namespace LLProtoBuff
 	}
 	public class FieldList : AList<FieldList, FieldRoot>
 	{
+		public FieldList()
+		{
+		}
+
 		public FieldList(FieldRoot d) : base(d)
 		{
 		}
@@ -54,6 +58,7 @@ namespace LLProtoBuff
 		public virtual bool IsEnum => false;
 		public virtual bool IsService => false;
 		public virtual bool IsImport => false;
+		public virtual bool IsOption => false;
 	}
 
 	public class EnumType : IAST
@@ -128,12 +133,14 @@ namespace LLProtoBuff
 		public readonly TokenAST TYPE;
 		public readonly TokenAST ID;
 		public readonly TokenAST NUM;
+		public bool OPTIONAL;
 
-		public Optional(TokenAST TYPE, TokenAST ID, TokenAST NUM)
+		public Optional(TokenAST TYPE, TokenAST ID, TokenAST NUM, bool optional)
 		{
 			this.TYPE = TYPE;
 			this.ID = ID;
 			this.NUM = NUM;
+			this.OPTIONAL = optional;
 		}
 	}
 	public class Repeated : FieldRoot
@@ -142,13 +149,15 @@ namespace LLProtoBuff
 		public readonly TokenAST TYPE;
 		public readonly TokenAST ID;
 		public readonly TokenAST NUM;
+		public readonly bool OPTIONAL;
 
-		public Repeated(FieldRoot f)
+		public Repeated(FieldRoot f, bool optional)
 		{
 			if (!f.IsOptional) throw new SyntaxError("only type");
 			this.TYPE = ((Optional) f).TYPE;
 			this.ID = ((Optional)f).ID;
 			this.NUM = ((Optional)f).NUM;
+			this.OPTIONAL = optional;
 		}
 	}
 
@@ -158,6 +167,15 @@ namespace LLProtoBuff
 		public readonly TokenAST Str;
 		public PackageDecl(TokenAST nt2_s) => this.Str = nt2_s;
 	}
+
+	class OptionDecl : DeclRoot, IAST
+	{
+		public override bool IsOption => true;
+		public readonly TokenAST Id;
+		public readonly TokenAST Str;
+		public OptionDecl(TokenAST nt1_s, TokenAST nt2_s) => (this.Id, this.Str) = (nt1_s, nt2_s);
+	}
+
 
 	class ImportDecl : DeclRoot, IAST
 	{
