@@ -209,20 +209,31 @@ namespace LLProtoBuff
 		public static string pbBaseType(this Repeated r) { if (r.TYPE.token == MParser.ID) return "none"; else return r.TYPE.strRead; }
 		public static string pbBaseType(this Optional r) { if (r.TYPE.token == MParser.ID) return "none"; else return r.TYPE.strRead; }
 
+		public static string csType(this Repeated r) => $"List<{csRequired(r.TYPE)}>";
+		public static string csType(this Optional r) => csRequired(r.TYPE);
 
-
-		public static string csType(this Repeated r) { return $"List<{csRequired(r.TYPE)}>"; }
-		public static string csType(this Optional r) { return csRequired(r.TYPE); }
+		public static bool csIsEnum(this Optional r, List<string> enumList)
+		{
+			if (r.TYPE.token == MParser.ID)
+				return enumList.Exists(p => p == r.TYPE.strRead);
+			return false;
+		}
+		public static bool csIsEnum(this Repeated r, List<string> enumList)
+		{
+			if (r.TYPE.token == MParser.ID)
+				return enumList.Exists(p => p == r.TYPE.strRead);
+			return false;
+		}
 
 		public static string cppType(this Repeated r, List<string> enumList) { return $"std::vector<{cppRequired(r.TYPE, enumList)}>"; }
 		public static string cppType(this Optional r, List<string> enumList) { return cppRequired(r.TYPE, enumList); }
 
 
-		public static int tag(this Repeated r) { return int.Parse(r.NUM.strRead); }
-		public static int tag(this Optional r) { return int.Parse(r.NUM.strRead); }
+		public static int tag(this Repeated r) => int.Parse(r.NUM.strRead);
+		public static int tag(this Optional r) => int.Parse(r.NUM.strRead);
 
-		public static string varName(this Repeated r) { return r.ID.strRead; }
-		public static string varName(this Optional r) { return r.ID.strRead; }
+		public static string varName(this Repeated r) => r.ID.strRead;
+		public static string varName(this Optional r) => r.ID.strRead;
 		public static string varName(this OneOf r) => r.ID.strRead;
 
 		public static bool isObject(this Optional r, List<string> enumList) => r.TYPE.token == MParser.ID && !enumList.Contains(r.pbType());
@@ -545,16 +556,10 @@ namespace LLProtoBuff
 				foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
 				{
 					enumList.Add(en.ID.strRead);
-					if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-						tw.WriteLine("[DataContract(Namespace = Constants.Namespace)]");
 					tw.WriteLine("public enum {0}", en.ID.strRead);
 					tw.WriteLine("{");
 					foreach (var em in en.List)
-					{
-						if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-							tw.Write("[EnumMember] ");
 						tw.WriteLine("{0} = {1},", em.ID.strRead, em.NUM.strRead);
-					}
 					tw.WriteLine("}");
 					tw.WriteLine("////////////////////////");
 				}
@@ -567,40 +572,91 @@ namespace LLProtoBuff
 					int order = 0;
 					foreach (var em in en.Fields)
 					{
-						if (order % 100 > 0) order -= order % 100;
 						if (em.IsOneOf)
 						{
 							var r = em as OneOf;
 
+							/*
+							 * one of non si riesce a tradurre "bene" in WCF, in quanto tutte le classi del OneOf
+							 * devono derivare da una classe base... e qui non solo non abbiamo una classe base
+							 * ma i tipi derivati possono essere anche interi ecc
+							 * 
+							 * La soluzione WFC non fa altro che esporre tante proprietà del tipo OneOf
+							 * dicendo che sono tutte isRequired = false;
+							 * E' aderente al modello PB... e funziona lo stesso. Non è elegante dal punto di vista
+							 * del WSDL ... ma pace.
+							 */
 							foreach (var er in r.List)
 							{
+								if (!er.isEnum(enumList))
+								{
+									tw.WriteLine($"public bool IsSet_{er.varName()} => _tag_{r.varName()} == {er.tag()};");
+									if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+										tw.WriteLine($"[DataMember(Order = {order}, IsRequired = false))] ");
+									tw.WriteLine($"public {er.csType()} {er.varName()}");
+									tw.WriteLine("{");
+									tw.WriteLine($"get => IsSet_{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
+									tw.WriteLine($"set {{ _{r.varName()} = value; _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
+									tw.WriteLine("}");
+								}
+								else
+								{
+									tw.WriteLine($"public bool IsSet_{er.varName()} => _tag_{r.varName()} == {er.tag()};");
+									tw.WriteLine($"public {er.csType()} {er.varName()}");
+									tw.WriteLine("{");
+									tw.WriteLine($"get => IsSet_{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
+									tw.WriteLine($"set {{ _{r.varName()} = value; _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
+									tw.WriteLine("}");
+
+									if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+									{
+										tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(er.OPTIONAL ? "false" : "true")})] ");
+										tw.WriteLine($"private int {er.varName()}Int {{ get => _{er.varName()}.ConvertAll(x => (int)x); set => _{r.varName()} = value.ConvertAll(x => ({er.TYPE.strRead})x); }}");
+									}
+								}
 								order += 1;
-								tw.WriteLine($"public bool IsSet_{er.varName()} => _tag_{r.varName()} == {er.tag()};");
-								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-									tw.Write($"[DataMember(Order = {order}, IsRequired = false))] ");
-								tw.WriteLine($"public {er.csType()} {er.varName()}");
-								tw.WriteLine("{");
-								tw.WriteLine($"get => IsSet_{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
-								tw.WriteLine($"set {{ _{r.varName()} = value; _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
-								tw.WriteLine("}");
 							}
 						}
 						else if (em.IsOptional)
 						{
-							order += 100;
 							var r = em as Optional;
-							if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-								tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
-							tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+							if (!r.isEnum(enumList))
+							{
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+							}
+							else
+							{
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+								{
+									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.WriteLine($"private int {r.varName()}Int {{ get => (int)_{r.varName()}; set => _{r.varName()} = ({r.csType()})value; }}");
+								}
+							}
 						}
 						else if (em.IsRepeated)
 						{
-							order += 100;
 							var r = em as Repeated;
-							if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-								tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
-							tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+							
+							if (!r.isEnum(enumList))
+							{
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+							}
+							else
+							{
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+								{
+									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.WriteLine($"private List<int> {r.varName()}Int {{ get => _{r.varName()}.ConvertAll(x => (int)x); set => _{r.varName()} = value.ConvertAll(x => ({r.TYPE.strRead})x); }}");
+								}
+							}
 						}
+						order = order - order % 100 + 100;
 					}
 					tw.WriteLine();
 
