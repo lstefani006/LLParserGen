@@ -1,0 +1,43 @@
+%lexer
+
+week   ^WEEK
+month  ^MONTH
+day    ^DAY
+
+first   ^FIRST
+last    ^LAST
+
+
+"("    ^(()
+")"    ^())
+","    ^(,)
+
+
+\-[0-9]+               ^NUM
+\+[0-9]+               ^NUM
+[0-9]+                 ^NUM
+(\ |\n|\r|\t)+         ^()
+
+%parser 
+%parser.class DateParser
+%parser.using System
+%parser.using System.Text
+%parser.namespace ET_DW_Builder
+
+date_expr<DateExpr>
+	: WEEK   '(' NUM ',' first_last ')'             ^new WeekExpr($3, $5, null)
+	| WEEK   '(' NUM ',' first_last ',' offset ')'  ^new WeekExpr($3, $5, $7)
+	| MONTH  '(' NUM ',' first_last ')'             ^new MonthExpr($3, $5, null)
+	| MONTH  '(' NUM ',' first_last ',' offset ')'  ^new MonthExpr($3, $5, $7)
+	| DAY    '(' NUM ')'                            ^new DayExpr($3)
+	;
+	
+first_last<TokenAST>
+	: FIRST     ^$1
+	| LAST      ^$1
+	;
+
+offset<TokenAST>
+	: NUM  ^$1
+	;
+

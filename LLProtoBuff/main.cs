@@ -105,44 +105,44 @@ namespace PBUtils
 
 			switch (type)
 			{
-			case PbType.INT32:
-			case PbType.INT64:
-			case PbType.UINT32:
-			case PbType.UINT64:
-			case PbType.BOOL:
-			case PbType.ENUM:
-				{
-					var aa = (fieldNumber << 3) | (int)WireType.Varint;
-					ret += write_varint(s, (ulong)aa);
-					ret += write_varint(s, n);
-				}
-				break;
+				case PbType.INT32:
+				case PbType.INT64:
+				case PbType.UINT32:
+				case PbType.UINT64:
+				case PbType.BOOL:
+				case PbType.ENUM:
+					{
+						var aa = (fieldNumber << 3) | (int)WireType.Varint;
+						ret += write_varint(s, (ulong)aa);
+						ret += write_varint(s, n);
+					}
+					break;
 
-			case PbType.SINT32:
-			case PbType.SINT64:
-				{
-					var aa = (fieldNumber << 3) | (int)WireType.Varint;
-					ret += write_varint(s, (ulong)aa);
-					ret += write_varint(s, zz64(n));
-				}
-				break;
+				case PbType.SINT32:
+				case PbType.SINT64:
+					{
+						var aa = (fieldNumber << 3) | (int)WireType.Varint;
+						ret += write_varint(s, (ulong)aa);
+						ret += write_varint(s, zz64(n));
+					}
+					break;
 
-			case PbType.FIXED32:
-			case PbType.SFIXED32:
-			/* TODO */
-			case PbType.FIXED64:
-			case PbType.SFIXED64:
-			/* TODO */
-			case PbType.FLOAT:
-			case PbType.DOUBLE:
-			/* TODO */
+				case PbType.FIXED32:
+				case PbType.SFIXED32:
+				/* TODO */
+				case PbType.FIXED64:
+				case PbType.SFIXED64:
+				/* TODO */
+				case PbType.FLOAT:
+				case PbType.DOUBLE:
+				/* TODO */
 
-			case PbType.STRING:
-			case PbType.BYTES:
-			case PbType.packedRepeated:
-			case PbType.embeddedMessage:
-			default:
-				throw new ArgumentException();
+				case PbType.STRING:
+				case PbType.BYTES:
+				case PbType.packedRepeated:
+				case PbType.embeddedMessage:
+				default:
+					throw new ArgumentException();
 			}
 
 			return ret;
@@ -245,25 +245,25 @@ namespace LLProtoBuff
 		{
 			switch (a.token)
 			{
-			case MParser.ID: return a.strRead;
-			case MParser.DOUBLE: return "double";
-			case MParser.FLOAT: return "float";
-			case MParser.INT32: return "int";
-			case MParser.INT64: return "long";
-			case MParser.UINT32: return "uint";
-			case MParser.UINT64: return "ulong";
-			case MParser.SINT32: return "int";
-			case MParser.SINT64: return "long";
-			case MParser.FIXED32: return "int";
-			case MParser.FIXED64: return "long";
-			case MParser.SFIXED32: return "int";
-			case MParser.SFIXED64: return "long";
-			case MParser.BOOL: return "bool";
-			case MParser.STRING: return "string";
-			case MParser.BYTES: return "List<byte>";
-			default:
-				Debug.Assert(false);
-				return null;
+				case MParser.ID: return a.strRead;
+				case MParser.DOUBLE: return "double";
+				case MParser.FLOAT: return "float";
+				case MParser.INT32: return "int";
+				case MParser.INT64: return "long";
+				case MParser.UINT32: return "uint";
+				case MParser.UINT64: return "ulong";
+				case MParser.SINT32: return "int";
+				case MParser.SINT64: return "long";
+				case MParser.FIXED32: return "int";
+				case MParser.FIXED64: return "long";
+				case MParser.SFIXED32: return "int";
+				case MParser.SFIXED64: return "long";
+				case MParser.BOOL: return "bool";
+				case MParser.STRING: return "string";
+				case MParser.BYTES: return "List<byte>";
+				default:
+					Debug.Assert(false);
+					return null;
 			}
 		}
 
@@ -271,25 +271,25 @@ namespace LLProtoBuff
 		{
 			switch (a.token)
 			{
-			case MParser.ID: if (!enumList.Contains(a.strRead)) return a.strRead + " *"; else return a.strRead + "_t";
-			case MParser.DOUBLE: return "double";
-			case MParser.FLOAT: return "float";
-			case MParser.INT32: return "int32_t";
-			case MParser.INT64: return "int64_t";
-			case MParser.UINT32: return "uint32_t";
-			case MParser.UINT64: return "uint64_t";
-			case MParser.SINT32: return "int32_t";
-			case MParser.SINT64: return "int64_t";
-			case MParser.FIXED32: return "int32_t";
-			case MParser.FIXED64: return "int64_t";
-			case MParser.SFIXED32: return "int32_t";
-			case MParser.SFIXED64: return "int64_t";
-			case MParser.BOOL: return "bool";
-			case MParser.STRING: return "std::string";
-			case MParser.BYTES: return "std::vector<uint8_t>";
-			default:
-				Debug.Assert(false);
-				return null;
+				case MParser.ID: if (!enumList.Contains(a.strRead)) return a.strRead + " *"; else return a.strRead.EndsWith("_t") ? a.strRead : a.strRead + "_t";
+				case MParser.DOUBLE: return "double";
+				case MParser.FLOAT: return "float";
+				case MParser.INT32: return "int32_t";
+				case MParser.INT64: return "int64_t";
+				case MParser.UINT32: return "uint32_t";
+				case MParser.UINT64: return "uint64_t";
+				case MParser.SINT32: return "int32_t";
+				case MParser.SINT64: return "int64_t";
+				case MParser.FIXED32: return "int32_t";
+				case MParser.FIXED64: return "int64_t";
+				case MParser.SFIXED32: return "int32_t";
+				case MParser.SFIXED64: return "int64_t";
+				case MParser.BOOL: return "bool";
+				case MParser.STRING: return "std::string";
+				case MParser.BYTES: return "std::vector<uint8_t>";
+				default:
+					Debug.Assert(false);
+					return null;
 			}
 		}
 
@@ -334,50 +334,50 @@ namespace LLProtoBuff
 					bool b = false;
 					switch (args[i])
 					{
-					case "-cs": cs = true; break;
-					case "-cpp": cpp = true; break;
-					case "-hpp": hpp = true; break;
+						case "-cs": cs = true; break;
+						case "-cpp": cpp = true; break;
+						case "-hpp": hpp = true; break;
 
-					case "-cs:Messages": csFlags = csFlags | CsFlags.Messages; break;
-					case "-cs:ServiceInterface": csFlags = csFlags | CsFlags.ServiceInterface; break;
-					case "-cs:ServiceInterfaceAsync": csFlags = csFlags | CsFlags.ServiceInterfaceAsync; break;
-					case "-cs:ClientPbCall": csFlags = csFlags | CsFlags.ClientPbCall; break;
-					case "-cs:ClientPbCallAsync": csFlags = csFlags | CsFlags.ClientPbCallAsync; break;
-					case "-cs:DataContractWS": csFlags = csFlags | CsFlags.DataContractWS; break;
-					case "-cs:PbCallStub": csFlags = csFlags | CsFlags.PbCallStub; break;
+						case "-cs:Messages": csFlags = csFlags | CsFlags.Messages; break;
+						case "-cs:ServiceInterface": csFlags = csFlags | CsFlags.ServiceInterface; break;
+						case "-cs:ServiceInterfaceAsync": csFlags = csFlags | CsFlags.ServiceInterfaceAsync; break;
+						case "-cs:ClientPbCall": csFlags = csFlags | CsFlags.ClientPbCall; break;
+						case "-cs:ClientPbCallAsync": csFlags = csFlags | CsFlags.ClientPbCallAsync; break;
+						case "-cs:DataContractWS": csFlags = csFlags | CsFlags.DataContractWS; break;
+						case "-cs:PbCallStub": csFlags = csFlags | CsFlags.PbCallStub; break;
 
 
-					case "-cpp:Messages": cppFlags = cppFlags | CppFlags.Messages; break;
-					case "-cpp:PbCallStub": cppFlags = cppFlags | CppFlags.PbCallStub; break;
-					case "-cpp:ClientPbCall": cppFlags = cppFlags | CppFlags.ClientPbCall; break;
+						case "-cpp:Messages": cppFlags = cppFlags | CppFlags.Messages; break;
+						case "-cpp:PbCallStub": cppFlags = cppFlags | CppFlags.PbCallStub; break;
+						case "-cpp:ClientPbCall": cppFlags = cppFlags | CppFlags.ClientPbCall; break;
 
-					default:
-						if (args[i].StartsWith("-o:"))
-						{
-							if (args[i].Length == 3)
+						default:
+							if (args[i].StartsWith("-o:"))
+							{
+								if (args[i].Length == 3)
+								{
+									Console.Error.WriteLine("Invalid option {0}", args[i]);
+									return 1;
+								}
+								fileOut = args[i].Substring(3);
+							}
+							else if (args[i] == "-o")
+							{
+								if (i + 1 >= args.Length)
+								{
+									Console.Error.WriteLine("Invalid option {0}", args[i]);
+									return 1;
+								}
+								fileOut = args[i + 1];
+								i++;
+							}
+							else if (args[i].StartsWith("-"))
 							{
 								Console.Error.WriteLine("Invalid option {0}", args[i]);
 								return 1;
 							}
-							fileOut = args[i].Substring(3);
-						}
-						else if (args[i] == "-o")
-						{
-							if (i + 1 >= args.Length)
-							{
-								Console.Error.WriteLine("Invalid option {0}", args[i]);
-								return 1;
-							}
-							fileOut = args[i + 1];
-							i++;
-						}
-						else if (args[i].StartsWith("-"))
-						{
-							Console.Error.WriteLine("Invalid option {0}", args[i]);
-							return 1;
-						}
-						b = true;
-						break;
+							b = true;
+							break;
 					}
 					if (b) break;
 				}
@@ -408,7 +408,6 @@ namespace LLProtoBuff
 					using (var rd = new LexReader(fileInput))
 					{
 						var p = new MParser();
-
 
 						foreach (var dc in p.Start(rd))
 						{
@@ -507,6 +506,7 @@ namespace LLProtoBuff
 			tw.WriteLine("// Generated by LLProtoBuff. DO NOT MODIFY");
 			tw.WriteLine();
 
+			tw.WriteLine("using System;");
 			tw.WriteLine("using System.Collections.Generic;");
 			tw.WriteLine("using System.Threading.Tasks;");
 			if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
@@ -542,6 +542,24 @@ namespace LLProtoBuff
 				tw.WriteLine("{");
 			}
 
+			tw.WriteLine("public partial class DateTime_t");
+			tw.WriteLine("{");
+			tw.WriteLine("public DateTime_t() {}");
+			tw.WriteLine("public DateTime_t(DateTime dt)");
+			tw.WriteLine("{");
+			tw.WriteLine("Year = dt.Year;");
+			tw.WriteLine("Month = dt.Month;");
+			tw.WriteLine("Day = dt.Day;");
+			tw.WriteLine("Hour = dt.Hour;");
+			tw.WriteLine("Minutes = dt.Minute;");
+			tw.WriteLine("Seconds = dt.Second;");
+			tw.WriteLine("}");
+			tw.WriteLine("public DateTime ToDateTime() => new DateTime(Year, Month, Day, Hour, Minutes, Seconds, 0, System.DateTimeKind.Local);");
+			tw.WriteLine("public bool HasValue => Year == 0 && Month == 0 && Day == 0;");
+			tw.WriteLine("public DateTime? ToNullableDateTime() => HasValue ? (DateTime?)new DateTime(Year, Month, Day, Hour, Minutes, Seconds, 0, System.DateTimeKind.Local) : null;");
+			tw.WriteLine("}");
+			
+
 			if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
 			{
 				tw.WriteLine("public static class Constants");
@@ -567,7 +585,7 @@ namespace LLProtoBuff
 				{
 					if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
 						tw.WriteLine("[DataContract(Namespace = Constants.Namespace)]");
-					tw.WriteLine("public partial class {0} : U.PB.PbObject", en.ID.strRead);
+					tw.WriteLine("public partial class {0} : U.PB.IPbObject", en.ID.strRead);
 					tw.WriteLine("{");
 					int order = 0;
 					foreach (var em in en.Fields)
@@ -588,11 +606,30 @@ namespace LLProtoBuff
 							 */
 							foreach (var er in r.List)
 							{
-								if (!er.isEnum(enumList))
+								if (er.TYPE.strRead == "DateTime_t")
+								{
+									tw.WriteLine($"public bool IsSet_{er.varName()} => _tag_{r.varName()} == {er.tag()};");
+									tw.WriteLine($"public {er.csType()} {er.varName()}");
+									tw.WriteLine("{");
+									tw.WriteLine($"get => IsSet_{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
+									tw.WriteLine($"set {{ _{r.varName()} = value; _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
+									tw.WriteLine("}");
+
+									if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+									{
+										tw.Write($"[DataMember(Order = {order}, IsRequired = false)] ");
+										tw.WriteLine($"private DateTime ? {er.varName()}WS");
+										tw.WriteLine("{");
+										tw.WriteLine($"get => IsSet_{er.varName()} ? (({er.csType()})_{r.varName()}).ToNullableDateTime();");
+										tw.WriteLine($"set {{ _{r.varName()} = value.HasValue ? new DateTime_t(value.Value); _tag_{r.varName()} = _{r.varName()} != null ? {er.tag()} : 0; }}");
+										tw.WriteLine("}");
+									}
+								}
+								else if (!er.isEnum(enumList))
 								{
 									tw.WriteLine($"public bool IsSet_{er.varName()} => _tag_{r.varName()} == {er.tag()};");
 									if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-										tw.WriteLine($"[DataMember(Order = {order}, IsRequired = false))] ");
+										tw.Write($"[DataMember(Order = {order}, IsRequired = false)] ");
 									tw.WriteLine($"public {er.csType()} {er.varName()}");
 									tw.WriteLine("{");
 									tw.WriteLine($"get => IsSet_{er.varName()} ? ({er.csType()})_{r.varName()} : default({er.csType()});");
@@ -610,7 +647,7 @@ namespace LLProtoBuff
 
 									if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
 									{
-										tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(er.OPTIONAL ? "false" : "true")})] ");
+										tw.Write($"[DataMember(Order = {order}, IsRequired = {(er.OPTIONAL ? "false" : "true")})] ");
 										tw.WriteLine($"private int {er.varName()}Int {{ get => _{er.varName()}.ConvertAll(x => (int)x); set => _{r.varName()} = value.ConvertAll(x => ({er.TYPE.strRead})x); }}");
 									}
 								}
@@ -620,10 +657,23 @@ namespace LLProtoBuff
 						else if (em.IsOptional)
 						{
 							var r = em as Optional;
-							if (!r.isEnum(enumList))
+
+							if (r.TYPE.strRead == "DateTime_t")
+							{
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+								{
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									if (r.OPTIONAL)
+										tw.WriteLine($"private DateTime ? {r.varName()}WS {{ get => _{r.varName()}.ToNullableDateTime(); set => _{r.varName()} = value.HasValue ? new DateTime_t(value.Value) : null; }}");
+									else
+										tw.WriteLine($"private DateTime {r.varName()}WS {{ get => _{r.varName()}.ToDateTime(); set => _{r.varName()} = new DateTime_t(value); }}");
+								}
+							}
+							else if (!r.isEnum(enumList))
 							{
 								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
 								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
 							}
 							else
@@ -631,7 +681,7 @@ namespace LLProtoBuff
 								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
 								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
 								{
-									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
 									tw.WriteLine($"private int {r.varName()}Int {{ get => (int)_{r.varName()}; set => _{r.varName()} = ({r.csType()})value; }}");
 								}
 							}
@@ -639,11 +689,20 @@ namespace LLProtoBuff
 						else if (em.IsRepeated)
 						{
 							var r = em as Repeated;
-							
-							if (!r.isEnum(enumList))
+
+							if (r.TYPE.strRead == "DateTime_t")
 							{
 								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
-									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+								{
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.WriteLine($"private List<DateTime> {r.varName()}WS {{ get => _{r.varName()}.ConvertAll(x => x.ToDateTime()); set => _{r.varName()} = value.ConvertAll(x => new DateTime_t(x); }}");
+								}
+								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
+							}
+							else if (!r.isEnum(enumList))
+							{
+								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
 								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
 							}
 							else
@@ -651,7 +710,7 @@ namespace LLProtoBuff
 								tw.WriteLine($"public {r.csType()} {r.varName()} {{ get => _{r.varName()}; set => _{r.varName()} = value; }}");
 								if ((csFlags & CsFlags.DataContractWS) == CsFlags.DataContractWS)
 								{
-									tw.WriteLine($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
+									tw.Write($"[DataMember(Order = {order}, IsRequired = {(r.OPTIONAL ? "false" : "true")})] ");
 									tw.WriteLine($"private List<int> {r.varName()}Int {{ get => _{r.varName()}.ConvertAll(x => (int)x); set => _{r.varName()} = value.ConvertAll(x => ({r.TYPE.strRead})x); }}");
 								}
 							}
@@ -660,6 +719,7 @@ namespace LLProtoBuff
 					}
 					tw.WriteLine();
 
+					tw.WriteLine("#region PB");
 					if (true)
 					{
 						tw.WriteLine("public void Clear()");
@@ -792,6 +852,8 @@ namespace LLProtoBuff
 						}
 					}
 					tw.WriteLine();
+					tw.WriteLine("#endregion //PB");
+
 
 					tw.WriteLine("}");
 					tw.WriteLine("////////////////////////");
@@ -805,7 +867,7 @@ namespace LLProtoBuff
 				tw.WriteLine("////////////////////");
 				foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
 				{
-					tw.WriteLine($"public partial class {s.Name.strRead}Client : PbCore.PbClientBase");
+					tw.WriteLine($"public partial class {s.Name.strRead}Client : U_Core.PbCore.PbClientBase");
 					tw.WriteLine("{");
 					tw.WriteLine($"public {s.Name.strRead}Client(string addr) : base(addr) {{}}");
 					foreach (var f in s.Fun)
@@ -819,7 +881,7 @@ namespace LLProtoBuff
 				tw.WriteLine("////////////////////");
 				foreach (var s in from v in dg where v.IsService select (ServiceDecl)v)
 				{
-					tw.WriteLine($"public partial class {s.Name.strRead}ClientAsync : PbCore.PbClientBase");
+					tw.WriteLine($"public partial class {s.Name.strRead}ClientAsync : U_Core.PbCore.PbClientBase");
 					tw.WriteLine("{");
 					tw.WriteLine($"public {s.Name.strRead}ClientAsync(string addr) : base(addr) {{}}");
 					foreach (var f in s.Fun)
@@ -827,7 +889,6 @@ namespace LLProtoBuff
 					tw.WriteLine("}");
 				}
 			}
-
 			if ((csFlags & CsFlags.PbCallStub) == CsFlags.PbCallStub)
 			{
 				tw.WriteLine();
@@ -841,7 +902,6 @@ namespace LLProtoBuff
 					tw.WriteLine("}");
 				}
 			}
-
 			if ((csFlags & CsFlags.ServiceInterfaceAsync) == CsFlags.ServiceInterfaceAsync)
 			{
 				tw.WriteLine();
@@ -863,7 +923,6 @@ namespace LLProtoBuff
 					tw.WriteLine("}");
 				}
 			}
-
 			if ((csFlags & CsFlags.ServiceInterface) == CsFlags.ServiceInterface)
 			{
 				tw.WriteLine();
@@ -931,11 +990,26 @@ namespace LLProtoBuff
 				foreach (var en in from v in dg where v.IsEnum select (EnumDecl)v)
 				{
 					enumList.Add(en.ID.strRead);
-					tw.WriteLine("enum class {0}_t", en.ID.strRead);
+					tw.WriteLine("#if __cuplusplus > 201103");
+					if (!en.ID.strRead.EndsWith("_t"))
+						tw.WriteLine("enum class {0}_t", en.ID.strRead);
+					else
+						tw.WriteLine("enum class {0}", en.ID.strRead);
 					tw.WriteLine("{");
 					foreach (var em in en.List)
 						tw.WriteLine("{0} = {1},", em.ID.strRead, em.NUM.strRead);
 					tw.WriteLine("};");
+
+					tw.WriteLine("#else");
+					if (!en.ID.strRead.EndsWith("_t"))
+						tw.WriteLine("enum {0}_t", en.ID.strRead);
+					else
+						tw.WriteLine("enum {0}", en.ID.strRead);
+					tw.WriteLine("{");
+					foreach (var em in en.List)
+						tw.WriteLine("{0}_{1} = {2},", en.ID.strRead, em.ID.strRead, em.NUM.strRead);
+					tw.WriteLine("};");
+					tw.WriteLine("#endif");
 					tw.WriteLine();
 					tw.WriteLine("////////////////////////");
 				}
@@ -945,11 +1019,13 @@ namespace LLProtoBuff
 				{
 					var className = en.ID.strRead;
 
-					tw.WriteLine("class {0} : public PbObject", className);
+					tw.WriteLine("class PB_API {0} : public PbObject", className);
 					tw.WriteLine("{");
 					tw.WriteLine("public:");
 					tw.WriteLine($"{className}();");
 					tw.WriteLine($"~{className}();");
+					tw.WriteLine($"{className}(const {className} &);");
+					tw.WriteLine($"void operator =(const {className} &);");
 					tw.WriteLine($"void Clear();");
 					tw.WriteLine($"void Write(PbStreamOut &w);");
 					tw.WriteLine($"void Read(PbStreamIn &r);");
@@ -980,9 +1056,6 @@ namespace LLProtoBuff
 						}
 					}
 
-					tw.WriteLine("private:");
-					tw.WriteLine($"{className}(const {className} &) = delete;");
-					tw.WriteLine($"void operator =(const {className} &) = delete;");
 
 					tw.WriteLine("};");
 					tw.WriteLine();
@@ -1117,7 +1190,7 @@ namespace LLProtoBuff
 							{
 								var r = em as Repeated;
 								if (r.isObject(enumList))
-									tw.WriteLine($"for (auto p : {r.varName()}) delete p;");
+									tw.WriteLine($"for (int i = 0; i < {r.varName()}.size(); ++i) delete {r.varName()}[i];");
 								tw.WriteLine(r.cppInit());
 							}
 						}
@@ -1137,26 +1210,26 @@ namespace LLProtoBuff
 								{
 									tw.WriteLine($"if ({r.varName()} == {er.tag()})");
 									if (!er.isEnum(enumList))
-										tw.WriteLine($"w.Write({er.tag()}, PbType::pb_{er.pbBaseType()}, {er.varName()});");
+										tw.WriteLine($"w.Write({er.tag()}, pb_{er.pbBaseType()}, {er.varName()});");
 									else
-										tw.WriteLine($"w.Write({er.tag()}, PbType::pb_{er.pbBaseType()}, (int){er.varName()});");
+										tw.WriteLine($"w.Write({er.tag()}, pb_{er.pbBaseType()}, (int){er.varName()});");
 								}
 							}
 							else if (em.IsOptional)
 							{
 								var r = em as Optional;
 								if (!r.isEnum(enumList))
-									tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, {r.varName()});");
+									tw.WriteLine($"w.Write({r.tag()}, pb_{r.pbBaseType()}, {r.varName()});");
 								else
-									tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, (int){r.varName()});");
+									tw.WriteLine($"w.Write({r.tag()}, pb_{r.pbBaseType()}, (int){r.varName()});");
 							}
 							else if (em.IsRepeated)
 							{
 								var r = em as Repeated;
 								if (!r.isEnum(enumList))
-									tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, {r.varName()});");
+									tw.WriteLine($"w.Write({r.tag()}, pb_{r.pbBaseType()}, {r.varName()});");
 								else
-									tw.WriteLine($"w.Write({r.tag()}, PbType::pb_{r.pbBaseType()}, (int){r.varName()});");
+									tw.WriteLine($"w.Write({r.tag()}, pb_{r.pbBaseType()}, (int){r.varName()});");
 							}
 						}
 						tw.WriteLine("}");
@@ -1190,6 +1263,21 @@ namespace LLProtoBuff
 							}
 						}
 
+						tw.WriteLine($"{className}::{className}(const {className} &r)");
+						tw.WriteLine("{");
+						tw.WriteLine("PbStreamOut so;");
+						tw.WriteLine($"const_cast<{className} &>(r).Write(so);");
+						tw.WriteLine("PbStreamIn si(so.ToArray());");
+						tw.WriteLine("this->Read(si);");
+						tw.WriteLine("}");
+						tw.WriteLine($"void {className}::operator =(const {className} &r)");
+						tw.WriteLine("{");
+						tw.WriteLine("PbStreamOut so;");
+						tw.WriteLine($"const_cast<{className} &>(r).Write(so);");
+						tw.WriteLine("PbStreamIn si(so.ToArray());");
+						tw.WriteLine("this->Read(si);");
+						tw.WriteLine("}");
+
 
 						tw.WriteLine($"void {className}::Read(PbStreamIn &r)");
 						tw.WriteLine("{");
@@ -1211,26 +1299,26 @@ namespace LLProtoBuff
 								foreach (var er in r.List)
 								{
 									if (!er.isEnum(enumList))
-										tw.WriteLine($"case {er.tag()}: r.Read(wt, PbType::pb_{er.pbBaseType()}, {er.varName()}); {r.varName()} = {er.tag()}; break;");
+										tw.WriteLine($"case {er.tag()}: r.Read(wt, pb_{er.pbBaseType()}, {er.varName()}); {r.varName()} = {er.tag()}; break;");
 									else
-										tw.WriteLine($"case {er.tag()}: r.Read(wt, PbType::pb_{er.pbBaseType()}, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
+										tw.WriteLine($"case {er.tag()}: r.Read(wt, pb_{er.pbBaseType()}, en); {er.varName()} = ({er.TYPE.strRead}) en; {r.varName()} = {er.tag()}; break;");
 								}
 							}
 							else if (em.IsOptional)
 							{
 								var r = em as Optional;
 								if (!r.isEnum(enumList))
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, {r.varName()}); break;");
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, pb_{r.pbBaseType()}, {r.varName()}); break;");
 								else
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
 							}
 							else if (em.IsRepeated)
 							{
 								var r = em as Repeated;
 								if (!r.isEnum(enumList))
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, {r.varName()}); break;");
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, pb_{r.pbBaseType()}, {r.varName()}); break;");
 								else
-									tw.WriteLine($"case {r.tag()}: r.Read(wt, PbType::pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
+									tw.WriteLine($"case {r.tag()}: r.Read(wt, pb_{r.pbBaseType()}, en); {r.varName()} = ({r.cppType(enumList)}) en; break;");
 
 							}
 						}
