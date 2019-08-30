@@ -1,6 +1,20 @@
 ﻿syntax = "proto3";
 package tutorial;
 
+
+///////////////////////////////////////////
+// dateTime
+message DateTime_t
+{
+	int32 Year = 1;
+	int32 Month = 2;
+	int32 Day = 3;
+	int32 Hour = 4;
+	int32 Minutes = 5;
+	int32 Seconds = 6;
+}
+
+
 enum PhoneType {
     MOBILE = 0;
     HOME = 1;
@@ -8,13 +22,14 @@ enum PhoneType {
 }
 
 message Person {
-	bool erer = 6;
   string name = 1;
   int32 id = 2;
   string email = 3;
-  oneof leo {
-	  int32 id1 = 4;
+  oneof leo 
+  {
+      int32 id1 = 4;
 	  string email1 = 5;
+	  PhoneType pt = 6;
   }
 }
 

@@ -2,7 +2,7 @@
   "profiles": {
     "LLProtoBuff": {
       "commandName": "Project",
-      "commandLineArgs": "-cpp ../../../pbMsg.txt"
+      "commandLineArgs": "-cs -cs:DataContractWS -cs:Messages ../../../pbMsg.txt"
     }
   }
 }

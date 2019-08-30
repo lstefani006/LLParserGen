@@ -3,6 +3,7 @@
 week   ^WEEK
 month  ^MONTH
 day    ^DAY
+date   ^DATE
 
 first   ^FIRST
 last    ^LAST
@@ -18,8 +19,9 @@ last    ^LAST
 [0-9]+                 ^NUM
 (\ |\n|\r|\t)+         ^()
 
+
 %parser 
-%parser.class DateParser
+%parser.class DateExprParser
 %parser.using System
 %parser.using System.Text
 %parser.namespace ET_DW_Builder
@@ -30,6 +32,8 @@ date_expr<DateExpr>
 	| MONTH  '(' NUM ',' first_last ')'             ^new MonthExpr($3, $5, null)
 	| MONTH  '(' NUM ',' first_last ',' offset ')'  ^new MonthExpr($3, $5, $7)
 	| DAY    '(' NUM ')'                            ^new DayExpr($3)
+	| DATE   '(' NUM ',' NUM ',' NUM ')'            ^new DateValueExpr($3, $5, $7)
+	| 
 	;
 	
 first_last<TokenAST>

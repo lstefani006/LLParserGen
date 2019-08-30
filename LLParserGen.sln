@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28922.388
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLParserGen", "LLParserGen\LLParserGen.csproj", "{A80B5CCD-FC11-4E39-9FE4-57923EE3B5BF}"
 EndProject
@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLParserGenLib", "LLParserG
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLProtoBuff", "LLProtoBuff\LLProtoBuff.csproj", "{1B92BD24-96FC-402B-BA49-A1A66050F3DA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLDateExpr", "LLDateExpr\LLDateExpr.csproj", "{9A14805D-F819-4380-9463-EBABAD7C0273}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLDateExpr", "LLDateExpr\LLDateExpr.csproj", "{9A14805D-F819-4380-9463-EBABAD7C0273}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataContractTest", "DataContractTest\DataContractTest.csproj", "{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{9A14805D-F819-4380-9463-EBABAD7C0273}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9A14805D-F819-4380-9463-EBABAD7C0273}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9A14805D-F819-4380-9463-EBABAD7C0273}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

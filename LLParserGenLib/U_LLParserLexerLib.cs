@@ -14,11 +14,21 @@ namespace LLParserLexerLib
 		public SyntaxError(string fn, int line, string fmt, params object[] args)
 			: base(U.F("{0}({1}): {2}", fn, line, U.F(fmt, args)))
 		{
+			FileName = fn;
+			LineNumber = line;
+			ErrorMsg = U.F(fmt, args);
 		}
 		public SyntaxError(ISourceTrackable sc, string fmt, params object[] args)
 			: base(U.F("{0}({1}): {2}", sc != null ? sc.fileName : "", sc != null ? sc.lineNu : 0, U.F(fmt, args)))
 		{
+			FileName = sc != null ? sc.fileName : "";
+			LineNumber = sc != null ? sc.lineNu : 0;
+			ErrorMsg = U.F(fmt, args);
 		}
+
+		public string FileName;
+		public int LineNumber;
+		public string ErrorMsg;
 	}
 
 	public interface ISourceTrackable
@@ -154,7 +164,7 @@ namespace LLParserLexerLib
 		protected virtual TokenAST Match(int ch, IAST v)
 		{
 			if (Next.token != ch)
-				throw new SyntaxError(_next.fileName, _next.lineNu, "expected char '{0}' read {1}", (char)ch, Next.ToString());
+				throw new SyntaxError(_next.fileName, _next.lineNu, "expected '{0}' read {1}", GetToken(ch), GetToken(Next.token));
 
 			var ret = _next;
 			_next = null;

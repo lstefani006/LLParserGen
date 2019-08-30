@@ -8,14 +8,15 @@ using LLParserLexerLib;
 
 namespace ET_DW_Builder
 {
-	public partial class DateParser : ParserBase
+	public partial class DateExprParser : ParserBase
 	{
 		public const int WEEK = -2;
 		public const int NUM = -3;
 		public const int MONTH = -4;
 		public const int DAY = -5;
-		public const int FIRST = -6;
-		public const int LAST = -7;
+		public const int DATE = -6;
+		public const int FIRST = -7;
+		public const int LAST = -8;
 		
 		Dictionary<int, string> _token;
 		public override Dictionary<int, string> Token
@@ -30,8 +31,9 @@ namespace ET_DW_Builder
 					_token.Add(-3, "NUM");
 					_token.Add(-4, "MONTH");
 					_token.Add(-5, "DAY");
-					_token.Add(-6, "FIRST");
-					_token.Add(-7, "LAST");
+					_token.Add(-6, "DATE");
+					_token.Add(-7, "FIRST");
+					_token.Add(-8, "LAST");
 				}
 				return _token;
 			}
@@ -50,6 +52,12 @@ namespace ET_DW_Builder
 				break;
 			case DAY:
 				alt = 2;
+				break;
+			case DATE:
+				alt = 3;
+				break;
+			case -1:
+				alt = 4;
 				break;
 			default:
 				Error();
@@ -107,6 +115,34 @@ namespace ET_DW_Builder
 					TokenAST nt3_s = Match(NUM, nt3_i);
 					TokenAST nt4_s = Match(')', nt4_i);
 					date_expr_s = new DayExpr(nt3_s);
+				}
+				break;
+			case 3:
+				{
+					var nt1_i = default(IAST);
+					var nt2_i = default(IAST);
+					var nt3_i = default(IAST);
+					var nt4_i = default(IAST);
+					var nt5_i = default(IAST);
+					var nt6_i = default(IAST);
+					var nt7_i = default(IAST);
+					var nt8_i = default(IAST);
+					
+					TokenAST nt1_s = Match(DATE, nt1_i);
+					TokenAST nt2_s = Match('(', nt2_i);
+					TokenAST nt3_s = Match(NUM, nt3_i);
+					TokenAST nt4_s = Match(',', nt4_i);
+					TokenAST nt5_s = Match(NUM, nt5_i);
+					TokenAST nt6_s = Match(',', nt6_i);
+					TokenAST nt7_s = Match(NUM, nt7_i);
+					TokenAST nt8_s = Match(')', nt8_i);
+					date_expr_s = new DateValueExpr(nt3_s, nt5_s, nt7_s);
+				}
+				break;
+			case 4:
+				{
+					var nt1_i = default(IAST);
+					
 				}
 				break;
 			}
@@ -318,6 +354,7 @@ namespace ET_DW_Builder
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('w'), new RegToken('e')), new RegToken('e')), new RegToken('k')), WEEK);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('m'), new RegToken('o')), new RegToken('n')), new RegToken('t')), new RegToken('h')), MONTH);
 			acts.Add(new RegAnd(new RegAnd(new RegToken('d'), new RegToken('a')), new RegToken('y')), DAY);
+			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('d'), new RegToken('a')), new RegToken('t')), new RegToken('e')), DATE);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegAnd(new RegToken('f'), new RegToken('i')), new RegToken('r')), new RegToken('s')), new RegToken('t')), FIRST);
 			acts.Add(new RegAnd(new RegAnd(new RegAnd(new RegToken('l'), new RegToken('a')), new RegToken('s')), new RegToken('t')), LAST);
 			acts.Add(new RegToken('('), '(');
