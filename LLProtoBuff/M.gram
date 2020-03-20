@@ -129,6 +129,7 @@ service_list<ServiceList>
 	;
 service<Service>
 	: RPC ID '(' ID ')' RETURNS '(' ID ')'   '{'   '}'   ^new Service($2, $4, $8)
+	| RPC ID '(' ID ')' RETURNS '(' ID ')'   ';'         ^new Service($2, $4, $8)
 	;
 
 enum_list<EnumList>

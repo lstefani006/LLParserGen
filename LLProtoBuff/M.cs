@@ -629,7 +629,6 @@ namespace PB
 					var nt8_i = default(IAST);
 					var nt9_i = default(IAST);
 					var nt10_i = default(IAST);
-					var nt11_i = default(IAST);
 					
 					TokenAST nt1_s = Match(RPC, nt1_i);
 					TokenAST nt2_s = Match(ID, nt2_i);
@@ -640,9 +639,8 @@ namespace PB
 					TokenAST nt7_s = Match('(', nt7_i);
 					TokenAST nt8_s = Match(ID, nt8_i);
 					TokenAST nt9_s = Match(')', nt9_i);
-					TokenAST nt10_s = Match('{', nt10_i);
-					TokenAST nt11_s = Match('}', nt11_i);
-					service_s = new Service(nt2_s, nt4_s, nt8_s);
+					var nt10_s = tmp_9(nt1_s, nt2_s, nt3_s, nt4_s, nt5_s, nt6_s, nt7_s, nt8_s, nt9_s, nt10_i);
+					service_s = nt10_s;
 				}
 				break;
 			}
@@ -657,6 +655,57 @@ namespace PB
 				break;
 			}
 			return service_s;
+		}
+		
+		Service tmp_9(IAST nt1_s, IAST nt2_s, IAST nt3_s, IAST nt4_s, IAST nt5_s, IAST nt6_s, IAST nt7_s, IAST nt8_s, IAST nt9_s, IAST tmp_9_i)
+		{
+			int alt = 0;
+			switch (Next.token)
+			{
+			case '{':
+				alt = 0;
+				break;
+			case ';':
+				alt = 1;
+				break;
+			default:
+				Error();
+				break;
+			}
+			
+			Service tmp_9_s = default(Service);
+			switch (alt)
+			{
+			case 0:
+				{
+					var nt10_i = default(IAST);
+					var nt11_i = default(IAST);
+					
+					TokenAST nt10_s = Match('{', nt10_i);
+					TokenAST nt11_s = Match('}', nt11_i);
+					tmp_9_s = new Service(((TokenAST)nt2_s), ((TokenAST)nt4_s), ((TokenAST)nt8_s));
+				}
+				break;
+			case 1:
+				{
+					var nt10_i = default(IAST);
+					
+					TokenAST nt10_s = Match(';', nt10_i);
+					tmp_9_s = new Service(((TokenAST)nt2_s), ((TokenAST)nt4_s), ((TokenAST)nt8_s));
+				}
+				break;
+			}
+			
+			switch (Next.token)
+			{
+			case RPC:
+			case '}':
+				break;
+			default:
+				Error();
+				break;
+			}
+			return tmp_9_s;
 		}
 		
 		EnumList enum_list(IAST enum_list_i)
@@ -1034,7 +1083,7 @@ namespace PB
 					var nt2_i = default(IAST);
 					
 					TokenAST nt1_s = Match(OPTIONAL, nt1_i);
-					var nt2_s = tmp_9(nt1_s, nt2_i);
+					var nt2_s = tmp_10(nt1_s, nt2_i);
 					field_s = nt2_s;
 				}
 				break;
@@ -1070,7 +1119,7 @@ namespace PB
 			return field_s;
 		}
 		
-		FieldRoot tmp_9(IAST nt1_s, IAST tmp_9_i)
+		FieldRoot tmp_10(IAST nt1_s, IAST tmp_10_i)
 		{
 			int alt = 0;
 			switch (Next.token)
@@ -1101,7 +1150,7 @@ namespace PB
 				break;
 			}
 			
-			FieldRoot tmp_9_s = default(FieldRoot);
+			FieldRoot tmp_10_s = default(FieldRoot);
 			switch (alt)
 			{
 			case 0:
@@ -1117,7 +1166,7 @@ namespace PB
 					TokenAST nt4_s = Match('=', nt4_i);
 					TokenAST nt5_s = Match(NUM, nt5_i);
 					TokenAST nt6_s = Match(';', nt6_i);
-					tmp_9_s = new Optional(nt2_s, nt3_s, nt5_s, true);
+					tmp_10_s = new Optional(nt2_s, nt3_s, nt5_s, true);
 				}
 				break;
 			case 1:
@@ -1127,7 +1176,7 @@ namespace PB
 					
 					TokenAST nt2_s = Match(REPEATED, nt2_i);
 					var nt3_s = field_non_optional(nt3_i);
-					tmp_9_s = new Repeated(nt3_s, true);
+					tmp_10_s = new Repeated(nt3_s, true);
 				}
 				break;
 			}
@@ -1159,7 +1208,7 @@ namespace PB
 				Error();
 				break;
 			}
-			return tmp_9_s;
+			return tmp_10_s;
 		}
 		
 		FieldRoot field_non_optional(IAST field_non_optional_i)
