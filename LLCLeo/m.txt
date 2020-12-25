@@ -1,0 +1,33 @@
+﻿
+var leo : int;
+
+namespace a
+{
+	var cca : int;
+	var ccb : b;
+	var ccc : MaxDel;
+
+	del MaxDel(a : int) : void;
+
+	fun leo(a: int, m : MaxDel) : int
+	{
+		leo(a+1, a);
+		if (m != 0)
+			return m(a + 1, a);
+	}
+
+	class b
+	{
+		public var leo : MaxDel;
+		public var a : int;
+		public fun print(a : int, b : String) : void {}
+	}
+}
+
+class String
+{
+	var cc : a.b;
+	var dd : int[];
+	public fun String() : void {}
+	extern fun Print(cacca : int *) : void ;
+}

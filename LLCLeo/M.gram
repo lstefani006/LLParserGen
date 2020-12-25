@@ -1,0 +1,311 @@
+%lexer
+
+fun                                   ^FUN
+var                                   ^VAR
+del                                   ^DEL
+
+class                                 ^CLASS
+public                                ^PUBLIC
+private                               ^PRIVATE
+protected                             ^PROTECTED
+extern                                ^EXTERN
+namespace                             ^NAMESPACE
+
+if                                    ^IF
+while                                 ^WHILE
+else                                  ^ELSE
+return                                ^RETURN
+for                                   ^FOR
+
+int                                   ^INT
+void                                  ^VOID
+bool                                  ^BOOL
+
+true                                  ^TRUE
+false                                 ^FALSE
+
+cast                                  ^CAST
+
+"&&"                                  ^ANDAND
+"||"                                  ^OROR
+
+"++"                                  ^INC
+"--"                                  ^DEC
+
+"+"									  ^(+)
+"-"									  ^(-)
+"="									  ^(=)
+"*"									  ^(*)
+"/"									  ^(/)
+"%"									  ^(%)
+";"									  ^(;)
+"("									  ^(()
+")"									  ^())
+"{"									  ^({)
+"}"									  ^(})
+"["									  ^([)
+"]"									  ^(])
+","									  ^(,)
+"."									  ^(.)
+":"									  ^(:)
+">"									  ^GT
+">="								  ^GE
+"<"		    						  ^LT
+"<="	    						  ^LE
+"=="	    						  ^EQ
+"!="	    						  ^NE
+(_|[a-z]|[A-Z])(_|[a-z]|[A-Z]|[0-9])* ^ID
+[0-9]+                                ^NUM
+\/\/.*                                ^() 
+"/*"                                   
+{
+	for (; ; )
+	{
+		if (rd.Peek().ch == -1) throw new Exception("EOF in comment");
+		if (rd.Read().ch == '*' && rd.Peek().ch == '/')
+		{
+			rd.Read();
+			break;
+		}
+	}
+	rd.SetMatch();
+	rd.EndToken(out tk.strRead, out tk.fileName, out tk.line);
+	return false;
+}
+(\ |\n|\r|\t)+                        ^()
+
+
+
+%parser 
+%parser.class MParser
+%parser.using System
+%parser.namespace LLCLeo
+
+start<DeclRootList>
+	: decl                 ^new DeclRootList($1)
+	| start decl           ^$1.Add($2)
+	;
+
+decl<DeclRoot>
+	: decl_visibility FUN ID '(' argse ')' ':' type decl_body        ^new DeclFunction ($1, $3, $5, $8, $9)
+	| decl_visibility DEL ID '(' argse ')' ':' type ';'              ^new DeclDelegate ($1, $3, $5, $8)
+	| decl_visibility VAR ID ':' type ';'                            ^new DeclVar      ($1, $3, $5)
+	| decl_visibility VAR ID ':' type '=' e ';'                      ^new DeclVar      ($1, $3, $5, $7)
+	| decl_visibility VAR ID '=' e ';'                               ^new DeclVar      ($1, $3, $5)
+	| decl_visibility CLASS ID '{' start '}'                         ^new DeclClass    ($1, $3, $5)
+	| NAMESPACE ID '{' start '}'                                     ^new DeclNamespace($2, $4)
+	;
+
+decl_visibility<DeclVisibility>
+	:                ^new DeclVisibility()
+	| PROTECTED      ^new DeclVisibility($1)
+	| PUBLIC         ^new DeclVisibility($1)
+	| PRIVATE        ^new DeclVisibility($1)
+	| EXTERN         ^new DeclVisibility($1)
+	;
+
+decl_body<DeclBody>
+	: '{' stmtlist '}'   ^new DeclBody($1, $2);
+	| '(' e ')'          ^new DeclBody($1, new StmtReturn($1, $2));
+	| ';'                ^new DeclBody($1, null);
+	;
+
+argse<DeclArgs>
+	:                ^new DeclArgs()
+	| args           ^$1
+	;
+
+args<DeclArgs>
+	: ID ':' type             ^new DeclArgs($1, $3)
+	| args ',' ID ':' type    ^$1.Add($3, $5)
+	;
+
+
+var<ExprVar>
+	: ID              ^new ExprVar($1)
+	| var '.' ID      ^new ExprVar($1, $2, $3)
+	;
+
+e<ExprRoot>
+	: e_oror '=' e            ^new ExprAss($1, $2, $3)
+	| e_oror                  ^$1
+	;
+
+e_oror<ExprRoot>
+	: e_oror OROR e_andand    ^new ExprBinOp($1, $2, $3)
+	| e_andand                ^$1
+	;
+
+e_andand<ExprRoot>
+	: e_andand ANDAND e_or   ^new ExprBinOp($1, $2, $3)
+	| e_or                   ^$1
+	;
+
+e_or<ExprRoot>
+	: e_or '|' e_xor   ^new ExprBinOp($1, $2, $3)
+	| e_xor            ^$1
+	;
+
+e_xor<ExprRoot>
+	: e_xor '^' e_and   ^new ExprBinOp($1, $2, $3)
+	| e_and             ^$1
+	;
+
+e_and<ExprRoot>
+	: e_and '&' e_eq    ^new ExprBinOp($1, $2, $3)
+	| e_eq              ^$1
+	;
+
+e_eq<ExprRoot>
+	: e_eq EQ e_cmp  ^new ExprBinOp($1, $2, $3)
+	| e_eq NE e_cmp  ^new ExprBinOp($1, $2, $3)
+	| e_cmp          ^$1
+	;
+
+e_cmp<ExprRoot>
+	: e_cmp LT e_shift ^new ExprBinOp($1, $2, $3)
+	| e_cmp LE e_shift ^new ExprBinOp($1, $2, $3)
+	| e_cmp GT e_shift ^new ExprBinOp($1, $2, $3)
+	| e_cmp GE e_shift ^new ExprBinOp($1, $2, $3)
+	| e_shift          ^$1
+	;
+
+e_shift<ExprRoot>
+	: e_shift LSH e_add    ^new ExprBinOp($1, $2, $3)
+	| e_shift RSH e_add    ^new ExprBinOp($1, $2, $3)
+	| e_add                ^$1
+	;
+
+e_add<ExprRoot>
+	: e_add '+' e_mul     ^new ExprAdd($1, $2, $3)
+	| e_add '-' e_mul     ^new ExprSub($1, $2, $3)
+	| e_mul               ^$1
+	;
+
+e_mul<ExprRoot>
+	: e_una            ^$1
+	| e_mul '*' e_una  ^new ExprMul($1, $2, $3)
+	| e_mul '/' e_una  ^new ExprDiv($1, $2, $3)
+	| e_mul '%' e_una  ^new ExprRem($1, $2, $3)
+	;
+
+e_una<ExprRoot>
+	: e_prim           ^$1
+	| '-' e_una        ^new ExprNeg($1, $2)
+	| '+' e_una        ^new ExprPlus($1, $2)
+	| INC e_una        ^new ExprPreInc($1, $2)
+	| DEC e_una        ^new ExprPreDec($1, $2)
+	;
+
+e_prim<ExprRoot>
+	: NUM                     ^new ExprNum($1)
+	| TRUE                    ^new ExprNum($1)
+	| FALSE                   ^new ExprNum($1)
+	| var                     ^$1
+	| e_prim '(' eliste ')'   ^new ExprCall($1, $2, $3)
+	| e_prim '[' elist ']'    ^new ExprArray($1, $2, $3)
+	| '(' e ')'               ^$2
+	| e_prim INC              ^new ExprPostInc($1, $2)
+	| e_prim DEC              ^new ExprPostDec($1, $2)
+	| NEW type '(' eliste ')' ^new ExprNew($1, $2, $4)
+	| CAST '(' type ',' e ')' ^new ExprCast($1, $3, $5)
+	| lambda                  ^$1
+	;
+
+lambda
+	: FUN '(' lambda_args_e ')' lambda_type_e '(' e ')'
+	| FUN '(' lambda_args_e ')' lambda_type_e '{' stmtlist '}'
+	;
+
+lambda_args_e
+	: lambda_args
+	;
+
+lambda_args
+	: lambda_args ',' lambda_arg
+	| lambda_arg
+	;
+
+lambda_arg
+	: ID
+	| ID ':' type
+	;
+
+lambda_type_e
+	: 
+	| ':' type
+	;
+
+eliste<ExprList>
+	:             ^new ExprList()
+	| elist       ^$1
+	;
+
+elist<ExprList>
+	: e               ^new ExprList($1)
+	| elist ',' e     ^$1.Add($3)
+	;
+
+e_ass<ExprRoot>
+	: e_prim2 INC             ^new ExprPostInc($1, $2)
+	| e_prim2 DEC             ^new ExprPostDec($1, $2)
+	| INC e_prim2             ^new ExprPreInc($1, $2)
+	| DEC e_prim2             ^new ExprPreDec($1, $2)
+	| NEW type '(' eliste ')' ^new ExprNew($1, $2, $4)
+	| e_prim2 '=' e           ^new ExprAss($1, $2, $3)
+	;
+
+e_prim2<ExprRoot>
+	: var                     ^$1
+	| '(' e ')'               ^$2
+	| e_prim2 '[' elist ']'    ^new ExprArray($1, $2, $3)
+	| e_prim2 '(' eliste ')'   ^new ExprCall($1, $2, $3)
+	;
+
+e_opz <ExprRoot>
+	:          ^null
+	| e        ^$1
+	;
+e_ass_opz <ExprRoot>
+	:          ^null
+	| e_ass    ^$1
+	;
+
+stmt<StmtRoot>
+	: e ';'                                              ^new StmtExpr($1)
+	| ';'                                                ^new StmtNull($1)
+	| IF '(' e ')' stmt                                  ^new StmtIf($1, $3, $5)
+	| IF '(' e ')' stmt *ELSE stmt                       ^new StmtIf($1, $3, $5, $7)
+	| WHILE '(' e ')' stmt                               ^new StmtWhile($1, $3, $5)
+	| FOR '(' e_ass_opz ';' e_opz ';' e_ass_opz ')' stmt ^new StmtFor($1, $3, $5, $7, $9)
+	| FOR '(' defv ';' e_opz ';' e_ass_opz ')' stmt      ^new StmtFor($1, $3, $5, $7, $9)
+	| '{' stmtlist '}'                                   ^$2
+	| RETURN e ';'                                       ^new StmtReturn($1, $2)
+	| RETURN ';'                                         ^new StmtReturn($1)
+	| defv ';'                                           ^$1
+	;
+
+defv<StmtDef>
+	: VAR ID ':' type          ^new StmtDef($1, $2, $4)
+	| VAR ID ':' type '=' e    ^new StmtDef($1, $2, $4, $6)
+	| VAR ID '=' e             ^new StmtDef($1, $2, $4)
+	;
+
+stmtlist<StmtBlock>
+	:                ^new StmtBlock()
+	| stmtlist stmt  ^$1.Add($2)
+	;
+
+typeId<TypeDef>
+	: ID                ^new TypeDef($1)
+	| typeId '.' ID     ^$1.Add($3)
+	;
+
+type<TypeRoot>
+	: typeId            ^($1)
+	| INT               ^new TypeNat($1)
+	| VOID              ^new TypeNat($1)
+	| BOOL              ^new TypeNat($1)
+	| type '[' ']'      ^new TypeArray($1)
+	| type '*'          ^new TypePt($1)
+	;

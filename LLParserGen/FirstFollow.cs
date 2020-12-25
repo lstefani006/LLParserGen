@@ -1135,7 +1135,6 @@ class Grammar
 						if (t is Token)
 							if (((Token)t).IsSimpleChar == false)
 								token.Add((Token)t);
-
 			int n = -2;
 			foreach (var tk in token)
 				tw.WriteLine("public const int {0} = {1};", tk.ToString(), n--);

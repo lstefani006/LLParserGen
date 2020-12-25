@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "LLCLeo": {
+      "commandName": "Project",
+      "commandLineArgs": "../../../m.txt"
+    }
+  }
+}
