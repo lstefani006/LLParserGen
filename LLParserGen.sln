@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLProtoBuff", "LLProtoBuff\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LLDateExpr", "LLDateExpr\LLDateExpr.csproj", "{9A14805D-F819-4380-9463-EBABAD7C0273}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataContractTest", "DataContractTest\DataContractTest.csproj", "{8D2CA219-8E80-4C04-8EC8-7AB0D3BD2F77}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LLCLeo", "LLCLeo\LLCLeo.csproj", "{5967AA7D-9C50-46B7-AE1F-DE911770994E}"
 EndProject
 Global

@@ -64,7 +64,6 @@ namespace LLCLeo
 				Console.WriteLine(ex);
 			}
 		}
-
 	}
 
 	public static class DeclExtension
